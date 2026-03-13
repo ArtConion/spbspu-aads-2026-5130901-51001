@@ -7,11 +7,16 @@ namespace vishnaykov
   struct Node
   {
     T data_;
-    *next_;
+    Node * next_;
 
-    Node(T val):
-      data_(val),
-      next_(nullptr)
+    explicit Node(const T & value = T(), Node * next = nullptr):
+      data_(value),
+      next_(next)
+    {}
+
+    explicit Node(T&& value, Node* next = nullptr):
+      data_(std::move(val)),
+      next_(next)
     {}
   };
 }

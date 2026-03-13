@@ -114,7 +114,229 @@ namespace vishnyakov
     {
       pseudoknot_->next_ = pseudoknot_;
     }
+    List(const List& other):
+      List()
+    {
+      for (const T& value : other)
+      {
+        push_back(value);
+      }
+    }
 
+    List(List&& other) noexcept:
+      pseudoknot_(other.pseudoknot_),
+      size_(other.size_)
+    {
+      other.pseudoknot_ = new Node();
+      other.pseudoknot_->next_ = other.pseudoknot_;
+      other.size_ = 0;
+    }
+
+    ~List()
+    {
+      clear();
+      delete pseudoknot_;
+    }
+
+    List& operator=(const List& other)
+    {
+      if (this != &other)
+      {
+        List tmp(other);
+        swap(tmp);
+      }
+      return *this;
+    }
+
+    List& operator=(List&& other) noexcept
+    {
+      if (this != &other)
+      {
+        clear();
+        delete pseudoknot_;
+
+        pseudoknot_ = other.pseudoknot_;
+        size_ = other.size_;
+
+        other.pseudoknot_ = new Node();
+        other.pseudoknot_->next_ = other.pseudoknot_;
+        other.size_ = 0;
+      }
+      return *this;
+    }
+
+    LIter< T > begin()
+    {
+      return LIter< T >(pseudoknot_->next_);
+    }
+
+    LIter< T > end()
+    {
+      return LIter< T >(pseudoknot_);
+    }
+
+    LCIter< T > begin() const
+    {
+      return LCIter< T >(pseudoknot_->next_);
+    }
+
+    LCIter< T > end() const
+    {
+      return LCIter< T >(pseudoknot_);
+    }
+
+    LCIter< T > cbegin() const
+    {
+      return LCIter< T >(pseudoknot_->next_);
+    }
+
+    LCIter< T > cend() const
+    {
+      return LCIter< T >(pseudoknot_);
+    }
+
+    T& front()
+    {
+      return pseudoknot_->next_->data_;
+    }
+
+    const T& front() const
+    {
+      return pseudoknot_->next_->data_;
+    }
+
+    T& back()
+    {
+      Node* current = pseudoknot_->next_;
+      while (current->next_ != pseudoknot_)
+      {
+        current = current->next_;
+      }
+      return current->data_;
+    }
+
+    const T& back() const
+    {
+      Node* current = pseudoknot_->next_;
+      while (current->next_ != pseudoknot_)
+      {
+        current = current->next_;
+      }
+      return current->data_;
+    }
+
+    void push_front(const T& value)
+    {
+      insert_after(LIter< T >(pseudoknot_), value);
+    }
+
+    void push_front(T&& value)
+    {
+      insert_after(LIter< T >(pseudoknot_), std::move(value));
+    }
+
+    void push_back(const T& value)
+    {
+      Node* last = pseudoknot_;
+      while (last->next_ != pseudoknot_)
+      {
+        last = last->next_;
+      }
+      insert_after(LIter< T >(last), value);
+    }
+
+    void push_back(T&& value)
+    {
+      Node* last = pseudoknot_;
+      while (last->next_ != pseudoknot_)
+      {
+        last = last->next_;
+      }
+      insert_after(LIter< T >(last), std::move(value));
+    }
+
+    LIter< T > insert_after(LIter< T > pos, const T& value)
+    {
+      Node* new_node = new Node(value, pos.ptr_->next_);
+      pos.ptr_->next_ = new_node;
+      ++size_;
+      return LIter< T >(new_node);
+    }
+
+    LIter< T > insert_after(LIter< T > pos, T&& value)
+    {
+      Node* new_node = new Node(std::move(value), pos.ptr_->next_);
+      pos.ptr_->next_ = new_node;
+      ++size_;
+      return LIter< T >(new_node);
+    }
+
+    void pop_front()
+    {
+      if (empty())
+      {
+        return;
+      }
+      erase_after(LIter< T >(pseudoknot_));
+    }
+
+    void pop_back()
+    {
+      if (empty())
+      {
+        return;
+      }
+
+      Node* prev = pseudoknot_;
+      Node* current = pseudoknot_->next_;
+
+      while (current->next_ != pseudoknot_)
+      {
+        prev = current;
+        current = current->next_;
+      }
+
+      erase_after(LIter< T >(prev));
+    }
+
+    LIter< T > erase_after(LIter< T > pos)
+    {
+      if (pos.ptr_->next_ == pseudoknot_)
+      {
+        return end();
+      }
+
+      Node* to_delete = pos.ptr_->next_;
+      pos.ptr_->next_ = to_delete->next_;
+      delete to_delete;
+      --size_;
+
+      return LIter< T >(pos.ptr_->next_);
+    }
+
+    void clear()
+    {
+      while (!empty())
+      {
+        pop_front();
+      }
+    }
+
+    bool empty() const
+    {
+      return size_ == 0;
+    }
+
+    size_t size() const
+    {
+      return size_;
+    }
+
+    void swap(List& other) noexcept
+    {
+      std::swap(pseudoknot_, other.pseudoknot_);
+      std::swap(size_, other.size_);
+    }
 
   };
 }

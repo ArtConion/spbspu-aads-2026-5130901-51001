@@ -1,24 +1,33 @@
 #include "functions.hpp"
+#include <iostream>
 
 vishnyakov::List< vishnyakov::Sequence > vishnyakov::readInput(std::istream& in)
 {
   List< Sequence > seqs;
   std::string name;
+
   while (in >> name)
   {
-    Sequence seq;
-    seq.name = name;
-    seq.nums = new List< size_t >();
-    LIter< size_t > curr_num = seq.nums->begin();
+    Sequence seq(name);
 
     getWithoutSkips(in);
-    while(!isEnd(in))
+
+    LIter< size_t > curr_num = seq.nums->begin();
+    while (!isEnd(in))
     {
       size_t num = 0;
-      in >> num;
-      curr_num = seq.nums->insert_after(curr_num, num);
+      if (in >> num)
+      {
+        curr_num = seq.nums->insert_after(curr_num, num);
+      }
+      else
+      {
+        in.clear();
+        break;
+      }
     }
     skipLine(in);
+
     if (seqs.empty())
     {
       seqs.push_front(std::move(seq));
@@ -82,19 +91,12 @@ bool vishnyakov::checkedSum(size_t a, size_t b, size_t& res)
   return false;
 }
 
-void vishnyakov::clearSequences(List< Sequence >& seqs)
-{
-  while (!seqs.empty())
-  {
-    seqs.pop_front();
-  }
-}
-
 void vishnyakov::outputNames(const List< Sequence >& seqs, std::ostream& out)
 {
   LCIter< Sequence > it = seqs.cbegin();
   bool first = true;
-  for(; it != seqs.cend(); ++it)
+
+  for (; it != seqs.cend(); ++it)
   {
     if (!first)
     {
@@ -106,10 +108,14 @@ void vishnyakov::outputNames(const List< Sequence >& seqs, std::ostream& out)
   out << '\n';
 }
 
-bool vishnyakov::outputNums(const List< Sequence >& seqs, std::ostream& out)
+int vishnyakov::outputNums(const List< Sequence >& seqs, std::ostream& out)
 {
-  size_t max_len = 0;
+  if (seqs.empty())
+  {
+    return 0;
+  }
 
+  size_t max_len = 0;
   for (LCIter< Sequence > curr = seqs.cbegin(); curr != seqs.cend(); ++curr)
   {
     size_t len = 0;
@@ -117,91 +123,128 @@ bool vishnyakov::outputNums(const List< Sequence >& seqs, std::ostream& out)
     {
       ++len;
     }
-    max_len = max_len > len ? max_len : len;
-  }
-
-  List< List < size_t > > transposed;
-  LIter< List < size_t > > last_transp = transposed.begin();
-  bool hasNums = false;
-
-  for (size_t i = 0; i < max_len; ++i)
-  {
-    List< size_t > new_seq;
-
-    for(LCIter< Sequence > cit = seqs.cbegin(); cit != seqs.cend(); ++cit)
+    if (len > max_len)
     {
-      LCIter< size_t > it = cit->nums->cbegin();
-      size_t curr = 0;
-      while (curr < i && it != cit->nums->cend())
-      {
-        ++curr;
-        ++it;
-      }
-
-      if (it != cit->nums->cend())
-      {
-        new_seq.push_back(*it);
-        hasNums = true;
-      }
-    }
-
-    if (new_seq.begin() != new_seq.end())
-    {
-      last_transp = transposed.insert_after(transposed.begin(), std::move(new_seq));
+      max_len = len;
     }
   }
 
-  if (hasNums)
+  List< List< size_t > > columns;
+  bool has_nums = false;
+
+  for (size_t col = 0; col < max_len; ++col)
   {
-    for (LIter< List< size_t > > it = transposed.begin(); it != transposed.end(); ++it)
+    List< size_t > column;
+    bool col_has_nums = false;
+
+    for (LCIter< Sequence > seq_it = seqs.cbegin(); seq_it != seqs.cend(); ++seq_it)
     {
-      bool first = true;
-      for (LCIter< size_t > cit = it->cbegin(); cit != it->cend(); ++cit)
+      size_t index = 0;
+      LCIter< size_t > num_it = seq_it->nums->cbegin();
+
+      while (index < col && num_it != seq_it->nums->cend())
       {
-        if (!first)
+        ++index;
+        ++num_it;
+      }
+
+      if (num_it != seq_it->nums->cend())
+      {
+        column.push_back(*num_it);
+        col_has_nums = true;
+        has_nums = true;
+      }
+    }
+
+    if (col_has_nums)
+    {
+      if (columns.empty())
+      {
+        columns.push_front(std::move(column));
+      }
+      else
+      {
+        LIter< List< size_t > > last = columns.begin();
+        while (last != columns.end())
+        {
+          LIter< List< size_t > > next = last;
+          ++next;
+          if (next == columns.end())
+          {
+            break;
+          }
+          last = next;
+        }
+        columns.insert_after(last, std::move(column));
+      }
+    }
+  }
+
+  if (has_nums)
+  {
+    for (LCIter< List< size_t > > col_it = columns.cbegin(); col_it != columns.cend(); ++col_it)
+    {
+      bool first_in_col = true;
+      for (LCIter< size_t > num_it = col_it->cbegin(); num_it != col_it->cend(); ++num_it)
+      {
+        if (!first_in_col)
         {
           out << ' ';
         }
-        out << *cit;
-        first = false;
+        out << *num_it;
+        first_in_col = false;
       }
       out << '\n';
     }
   }
 
   List< size_t > sums;
-  for (LCIter< List < size_t > > it = transposed.cbegin(); it != transposed.cend(); ++it)
+  bool overflow = false;
+
+  for (LCIter< List< size_t > > col_it = columns.cbegin(); col_it != columns.cend(); ++col_it)
   {
     size_t sum = 0;
-    for (LCIter< size_t > cit = it->cbegin(); cit != it->cend(); ++cit)
+    for (LCIter< size_t > num_it = col_it->cbegin(); num_it != col_it->cend(); ++num_it)
     {
-      if (checkedSum(sum, *cit, sum))
+      if (checkedSum(sum, *num_it, sum))
       {
         std::cerr << "overflow";
-        return 1;
+        overflow = true;
+        break;
       }
     }
+
+    if (overflow)
+    {
+      break;
+    }
     sums.push_back(sum);
+  }
+
+  if (overflow)
+  {
+    return 1;
   }
 
   if (sums.empty())
   {
     out << "0\n";
-    return 0;
+  }
+  else
+  {
+    bool first_sum = true;
+    for (LCIter< size_t > sum_it = sums.cbegin(); sum_it != sums.cend(); ++sum_it)
+    {
+      if (!first_sum)
+      {
+        out << ' ';
+      }
+      out << *sum_it;
+      first_sum = false;
+    }
+    out << '\n';
   }
 
-  bool first = true;
-  for (auto it = sums.begin(); it != sums.end(); ++it)
-  {
-    if (!first)
-    {
-      out << ' ';
-    }
-    out << *it;
-    first = false;
-  }
-  out << '\n';
   return 0;
 }
-
 

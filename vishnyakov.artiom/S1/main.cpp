@@ -15,4 +15,3 @@ int main()
   return vishnyakov::outputNums(seqs, std::cout);
 }
 
-

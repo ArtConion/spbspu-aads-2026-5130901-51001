@@ -158,6 +158,12 @@ bool vishnyakov::outputNums(const List< Sequence >& seqs, std::ostream& out)
     sums.push_back(sum);
   }
 
+  if (sums.empty())
+  {
+    out << "0\n";
+    return 0;
+  }
+
   bool first = true;
   for (auto it = sums.begin(); it != sums.end(); ++it)
   {

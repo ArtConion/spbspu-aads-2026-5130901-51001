@@ -247,3 +247,4 @@ int vishnyakov::outputNums(const List< Sequence >& seqs, std::ostream& out)
 
   return 0;
 }
+

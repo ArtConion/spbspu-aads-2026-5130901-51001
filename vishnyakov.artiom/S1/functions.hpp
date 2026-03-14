@@ -4,6 +4,7 @@
 #include "list.hpp"
 #include <iostream>
 #include <cstring>
+#include <limits>
 
 namespace vishnyakov
 {
@@ -14,9 +15,15 @@ namespace vishnyakov
   };
 
   List< Sequence > readInput(std::istream& in);
+
   void getWitoutSkips(std::istream& in);
   bool isEnd(std::istream& in);
   void skipLine(std::istream& in);
+  bool checkedSum(size_t a, size_t b, size_t& res);
+
+  void ouputNames(const List< Sequence >& seqs, std::ostream& out);
+  bool outputNums(const List< Sequence >& seqs, std::ostream& out);
 }
 
 #endif
+

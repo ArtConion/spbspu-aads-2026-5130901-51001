@@ -21,14 +21,14 @@ namespace vishnyakov
       node_(node)
     {}
 
-    T* operator*() const
+    T& operator*() const
     {
-      return node_->data_;
+        return node_->data_;
     }
 
-    T& operator->() const
+    T* operator->() const
     {
-      return *node_->data_;
+      return &node_->data_;
     }
 
     LIter& operator++()
@@ -51,7 +51,12 @@ namespace vishnyakov
 
     bool operator!=(const LIter& other) const
     {
-      return !(node_ == other);
+      return !(node_ == other.node_);
+    }
+
+    operator LIter<const T>() const
+    {
+      return LIter<const T>(const_cast<const Node*>(node_));
     }
   };
 
@@ -62,7 +67,7 @@ namespace vishnyakov
 
     using Node = vishnaykov::Node< T >;
 
-    Node* node_;
+    const Node* node_;
 
   public:
     LCIter(const Node* node = nullptr):
@@ -73,23 +78,23 @@ namespace vishnyakov
       node_(it.node_)
     {}
 
-    T* operator*() const
+    const T& operator*() const
     {
       return node_->data_;
     }
 
-    T& operator->() const
+    const T* operator->() const
     {
-      return *node_->data_;
+      return &node_->data_;
     }
 
-    LCIter& operator++()
+    const LCIter& operator++()
     {
       node_ = node_->next_;
       return *this;
     }
 
-    LCIter* operator++(int)
+    const LCIter* operator++(int)
     {
       LIter tmp = *this;
       ++(*this);
@@ -103,9 +108,10 @@ namespace vishnyakov
 
     bool operator!=(const LCIter& other) const
     {
-      return !(node_ == other);
+      return !(node_ == other.node_);
     }
   };
+
 
   template< class T >
   class List
@@ -350,3 +356,4 @@ namespace vishnyakov
 }
 
 #endif
+

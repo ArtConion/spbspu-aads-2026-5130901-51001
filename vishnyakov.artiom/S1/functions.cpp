@@ -53,3 +53,121 @@ void vishnyakov::skipLine(std::istream& in)
     in.get();
   }
 }
+
+bool vishnyakov::checkedSum(size_t a, size_t b, size_t& res)
+{
+  if (b > std::numeric_limits< size_t >::max() - a)
+  {
+    return true;
+  }
+  res = a + b;
+  return false;
+}
+
+void vishnyakov::ouputNames(const List< Sequence >& seqs, std::ostream& out)
+{
+  LCIter< Sequence > it = seqs.cbegin();
+  bool first = true;
+  for(; it != seqs.cend(); ++it)
+  {
+    if (!first)
+    {
+      out << ' ';
+    }
+    out << it->name;
+    first = false;
+  }
+  out << '\n';
+}
+
+bool vishnyakov::outputNums(const List< Sequence >& seqs, std::ostream& out)
+{
+  size_t max_len = 0;
+
+  for (LCIter< Sequence > curr = seqs.cbegin(); curr != seqs.cend(); ++curr)
+  {
+    size_t len = 0;
+    for (LCIter< size_t > cit = curr->nums->cbegin(); cit != curr->nums->cend(); ++cit)
+    {
+      ++len;
+    }
+    max_len = max_len > len ? max_len : len;
+  }
+
+  List< List < size_t > > transposed;
+  LIter< List < size_t > > last_transp = transposed.begin();
+  bool hasNums = false;
+
+  for (size_t i = 0; i < max_len; ++i)
+  {
+    List< size_t > new_seq;
+
+    for(LCIter< Sequence > cit = seqs.cbegin(); cit != seqs.cend(); ++cit)
+    {
+      LCIter< size_t > it = cit->nums->cbegin();
+      size_t curr = 0;
+      while (curr < i && it != cit->nums->cend())
+      {
+        ++curr;
+        ++it;
+      }
+
+      if (it != cit->nums->cend())
+      {
+        new_seq.push_back(*it);
+        hasNums = true;
+      }
+    }
+
+    if (new_seq.begin() != new_seq.end())
+    {
+      last_transp = transposed.insert_after(transposed.begin(), std::move(new_seq));
+    }
+  }
+
+  if (hasNums)
+  {
+    for (LIter< List< size_t > > it = transposed.begin(); it != transposed.end(); ++it)
+    {
+      bool first = true;
+      for (LCIter< size_t > cit = it->cbegin(); cit != it->cend(); ++it)
+      {
+        if (!first)
+        {
+          out << ' ';
+        }
+        out << *cit;
+        first = false;
+      }
+      out << '\n';
+    }
+  }
+
+  List< size_t > sums;
+  for (LCIter< List < size_t > > it = transposed.cbegin(); it != transposed.cend(); ++it)
+  {
+    size_t sum = 0;
+    for (LCIter< size_t > cit = it->cbegin(); cit != it->cend(); ++cit)
+    {
+      if (checkedSum(sum, *cit, sum))
+      {
+        return 1;
+      }
+    }
+    sums.push_back(sum);
+  }
+
+  bool first = true;
+  for (auto it = sums.begin(); it != sums.end(); ++it)
+  {
+    if (!first)
+    {
+      out << ' ';
+    }
+    out << *it;
+    first = false;
+  }
+  out << '\n';
+  return 0;
+}
+

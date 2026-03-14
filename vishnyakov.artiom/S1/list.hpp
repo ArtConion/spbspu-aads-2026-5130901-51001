@@ -96,7 +96,7 @@ namespace vishnyakov
 
     const LCIter* operator++(int)
     {
-      LIter tmp = *this;
+      LCIter tmp = *this;
       ++(*this);
       return tmp;
     }

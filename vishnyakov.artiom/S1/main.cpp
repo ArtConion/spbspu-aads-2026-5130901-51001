@@ -12,6 +12,10 @@ int main()
   }
 
   vishnyakov::outputNames(seqs, std::cout);
-  return vishnyakov::outputNums(seqs, std::cout);
+  bool res = vishnyakov::outputNums(seqs, std::cout);
+
+  vishnyakov::clearSequences(seqs);
+
+  return res;
 }
 

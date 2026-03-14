@@ -291,9 +291,15 @@ namespace vishnyakov
       {
         return;
       }
-      erase_after(LIter< T >(pseudoknot_));
-    }
 
+      Node* to_delete = pseudoknot_->next_;
+      if (to_delete != pseudoknot_)
+      {
+        pseudoknot_->next_ = to_delete->next_;
+        delete to_delete;
+        --size_;
+      }
+    }
     void pop_back()
     {
       if (empty())

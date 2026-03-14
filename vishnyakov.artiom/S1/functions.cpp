@@ -20,7 +20,25 @@ vishnyakov::List< vishnyakov::Sequence > vishnyakov::readInput(std::istream& in)
       curr_num = seq.nums->insert_after(curr_num, num);
     }
     skipLine(in);
-    curr_seq = seqs.insert_after(curr_seq, seq);
+    if (seqs.empty())
+    {
+      seqs.push_front(std::move(seq));
+    }
+    else
+    {
+      LIter< Sequence > last = seqs.begin();
+      while (last != seqs.end())
+      {
+        LIter< Sequence > next = last;
+        ++next;
+        if (next == seqs.end())
+        {
+          break;
+        }
+        last = next;
+      }
+      seqs.insert_after(last, std::move(seq));
+    }
   }
   return seqs;
 }
@@ -63,6 +81,14 @@ bool vishnyakov::checkedSum(size_t a, size_t b, size_t& res)
   }
   res = a + b;
   return false;
+}
+
+void vishnyakov::clearSequences(List< Sequence >& seqs)
+{
+  while (!seqs.empty())
+  {
+    seqs.pop_front();
+  }
 }
 
 void vishnyakov::outputNames(const List< Sequence >& seqs, std::ostream& out)
@@ -178,4 +204,5 @@ bool vishnyakov::outputNums(const List< Sequence >& seqs, std::ostream& out)
   out << '\n';
   return 0;
 }
+
 

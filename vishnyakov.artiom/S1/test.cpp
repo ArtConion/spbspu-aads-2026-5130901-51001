@@ -147,10 +147,14 @@ BOOST_AUTO_TEST_CASE(const_iterator_conversion)
   List< int > lst;
   lst.push_back(42);
 
-  LIter< int > it = lst.begin();
   LCIter< int > cit = lst.cbegin();
 
   BOOST_TEST(*cit == 42);
+
+  BOOST_CHECK(cit != lst.cend());
+
+  ++cit;
+  BOOST_CHECK(cit == lst.cend());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

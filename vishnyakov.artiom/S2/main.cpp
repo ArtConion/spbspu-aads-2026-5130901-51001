@@ -31,18 +31,16 @@ int main(int argc, char* argv[])
 
     std::vector< std::string > expressions;
     std::string line;
-    bool hasContent = false;
 
     while (std::getline(*input, line))
     {
       if (!line.empty())
       {
         expressions.push_back(line);
-        hasContent = true;
       }
     }
 
-    if (!hasContent)
+    if (expressions.empty())
     {
       return 0;
     }

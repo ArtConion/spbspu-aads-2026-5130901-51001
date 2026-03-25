@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(TestApplyBinaryOp)
   BOOST_CHECK_EQUAL(vishnyakov::applyBinaryOp("/", 6, 3), 2);
   BOOST_CHECK_EQUAL(vishnyakov::applyBinaryOp("%", 7, 3), 1);
   BOOST_CHECK_EQUAL(vishnyakov::applyBinaryOp("/", -6, 3), -2);
-  BOOST_CHECK_EQUAL(vishnyakov::applyBinaryOp("%", -7, 3), -1);
+  BOOST_CHECK_EQUAL(vishnyakov::applyBinaryOp("%", -7, 3), 2);
 }
 
 BOOST_AUTO_TEST_CASE(TestApplyBinaryOpDivisionByZero)

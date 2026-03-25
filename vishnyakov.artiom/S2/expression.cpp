@@ -79,8 +79,7 @@ namespace vishnyakov
       absNum /= 10;
     }
 
-    long long result = negative ? -reversed : reversed;
-    return result;
+    return negative ? -reversed : reversed;
   }
 
   bool isNumber(const std::string& s)
@@ -183,12 +182,12 @@ namespace vishnyakov
     throw std::runtime_error("Unknown operator: " + op);
   }
 
-  Queue< std::string > infixToPostfix(const std::string& expression)
+  Queue<std::string> infixToPostfix(const std::string& expression)
   {
     std::istringstream iss(expression);
     std::string token;
-    Stack< std::string > operators;
-    Queue< std::string > output;
+    Stack<std::string> operators;
+    Queue<std::string> output;
 
     while (iss >> token)
     {
@@ -214,12 +213,24 @@ namespace vishnyakov
       }
       else if (isOperator(token))
       {
-        while (!operators.empty() && operators.top() != "(" &&
-               getPriority(operators.top()) >= getPriority(token))
+        if (token == "#")
         {
-          output.push(operators.pop());
+          while (!operators.empty() && operators.top() != "(" &&
+                 getPriority(operators.top()) >= getPriority(token))
+          {
+            output.push(operators.pop());
+          }
+          operators.push(token);
         }
-        operators.push(token);
+        else
+        {
+          while (!operators.empty() && operators.top() != "(" &&
+                 getPriority(operators.top()) >= getPriority(token))
+          {
+            output.push(operators.pop());
+          }
+          operators.push(token);
+        }
       }
       else
       {
@@ -239,10 +250,10 @@ namespace vishnyakov
     return output;
   }
 
-  long long evaluatePostfix(const Queue< std::string >& postfix)
+  long long evaluatePostfix(const Queue<std::string>& postfix)
   {
-    Stack< long long > values;
-    Queue< std::string > temp = postfix;
+    Stack<long long> values;
+    Queue<std::string> temp = postfix;
 
     while (!temp.empty())
     {
@@ -288,7 +299,7 @@ namespace vishnyakov
 
   long long evaluateExpression(const std::string& expression)
   {
-    Queue< std::string > postfix = infixToPostfix(expression);
+    Queue<std::string> postfix = infixToPostfix(expression);
     return evaluatePostfix(postfix);
   }
 }

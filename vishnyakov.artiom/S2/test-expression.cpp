@@ -109,9 +109,9 @@ BOOST_AUTO_TEST_CASE(TestEvaluateExpressionWithUnaryOperator)
   BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("# 123"), 321);
   BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("# -123"), -321);
   BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("# 100"), 1);
-  BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("2 + # 123"), 125);
+  BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("2 + # 123"), 323);
   BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("# 123 + 4"), 325);
-  BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("# 123 + # 456"), 777);
+  BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("# 123 + # 456"), 975);
   BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("# ( 100 + 20 )"), 21);
   BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("( # 123 ) * 2"), 642);
   BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("# # 123"), 123);
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(TestEvaluateExpressionComplex)
   BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("( 10 + 2 ) * ( 3 - 1 ) / 4"), 6);
   BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("100 % 30 + 20 / 5"), 14);
   BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("# ( 123 + 321 )"), 444);
-  BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("( # 123 ) + ( # 456 )"), 777);
+  BOOST_CHECK_EQUAL(vishnyakov::evaluateExpression("( # 123 ) + ( # 456 )"), 975);
 }
 
 BOOST_AUTO_TEST_CASE(TestInfixToPostfix)

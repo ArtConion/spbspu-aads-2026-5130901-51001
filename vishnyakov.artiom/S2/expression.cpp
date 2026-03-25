@@ -217,20 +217,28 @@ namespace vishnyakov
       }
       else if (isOperator(token))
       {
-        if (token == "#" && expectOperand)
+        if (token == "#")
         {
+          if (!expectOperand)
+          {
+            throw std::runtime_error("Invalid placement of unary operator");
+          }
           operators.push(token);
         }
         else
         {
+          if (expectOperand)
+          {
+            throw std::runtime_error("Missing operand");
+          }
           while (!operators.empty() && operators.top() != "(" &&
-                 getPriority(operators.top()) >= getPriority(token))
+                getPriority(operators.top()) >= getPriority(token))
           {
             output.push(operators.pop());
           }
           operators.push(token);
+          expectOperand = true;
         }
-        expectOperand = true;
       }
       else
       {
@@ -245,6 +253,11 @@ namespace vishnyakov
         throw std::runtime_error("Mismatched parentheses");
       }
       output.push(operators.pop());
+    }
+
+    if (expectOperand)
+    {
+      throw std::runtime_error("Incomplete expression");
     }
 
     return output;

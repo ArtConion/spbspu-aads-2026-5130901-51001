@@ -1,6 +1,4 @@
-#ifdef TEST_MODE
-
-#define BOOST_TEST_MODULE S2
+#define BOOST_TEST_MODULE S2T
 #include <boost/test/unit_test.hpp>
 #include "stack.hpp"
 #include "queue.hpp"
@@ -275,6 +273,4 @@ BOOST_AUTO_TEST_CASE(TestPositiveModWithNegativeNumbers)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
-#endif
 

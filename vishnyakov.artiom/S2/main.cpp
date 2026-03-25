@@ -18,30 +18,33 @@ int main(int argc, char* argv[])
       file.open(argv[1]);
       if (!file.is_open())
       {
-        std::cerr << "Error: Cannot open file " << argv[1] << std::endl;
+        std::cerr << "Error: Cannot open file " << argv[1] << '\n';
         return 1;
       }
       input = &file;
     }
     else if (argc > 2)
     {
-      std::cerr << "Error: Too many arguments" << std::endl;
+      std::cerr << "Error: Too many arguments" << '\n';
       return 1;
     }
 
     std::vector< std::string > expressions;
     std::string line;
+    bool hasNonEmptyLine = false;
 
     while (std::getline(*input, line))
     {
       if (!line.empty())
       {
         expressions.push_back(line);
+        hasNonEmptyLine = true;
       }
     }
 
-    if (expressions.empty())
+    if (!hasNonEmptyLine)
     {
+      std::cout << '\n';
       return 0;
     }
 
@@ -60,24 +63,23 @@ int main(int argc, char* argv[])
         std::cout << " ";
       }
     }
-    std::cout << std::endl;
+    std::cout << '\n';
   }
   catch (const std::overflow_error& e)
   {
-    std::cerr << "Overflow error: " << e.what() << std::endl;
+    std::cerr << "Overflow error: " << e.what() << '\n';
     return 1;
   }
   catch (const std::runtime_error& e)
   {
-    std::cerr << "Runtime error: " << e.what() << std::endl;
+    std::cerr << "Runtime error: " << e.what() << '\n';
     return 1;
   }
   catch (const std::exception& e)
   {
-    std::cerr << "Error: " << e.what() << std::endl;
+    std::cerr << "Error: " << e.what() << '\n';
     return 1;
   }
 
   return 0;
 }
-

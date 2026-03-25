@@ -217,9 +217,7 @@ namespace vishnyakov
       }
       else if (isOperator(token))
       {
-        bool isUnary = (token == "#") && expectOperand;
-
-        if (isUnary)
+        if (token == "#" && expectOperand)
         {
           operators.push(token);
         }

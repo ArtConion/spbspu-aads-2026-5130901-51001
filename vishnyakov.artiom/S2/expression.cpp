@@ -3,7 +3,6 @@
 #include <cctype>
 #include <stdexcept>
 #include <climits>
-#include <cstdlib>
 
 namespace vishnyakov
 {
@@ -61,6 +60,11 @@ namespace vishnyakov
 
   long long reverseNumber(long long num)
   {
+    if (num == 0)
+    {
+      return 0;
+    }
+
     bool negative = num < 0;
     long long absNum = negative ? -num : num;
     long long reversed = 0;
@@ -76,12 +80,6 @@ namespace vishnyakov
     }
 
     long long result = negative ? -reversed : reversed;
-
-    if (negative && reversed == LLONG_MIN)
-    {
-      throw std::overflow_error("Reverse operation overflow");
-    }
-
     return result;
   }
 
@@ -176,24 +174,21 @@ namespace vishnyakov
         throw std::runtime_error("Modulo by zero");
       }
       long long result = left % right;
-      if ((left < 0 && right > 0) || (left > 0 && right < 0))
+      if (result != 0 && ((left < 0 && right > 0) || (left > 0 && right < 0)))
       {
-        if (result != 0)
-        {
-          result += right;
-        }
+        result += right;
       }
       return result;
     }
     throw std::runtime_error("Unknown operator: " + op);
   }
 
-  Queue<std::string> infixToPostfix(const std::string& expression)
+  Queue< std::string > infixToPostfix(const std::string& expression)
   {
     std::istringstream iss(expression);
     std::string token;
-    Stack<std::string> operators;
-    Queue<std::string> output;
+    Stack< std::string > operators;
+    Queue< std::string > output;
 
     while (iss >> token)
     {
@@ -244,10 +239,10 @@ namespace vishnyakov
     return output;
   }
 
-  long long evaluatePostfix(const Queue<std::string>& postfix)
+  long long evaluatePostfix(const Queue< std::string >& postfix)
   {
-    Stack<long long> values;
-    Queue<std::string> temp = postfix;
+    Stack< long long > values;
+    Queue< std::string > temp = postfix;
 
     while (!temp.empty())
     {
@@ -293,7 +288,7 @@ namespace vishnyakov
 
   long long evaluateExpression(const std::string& expression)
   {
-    Queue<std::string> postfix = infixToPostfix(expression);
+    Queue< std::string > postfix = infixToPostfix(expression);
     return evaluatePostfix(postfix);
   }
 }

@@ -1,6 +1,6 @@
 #define BOOST_TEST_MODULE StackTest
 #include <boost/test/unit_test.hpp>
-#include "../S2/stack.hpp"
+#include "stack.hpp"
 
 BOOST_AUTO_TEST_SUITE(StackTests)
 

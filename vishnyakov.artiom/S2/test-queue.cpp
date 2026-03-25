@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_SUITE(QueueTests)
 
 BOOST_AUTO_TEST_CASE(TestQueuePushPop)
 {
-  vishnyakov::Queue<int> queue;
+  vishnyakov::Queue< int > queue;
   BOOST_CHECK(queue.empty());
   BOOST_CHECK_EQUAL(queue.size(), 0);
 
@@ -35,12 +35,12 @@ BOOST_AUTO_TEST_CASE(TestQueuePushPop)
 
 BOOST_AUTO_TEST_CASE(TestQueueCopy)
 {
-  vishnyakov::Queue<int> queue1;
+  vishnyakov::Queue< int > queue1;
   queue1.push(1);
   queue1.push(2);
   queue1.push(3);
 
-  vishnyakov::Queue<int> queue2(queue1);
+  vishnyakov::Queue< int > queue2(queue1);
   BOOST_CHECK_EQUAL(queue2.size(), 3);
   BOOST_CHECK_EQUAL(queue2.pop(), 1);
   BOOST_CHECK_EQUAL(queue2.pop(), 2);
@@ -49,11 +49,11 @@ BOOST_AUTO_TEST_CASE(TestQueueCopy)
 
 BOOST_AUTO_TEST_CASE(TestQueueAssignment)
 {
-  vishnyakov::Queue<int> queue1;
+  vishnyakov::Queue< int > queue1;
   queue1.push(1);
   queue1.push(2);
 
-  vishnyakov::Queue<int> queue2;
+  vishnyakov::Queue< int > queue2;
   queue2 = queue1;
   BOOST_CHECK_EQUAL(queue2.size(), 2);
   BOOST_CHECK_EQUAL(queue2.pop(), 1);
@@ -62,11 +62,11 @@ BOOST_AUTO_TEST_CASE(TestQueueAssignment)
 
 BOOST_AUTO_TEST_CASE(TestQueueMove)
 {
-  vishnyakov::Queue<int> queue1;
+  vishnyakov::Queue< int > queue1;
   queue1.push(1);
   queue1.push(2);
 
-  vishnyakov::Queue<int> queue2(std::move(queue1));
+  vishnyakov::Queue< int > queue2(std::move(queue1));
   BOOST_CHECK_EQUAL(queue2.size(), 2);
   BOOST_CHECK_EQUAL(queue2.pop(), 1);
   BOOST_CHECK_EQUAL(queue2.pop(), 2);
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(TestQueueMove)
 
 BOOST_AUTO_TEST_CASE(TestQueueClear)
 {
-  vishnyakov::Queue<int> queue;
+  vishnyakov::Queue< int > queue;
   queue.push(1);
   queue.push(2);
   queue.push(3);
@@ -88,11 +88,11 @@ BOOST_AUTO_TEST_CASE(TestQueueClear)
 
 BOOST_AUTO_TEST_CASE(TestQueueSwap)
 {
-  vishnyakov::Queue<int> queue1;
+  vishnyakov::Queue< int > queue1;
   queue1.push(1);
   queue1.push(2);
 
-  vishnyakov::Queue<int> queue2;
+  vishnyakov::Queue< int > queue2;
   queue2.push(3);
   queue2.push(4);
 
@@ -105,25 +105,25 @@ BOOST_AUTO_TEST_CASE(TestQueueSwap)
 
 BOOST_AUTO_TEST_CASE(TestQueueFrontEmpty)
 {
-  vishnyakov::Queue<int> queue;
+  vishnyakov::Queue< int > queue;
   BOOST_CHECK_THROW(queue.front(), std::underflow_error);
 }
 
 BOOST_AUTO_TEST_CASE(TestQueueBackEmpty)
 {
-  vishnyakov::Queue<int> queue;
+  vishnyakov::Queue< int > queue;
   BOOST_CHECK_THROW(queue.back(), std::underflow_error);
 }
 
 BOOST_AUTO_TEST_CASE(TestQueuePopEmpty)
 {
-  vishnyakov::Queue<int> queue;
+  vishnyakov::Queue< int > queue;
   BOOST_CHECK_THROW(queue.pop(), std::underflow_error);
 }
 
 BOOST_AUTO_TEST_CASE(TestQueueWithStrings)
 {
-  vishnyakov::Queue<std::string> queue;
+  vishnyakov::Queue< std::string > queue;
   queue.push("first");
   queue.push("second");
   queue.push("third");
@@ -139,15 +139,15 @@ BOOST_AUTO_TEST_CASE(TestQueueWithStrings)
 
 BOOST_AUTO_TEST_CASE(TestQueueWithComplexTypes)
 {
-  vishnyakov::Queue<std::pair<int, int>> queue;
+  vishnyakov::Queue< std::pair< int, int > > queue;
   queue.push(std::make_pair(1, 2));
   queue.push(std::make_pair(3, 4));
 
-  std::pair<int, int> p1 = queue.pop();
+  std::pair< int, int > p1 = queue.pop();
   BOOST_CHECK_EQUAL(p1.first, 1);
   BOOST_CHECK_EQUAL(p1.second, 2);
 
-  std::pair<int, int> p2 = queue.pop();
+  std::pair< int, int > p2 = queue.pop();
   BOOST_CHECK_EQUAL(p2.first, 3);
   BOOST_CHECK_EQUAL(p2.second, 4);
 }

@@ -6,7 +6,7 @@
 
 namespace vishnyakov
 {
-  template<typename T>
+  template< class T >
   class Stack
   {
   public:
@@ -69,7 +69,7 @@ namespace vishnyakov
     }
 
   private:
-    List<T> data_;
+    List< T > data_;
   };
 }
 

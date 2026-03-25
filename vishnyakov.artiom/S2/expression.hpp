@@ -21,9 +21,9 @@ namespace vishnyakov
 
   long long applyBinaryOp(const std::string& op, long long left, long long right);
 
-  Queue<std::string> infixToPostfix(const std::string& expression);
+  Queue< std::string > infixToPostfix(const std::string& expression);
 
-  long long evaluatePostfix(const Queue<std::string>& postfix);
+  long long evaluatePostfix(const Queue< std::string >& postfix);
 
   long long evaluateExpression(const std::string& expression);
 }

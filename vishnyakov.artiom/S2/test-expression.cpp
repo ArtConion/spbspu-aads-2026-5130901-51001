@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(TestEvaluateExpressionComplex)
 
 BOOST_AUTO_TEST_CASE(TestInfixToPostfix)
 {
-  vishnyakov::Queue<std::string> postfix;
+  vishnyakov::Queue< std::string > postfix;
   std::string result;
 
   postfix = vishnyakov::infixToPostfix("1 + 2");

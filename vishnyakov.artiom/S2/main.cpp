@@ -29,24 +29,25 @@ int main(int argc, char* argv[])
       return 1;
     }
 
-    std::vector<std::string> expressions;
+    std::vector< std::string > expressions;
     std::string line;
+    bool hasContent = false;
 
     while (std::getline(*input, line))
     {
-      if (line.empty())
+      if (!line.empty())
       {
-        continue;
+        expressions.push_back(line);
+        hasContent = true;
       }
-      expressions.push_back(line);
     }
 
-    if (expressions.empty())
+    if (!hasContent)
     {
       return 0;
     }
 
-    std::vector<long long> results;
+    std::vector< long long > results;
 
     for (const std::string& expr : expressions)
     {
@@ -55,11 +56,11 @@ int main(int argc, char* argv[])
 
     for (size_t i = results.size(); i > 0; --i)
     {
-      if (i != results.size())
+      std::cout << results[i - 1];
+      if (i > 1)
       {
         std::cout << " ";
       }
-      std::cout << results[i - 1];
     }
     std::cout << std::endl;
   }

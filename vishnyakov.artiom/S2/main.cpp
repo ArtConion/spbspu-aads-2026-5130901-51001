@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 int main(int argc, char* argv[])
 {
@@ -28,7 +29,7 @@ int main(int argc, char* argv[])
       return 1;
     }
 
-    Queue<std::string> expressions;
+    std::vector<std::string> expressions;
     std::string line;
 
     while (std::getline(*input, line))
@@ -37,7 +38,7 @@ int main(int argc, char* argv[])
       {
         continue;
       }
-      expressions.push(line);
+      expressions.push_back(line);
     }
 
     if (expressions.empty())
@@ -45,28 +46,32 @@ int main(int argc, char* argv[])
       return 0;
     }
 
-    Queue<long long> results;
-    Queue<std::string> tempExpressions = expressions;
+    std::vector<long long> results;
 
-    while (!tempExpressions.empty())
+    for (const std::string& expr : expressions)
     {
-      std::string expr = tempExpressions.pop();
-      results.push(evaluateExpression(expr));
+      results.push_back(evaluateExpression(expr));
     }
 
-    bool first = true;
-    Queue<long long> tempResults = results;
-
-    while (!tempResults.empty())
+    for (size_t i = results.size(); i > 0; --i)
     {
-      if (!first)
+      if (i != results.size())
       {
         std::cout << " ";
       }
-      std::cout << tempResults.pop();
-      first = false;
+      std::cout << results[i - 1];
     }
     std::cout << std::endl;
+  }
+  catch (const std::overflow_error& e)
+  {
+    std::cerr << "Overflow error: " << e.what() << std::endl;
+    return 1;
+  }
+  catch (const std::runtime_error& e)
+  {
+    std::cerr << "Runtime error: " << e.what() << std::endl;
+    return 1;
   }
   catch (const std::exception& e)
   {

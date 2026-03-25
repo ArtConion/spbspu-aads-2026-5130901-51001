@@ -7,6 +7,10 @@
 
 namespace vishnyakov
 {
+  bool willOverflowAdd(long long left, long long right);
+  bool willOverflowSub(long long left, long long right);
+  bool willOverflowMul(long long left, long long right);
+
   long long reverseNumber(long long num);
 
   bool isNumber(const std::string& s);

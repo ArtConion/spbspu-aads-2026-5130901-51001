@@ -2,9 +2,63 @@
 #include <sstream>
 #include <cctype>
 #include <stdexcept>
+#include <climits>
+#include <cstdlib>
 
 namespace vishnyakov
 {
+  bool willOverflowAdd(long long left, long long right)
+  {
+    if (right > 0 && left > LLONG_MAX - right)
+    {
+      return true;
+    }
+    if (right < 0 && left < LLONG_MIN - right)
+    {
+      return true;
+    }
+    return false;
+  }
+
+  bool willOverflowSub(long long left, long long right)
+  {
+    if (right < 0 && left > LLONG_MAX + right)
+    {
+      return true;
+    }
+    if (right > 0 && left < LLONG_MIN + right)
+    {
+      return true;
+    }
+    return false;
+  }
+
+  bool willOverflowMul(long long left, long long right)
+  {
+    if (left == 0 || right == 0)
+    {
+      return false;
+    }
+
+    if (left > 0 && right > 0 && left > LLONG_MAX / right)
+    {
+      return true;
+    }
+    if (left > 0 && right < 0 && right < LLONG_MIN / left)
+    {
+      return true;
+    }
+    if (left < 0 && right > 0 && left < LLONG_MIN / right)
+    {
+      return true;
+    }
+    if (left < 0 && right < 0 && left < LLONG_MAX / right)
+    {
+      return true;
+    }
+    return false;
+  }
+
   long long reverseNumber(long long num)
   {
     bool negative = num < 0;
@@ -13,11 +67,22 @@ namespace vishnyakov
 
     while (absNum > 0)
     {
+      if (reversed > LLONG_MAX / 10)
+      {
+        throw std::overflow_error("Reverse operation overflow");
+      }
       reversed = reversed * 10 + (absNum % 10);
       absNum /= 10;
     }
 
-    return negative ? -reversed : reversed;
+    long long result = negative ? -reversed : reversed;
+
+    if (negative && reversed == LLONG_MIN)
+    {
+      throw std::overflow_error("Reverse operation overflow");
+    }
+
+    return result;
   }
 
   bool isNumber(const std::string& s)
@@ -74,14 +139,26 @@ namespace vishnyakov
   {
     if (op == "+")
     {
+      if (willOverflowAdd(left, right))
+      {
+        throw std::overflow_error("Addition overflow");
+      }
       return left + right;
     }
     if (op == "-")
     {
+      if (willOverflowSub(left, right))
+      {
+        throw std::overflow_error("Subtraction overflow");
+      }
       return left - right;
     }
     if (op == "*")
     {
+      if (willOverflowMul(left, right))
+      {
+        throw std::overflow_error("Multiplication overflow");
+      }
       return left * right;
     }
     if (op == "/")
@@ -98,7 +175,15 @@ namespace vishnyakov
       {
         throw std::runtime_error("Modulo by zero");
       }
-      return left % right;
+      long long result = left % right;
+      if ((left < 0 && right > 0) || (left > 0 && right < 0))
+      {
+        if (result != 0)
+        {
+          result += right;
+        }
+      }
+      return result;
     }
     throw std::runtime_error("Unknown operator: " + op);
   }
@@ -170,7 +255,8 @@ namespace vishnyakov
 
       if (isNumber(token))
       {
-        values.push(std::stoll(token));
+        long long num = std::stoll(token);
+        values.push(num);
       }
       else if (token == "#")
       {

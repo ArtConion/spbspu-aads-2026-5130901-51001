@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(TestLargeNumbers)
 {
   long long large = vishnyakov::evaluateExpression("123456789 + 987654321");
   BOOST_CHECK_EQUAL(large, 1111111110);
-  
+
   long long reversed = vishnyakov::evaluateExpression("# 123456789");
   BOOST_CHECK_EQUAL(reversed, 987654321);
 }

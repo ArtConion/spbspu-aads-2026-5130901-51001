@@ -188,16 +188,19 @@ namespace vishnyakov
     std::string token;
     Stack<std::string> operators;
     Queue<std::string> output;
+    bool expectOperand = true;
 
     while (iss >> token)
     {
       if (isNumber(token))
       {
         output.push(token);
+        expectOperand = false;
       }
       else if (token == "(")
       {
         operators.push(token);
+        expectOperand = true;
       }
       else if (token == ")")
       {
@@ -210,16 +213,14 @@ namespace vishnyakov
           throw std::runtime_error("Mismatched parentheses");
         }
         operators.pop();
+        expectOperand = false;
       }
       else if (isOperator(token))
       {
-        if (token == "#")
+        bool isUnary = (token == "#") && expectOperand;
+
+        if (isUnary)
         {
-          while (!operators.empty() && operators.top() != "(" &&
-                 getPriority(operators.top()) >= getPriority(token))
-          {
-            output.push(operators.pop());
-          }
           operators.push(token);
         }
         else
@@ -231,6 +232,7 @@ namespace vishnyakov
           }
           operators.push(token);
         }
+        expectOperand = true;
       }
       else
       {

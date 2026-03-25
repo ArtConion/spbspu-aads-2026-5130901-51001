@@ -44,6 +44,7 @@ int main(int argc, char* argv[])
 
     if (!hasContent)
     {
+      std::cout << '\n';
       return 0;
     }
 

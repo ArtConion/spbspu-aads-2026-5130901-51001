@@ -1,5 +1,5 @@
-#ifndef LAB3_SIPHASH_HPP
-#define LAB3_SIPHASH_HPP
+#ifndef SIPHASH_HPP
+#define SIPHASH_HPP
 
 #include <boost/container_hash/hash.hpp>
 #include <cstddef>

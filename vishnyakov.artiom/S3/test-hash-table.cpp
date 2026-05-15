@@ -202,3 +202,149 @@ BOOST_AUTO_TEST_CASE(ClearThenAdd)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(HashTableAtTests)
+
+BOOST_AUTO_TEST_CASE(AtExistingKey)
+{
+  vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table;
+  table.add(1, "one");
+  table.add(2, "two");
+
+  std::string& value = table.at(1);
+  BOOST_CHECK_EQUAL(value, "one");
+
+  value = "uno";
+  BOOST_CHECK_EQUAL(table.at(1), "uno");
+}
+
+BOOST_AUTO_TEST_CASE(AtNonExistingKey)
+{
+  vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table;
+  table.add(1, "one");
+
+  BOOST_CHECK_THROW(table.at(999), std::out_of_range);
+}
+
+BOOST_AUTO_TEST_CASE(AtConstOverload)
+{
+  vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table;
+  table.add(1, "one");
+
+  const auto& const_table = table;
+  BOOST_CHECK_EQUAL(const_table.at(1), "one");
+  BOOST_CHECK_THROW(const_table.at(999), std::out_of_range);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(HashTableSubscriptTests)
+
+BOOST_AUTO_TEST_CASE(SubscriptExistingKey)
+{
+  vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table;
+  table.add(1, "one");
+
+  std::string& value = table[1];
+  BOOST_CHECK_EQUAL(value, "one");
+
+  value = "uno";
+  BOOST_CHECK_EQUAL(table[1], "uno");
+}
+
+BOOST_AUTO_TEST_CASE(SubscriptNonExistingKey)
+{
+  vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table;
+  std::string& value = table[42];
+
+  BOOST_CHECK_EQUAL(table.size(), 1);
+  BOOST_CHECK(table.has(42));
+  BOOST_CHECK(value.empty());
+}
+
+BOOST_AUTO_TEST_CASE(SubscriptChained)
+{
+  vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table;
+  table[1] = "one";
+  table[2] = "two";
+
+  BOOST_CHECK_EQUAL(table[1], "one");
+  BOOST_CHECK_EQUAL(table[2], "two");
+  BOOST_CHECK_EQUAL(table.size(), 2);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(HashTableRehashTests)
+
+BOOST_AUTO_TEST_CASE(RehashToLargerCapacity)
+{
+  vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(4);
+  table.add(1, "one");
+  table.add(2, "two");
+  table.add(3, "three");
+  table.add(4, "four");
+
+  BOOST_CHECK_EQUAL(table.capacity(), 4);
+  BOOST_CHECK_EQUAL(table.size(), 4);
+
+  table.rehash(16);
+
+  BOOST_CHECK_EQUAL(table.capacity(), 16);
+  BOOST_CHECK_EQUAL(table.size(), 4);
+  BOOST_CHECK(table.has(1));
+  BOOST_CHECK(table.has(2));
+  BOOST_CHECK(table.has(3));
+  BOOST_CHECK(table.has(4));
+}
+
+BOOST_AUTO_TEST_CASE(RehashToSmallerCapacity)
+{
+  vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(16);
+  table.add(1, "one");
+  table.add(2, "two");
+
+  table.rehash(4);
+
+  BOOST_CHECK_EQUAL(table.capacity(), 4);
+  BOOST_CHECK_EQUAL(table.size(), 2);
+  BOOST_CHECK(table.has(1));
+  BOOST_CHECK(table.has(2));
+}
+
+BOOST_AUTO_TEST_CASE(RehashToZero)
+{
+  vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(4);
+  table.add(1, "one");
+
+  table.rehash(0);
+
+  BOOST_CHECK_EQUAL(table.capacity(), 16);
+  BOOST_CHECK_EQUAL(table.size(), 1);
+  BOOST_CHECK(table.has(1));
+}
+
+BOOST_AUTO_TEST_CASE(RehashSameCapacity)
+{
+  vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(8);
+  table.add(1, "one");
+
+  std::size_t old_capacity = table.capacity();
+  table.rehash(8);
+
+  BOOST_CHECK_EQUAL(table.capacity(), old_capacity);
+  BOOST_CHECK_EQUAL(table.size(), 1);
+  BOOST_CHECK(table.has(1));
+}
+
+BOOST_AUTO_TEST_CASE(RehashEmptyTable)
+{
+  vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(4);
+  table.rehash(16);
+
+  BOOST_CHECK_EQUAL(table.capacity(), 16);
+  BOOST_CHECK(table.empty());
+  BOOST_CHECK_EQUAL(table.size(), 0);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+

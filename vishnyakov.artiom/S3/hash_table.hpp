@@ -282,6 +282,40 @@ namespace vishnyakov
       return false;
     }
 
+    Value drop(const Key& key)
+    {
+      std::size_t idx = index(key);
+      List< std::pair< const Key, Value > >& chain = array_[idx];
+
+      typename List< std::pair< const Key, Value > >::Iter prev = chain.begin();
+      typename List< std::pair< const Key, Value > >::Iter it = chain.begin();
+
+      for (; it != chain.end(); ++it)
+      {
+        if (equal_(it->first, key))
+        {
+          Value result = std::move(it->second);
+          chain.erase_after(prev);
+          --size_;
+          return result;
+        }
+
+        prev = it;
+      }
+
+      throw std::out_of_range("Key not found");
+    }
+
+    void clear() noexcept
+    {
+      for (std::size_t i = 0; i < array_capacity_; ++i)
+      {
+        array_[i].clear();
+      }
+
+      size_ = 0;
+    }
+
   private:
     List< std::pair< const Key, Value > >* array_;
     std::size_t array_capacity_;

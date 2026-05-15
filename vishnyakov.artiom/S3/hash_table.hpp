@@ -232,6 +232,56 @@ namespace vishnyakov
       std::swap(equal_, other.equal_);
     }
 
+    void add(const Key& key, const Value& value)
+    {
+      std::size_t idx = index(key);
+      List< std::pair< const Key, Value > >& chain = array_[idx];
+
+      for (std::pair< const Key, Value >& item : chain)
+      {
+        if (equal_(item.first, key))
+        {
+          return;
+        }
+      }
+
+      chain.push_front(std::pair< const Key, Value >(key, value));
+      ++size_;
+    }
+
+    void add(Key&& key, Value&& value)
+    {
+      std::size_t idx = index(key);
+      List< std::pair< const Key, Value > >& chain = array_[idx];
+
+      for (std::pair< const Key, Value >& item : chain)
+      {
+        if (equal_(item.first, key))
+        {
+          return;
+        }
+      }
+
+      chain.push_front(std::pair< const Key, Value >(std::move(key), std::move(value)));
+      ++size_;
+    }
+
+    bool has(const Key& key) const
+    {
+      std::size_t idx = index(key);
+      const List< std::pair< const Key, Value > >& chain = array_[idx];
+
+      for (const std::pair< const Key, Value >& item : chain)
+      {
+        if (equal_(item.first, key))
+        {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
   private:
     List< std::pair< const Key, Value > >* array_;
     std::size_t array_capacity_;

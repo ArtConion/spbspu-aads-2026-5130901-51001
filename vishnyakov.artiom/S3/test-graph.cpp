@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE GraphTest
+#define BOOST_TEST_MODULE S3
 #include <boost/test/unit_test.hpp>
 #include "graph.hpp"
 #include <string>

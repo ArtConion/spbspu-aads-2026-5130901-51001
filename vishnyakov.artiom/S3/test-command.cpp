@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE CommandTest
+#define BOOST_TEST_MODULE S3
 #include <boost/test/unit_test.hpp>
 #include "command.hpp"
 #include <sstream>

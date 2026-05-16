@@ -60,10 +60,8 @@ BOOST_AUTO_TEST_CASE(MergeThenQuery)
   std::string result = out.str();
   BOOST_CHECK(result.find("a\nb\nc\n") != std::string::npos);
   BOOST_CHECK(result.find("b 10\nc 20\n") != std::string::npos);
-
-  bool has_a40 = result.find("a 40") != std::string::npos;
-  bool has_b30 = result.find("b 30") != std::string::npos;
-  BOOST_CHECK(has_a40 && has_b30);
+  BOOST_CHECK(result.find("a 40") != std::string::npos);
+  BOOST_CHECK(result.find("b 30") != std::string::npos);
 }
 
 BOOST_AUTO_TEST_CASE(ExtractThenQuery)
@@ -100,10 +98,11 @@ BOOST_AUTO_TEST_CASE(InvalidCommandsThroughout)
   handler.execute("create existing", out);
   handler.execute("merge new missing1 missing2", out);
   handler.execute("extract new missing 1 a", out);
+  handler.execute("extract new missing 1 a", out);
 
   std::string result = out.str();
   std::string expected;
-  for (int i = 0; i < 9; ++i)
+  for (int i = 0; i < 10; ++i)
   {
     expected += "<INVALID COMMAND>\n";
   }

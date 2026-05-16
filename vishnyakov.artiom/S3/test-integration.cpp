@@ -53,21 +53,21 @@ BOOST_AUTO_TEST_CASE(MergeThenQuery)
   handler.execute("bind g2 c a 40", out);
 
   handler.execute("merge merged g1 g2", out);
-  
+
   out.str("");
   out.clear();
-  
+
   handler.execute("vertexes merged", out);
   handler.execute("outbound merged a", out);
   handler.execute("inbound merged c", out);
 
   std::string result = out.str();
-  
+
   BOOST_CHECK(result.find("a\nb\nc\n") != std::string::npos);
-  
+
   BOOST_CHECK(result.find("b 10") != std::string::npos);
   BOOST_CHECK(result.find("c 20") != std::string::npos);
-  
+
   BOOST_CHECK(result.find("a 20") != std::string::npos);
   BOOST_CHECK(result.find("b 30") != std::string::npos);
 }

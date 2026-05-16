@@ -213,7 +213,7 @@ namespace vishnyakov
     {
       const std::string& dest = *dit;
       out << dest;
-    
+
       for (LIter< std::pair< std::string, List< unsigned long long > > > oit = outbound.begin();
            oit != outbound.end(); ++oit)
       {
@@ -287,7 +287,7 @@ namespace vishnyakov
     {
       const std::string& src = *sit;
       out << src;
-    
+
       for (LIter< std::pair< std::string, List< unsigned long long > > > iit = inbound.begin();
            iit != inbound.end(); ++iit)
       {

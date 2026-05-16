@@ -42,7 +42,7 @@ namespace vishnyakov
       throw std::runtime_error("No edges found");
     }
 
-  if (weights.front() == weight)
+    if (weights.front() == weight)
     {
       weights.pop_front();
 
@@ -52,7 +52,7 @@ namespace vishnyakov
       }
 
       return;
-    }
+   }
 
     LIter< Weight > prev = weights.begin();
     LIter< Weight > it = weights.begin();

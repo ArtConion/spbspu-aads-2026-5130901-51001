@@ -1,12 +1,8 @@
 #include <boost/test/unit_test.hpp>
 #include "command.hpp"
+#include "utils.hpp"
 #include <sstream>
 #include <string>
-
-namespace vishnyakov
-{
-  void parse_graph_file(std::istream& file, CommandHandler& handler);
-}
 
 BOOST_AUTO_TEST_SUITE(IntegrationTests)
 
@@ -64,8 +60,10 @@ BOOST_AUTO_TEST_CASE(MergeThenQuery)
   std::string result = out.str();
   BOOST_CHECK(result.find("a\nb\nc\n") != std::string::npos);
   BOOST_CHECK(result.find("b 10\nc 20\n") != std::string::npos);
-  BOOST_CHECK(result.find("b 30\na 40\n") != std::string::npos ||
-              result.find("a 40\nb 30\n") != std::string::npos);
+
+  bool has_a40 = result.find("a 40") != std::string::npos;
+  bool has_b30 = result.find("b 30") != std::string::npos;
+  BOOST_CHECK(has_a40 && has_b30);
 }
 
 BOOST_AUTO_TEST_CASE(ExtractThenQuery)

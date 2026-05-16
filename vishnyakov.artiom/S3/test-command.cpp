@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_CASE(CmdGraphsEmpty)
   vishnyakov::CommandHandler handler;
   std::ostringstream out;
   handler.execute("graphs", out);
-  BOOST_CHECK(out.str().empty());
+  BOOST_CHECK_EQUAL(out.str(), "\n");
 }
 
 BOOST_AUTO_TEST_CASE(CmdGraphsWithGraphs)

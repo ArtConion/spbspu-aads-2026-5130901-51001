@@ -502,7 +502,10 @@ namespace vishnyakov
         }
       }
 
-      chain.push_front(std::pair< const Key, Value >(key, Value()));
+      List< std::pair< const Key, Value > > tmp_chain(chain);
+      tmp_chain.push_front(std::pair< const Key, Value >(key, Value()));
+
+      chain.swap(tmp_chain);
       ++size_;
 
       return chain.front().second;
@@ -553,7 +556,10 @@ namespace vishnyakov
         }
       }
 
-      chain.push_front(std::pair< const Key, Value >(key, value));
+      List< std::pair< const Key, Value > > tmp_chain(chain);
+      tmp_chain.push_front(std::pair< const Key, Value >(key, value));
+
+      chain.swap(tmp_chain);
       ++size_;
     }
 
@@ -570,7 +576,10 @@ namespace vishnyakov
         }
       }
 
-      chain.push_front(std::pair< const Key, Value >(std::move(key), std::move(value)));
+      List< std::pair< const Key, Value > > tmp_chain(chain);
+      tmp_chain.push_front(std::pair< const Key, Value >(std::move(key), std::move(value)));
+
+      chain.swap(tmp_chain);
       ++size_;
     }
 

@@ -3,7 +3,7 @@
 
 #include "hash_table.hpp"
 #include "siphash.hpp"
-#include "list.hpp"
+#include "../common/list.hpp"
 #include <string>
 #include <utility>
 

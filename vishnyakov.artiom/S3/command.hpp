@@ -4,7 +4,7 @@
 #include "hash_table.hpp"
 #include "graph.hpp"
 #include "siphash.hpp"
-#include "list.hpp"
+#include "../common/list.hpp"
 #include <string>
 #include <iostream>
 #include <functional>

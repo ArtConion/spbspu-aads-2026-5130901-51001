@@ -1,7 +1,7 @@
 #include "command.hpp"
 #include "graph.hpp"
 #include "siphash.hpp"
-#include "list.hpp"
+#include "../common/list.hpp"
 #include <iostream>
 #include <fstream>
 #include <string>

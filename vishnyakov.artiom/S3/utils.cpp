@@ -5,7 +5,7 @@
 
 namespace vishnyakov
 {
-  void parse_graph_file(std::istream& file, CommandHandler& handler)
+  void vishnyakov::parse_graph_file(std::istream& file, CommandHandler& handler)
   {
     std::string line;
 
@@ -56,7 +56,7 @@ namespace vishnyakov
     }
   }
 
-  void process_commands(std::istream& in, CommandHandler& handler, std::ostream& out)
+  void vishnyakov::process_commands(std::istream& in, CommandHandler& handler, std::ostream& out)
   {
     std::string line;
 

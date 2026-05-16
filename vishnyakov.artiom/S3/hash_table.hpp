@@ -9,8 +9,7 @@
 
 namespace vishnyakov
 {
-
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 class HashTable
 {
 public:
@@ -380,7 +379,7 @@ private:
   }
 };
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 void swap(HashTable< Key, Value, Hash, Equal >& lhs, HashTable< Key, Value, Hash, Equal >& rhs) noexcept
 {
   lhs.swap(rhs);

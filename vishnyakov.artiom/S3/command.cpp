@@ -185,7 +185,6 @@ namespace vishnyakov
     }
 
     List< std::string > dest_vertices;
-
     for (LIter< std::pair< std::string, List< unsigned long long > > > it = outbound.begin();
          it != outbound.end(); ++it)
     {
@@ -195,7 +194,6 @@ namespace vishnyakov
     for (LIter< std::string > it = dest_vertices.begin(); it != dest_vertices.end(); ++it)
     {
       LIter< std::string > min_it = it;
-
       for (LIter< std::string > jt = it; jt != dest_vertices.end(); ++jt)
       {
         if (*jt < *min_it)
@@ -203,7 +201,6 @@ namespace vishnyakov
           min_it = jt;
         }
       }
-
       if (min_it != it)
       {
         std::string tmp = *it;
@@ -216,24 +213,21 @@ namespace vishnyakov
     {
       const std::string& dest = *dit;
       out << dest;
-
+    
       for (LIter< std::pair< std::string, List< unsigned long long > > > oit = outbound.begin();
            oit != outbound.end(); ++oit)
       {
         if (oit->first == dest)
         {
           List< unsigned long long > sorted_weights = graph.get_sorted_weights(oit->second);
-
           for (LIter< unsigned long long > wit = sorted_weights.begin();
                wit != sorted_weights.end(); ++wit)
           {
             out << " " << *wit;
           }
-
           break;
         }
       }
-
       out << '\n';
     }
   }
@@ -265,7 +259,6 @@ namespace vishnyakov
     }
 
     List< std::string > src_vertices;
-
     for (LIter< std::pair< std::string, List< unsigned long long > > > it = inbound.begin();
          it != inbound.end(); ++it)
     {
@@ -275,7 +268,6 @@ namespace vishnyakov
     for (LIter< std::string > it = src_vertices.begin(); it != src_vertices.end(); ++it)
     {
       LIter< std::string > min_it = it;
-
       for (LIter< std::string > jt = it; jt != src_vertices.end(); ++jt)
       {
         if (*jt < *min_it)
@@ -283,7 +275,6 @@ namespace vishnyakov
           min_it = jt;
         }
       }
-
       if (min_it != it)
       {
         std::string tmp = *it;
@@ -296,24 +287,21 @@ namespace vishnyakov
     {
       const std::string& src = *sit;
       out << src;
-
+    
       for (LIter< std::pair< std::string, List< unsigned long long > > > iit = inbound.begin();
            iit != inbound.end(); ++iit)
       {
         if (iit->first == src)
         {
           List< unsigned long long > sorted_weights = graph.get_sorted_weights(iit->second);
-
           for (LIter< unsigned long long > wit = sorted_weights.begin();
-               wit != sorted_weights.end(); ++wit)
+              wit != sorted_weights.end(); ++wit)
           {
             out << " " << *wit;
           }
-
           break;
         }
       }
-
       out << '\n';
     }
   }

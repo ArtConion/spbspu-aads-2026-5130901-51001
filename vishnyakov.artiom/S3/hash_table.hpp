@@ -6,7 +6,6 @@
 #include <utility>
 #include <stdexcept>
 #include <algorithm>
-#include <functional>
 
 namespace vishnyakov
 {
@@ -22,8 +21,7 @@ namespace vishnyakov
     HTIter()
       : array_(nullptr),
         array_capacity_(0),
-        current_index_(0),
-        current_iter_()
+        current_index_(0)
     {}
 
     HTIter(const HTIter&) = default;
@@ -81,13 +79,12 @@ namespace vishnyakov
     List< std::pair< const Key, Value > >* array_;
     std::size_t array_capacity_;
     std::size_t current_index_;
-    typename List< std::pair< const Key, Value > >::LIter current_iter_;
+    LIter< std::pair< const Key, Value > > current_iter_;
 
     HTIter(List< std::pair< const Key, Value > >* array, std::size_t capacity)
       : array_(array),
         array_capacity_(capacity),
-        current_index_(0),
-        current_iter_()
+        current_index_(0)
     {
       while (current_index_ < array_capacity_ &&
              array_[current_index_].empty())
@@ -120,8 +117,7 @@ namespace vishnyakov
     HTCIter()
       : array_(nullptr),
         array_capacity_(0),
-        current_index_(0),
-        current_iter_()
+        current_index_(0)
     {}
 
     HTCIter(const HTCIter&) = default;
@@ -187,13 +183,12 @@ namespace vishnyakov
     const List< std::pair< const Key, Value > >* array_;
     std::size_t array_capacity_;
     std::size_t current_index_;
-    typename List< std::pair< const Key, Value > >::LCIter current_iter_;
+    LCIter< std::pair< const Key, Value > > current_iter_;
 
     HTCIter(const List< std::pair< const Key, Value > >* array, std::size_t capacity)
       : array_(array),
         array_capacity_(capacity),
-        current_index_(0),
-        current_iter_()
+        current_index_(0)
     {
       while (current_index_ < array_capacity_ &&
              array_[current_index_].empty())
@@ -467,8 +462,8 @@ namespace vishnyakov
         return result;
       }
 
-      typename List< std::pair< const Key, Value > >::LIter prev = chain.begin();
-      typename List< std::pair< const Key, Value > >::LIter it = chain.begin();
+      LIter< std::pair< const Key, Value > > prev = chain.begin();
+      LIter< std::pair< const Key, Value > > it = chain.begin();
       ++it;
 
       for (; it != chain.end(); ++it)

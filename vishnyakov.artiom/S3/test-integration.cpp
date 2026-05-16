@@ -101,10 +101,17 @@ BOOST_AUTO_TEST_CASE(InvalidCommandsThroughout)
   handler.execute("invalid command with spaces", out);
 
   int line_count = 0;
-  for (char c : out.str())
+  std::string line;
+  std::istringstream result(out.str());
+  
+  while (std::getline(result, line))
   {
-    if (c == '\n') line_count++;
+    if (line == "<INVALID COMMAND>")
+    {
+      line_count++;
+    }
   }
+  
   BOOST_CHECK_EQUAL(line_count, 10);
 }
 

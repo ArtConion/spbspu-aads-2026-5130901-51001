@@ -26,6 +26,11 @@ namespace vishnyakov
 
       iss >> graph_name >> edge_count;
 
+      if (handler.has_graph(graph_name))
+      {
+        throw std::runtime_error("Duplicate graph name");
+      }
+
       Graph graph;
 
       for (std::size_t i = 0; i < edge_count; ++i)

@@ -1,4 +1,3 @@
-// lab3/command.cpp
 #include "command.hpp"
 #include <sstream>
 #include <string>
@@ -83,7 +82,7 @@ namespace vishnyakov
 
     if (!commands_.has(cmd_name))
     {
-      out << "<INVALID COMMAND>" << '\n';
+      out << "<INVALID COMMAND>\n";
       return;
     }
 
@@ -93,7 +92,7 @@ namespace vishnyakov
     }
     catch (const std::exception&)
     {
-      out << "<INVALID COMMAND>" << '\n';
+      out << "<INVALID COMMAND>\n";
     }
   }
 
@@ -387,7 +386,7 @@ namespace vishnyakov
 
     Graph merged;
 
-    for (LIter< std::string > it = g1.get_vertices().begin();
+    for (LCIter< std::string > it = g1.get_vertices().begin();
          it != g1.get_vertices().end(); ++it)
     {
       if (!merged.has_vertex(*it))
@@ -396,7 +395,7 @@ namespace vishnyakov
       }
     }
 
-    for (LIter< std::string > it = g2.get_vertices().begin();
+    for (LCIter< std::string > it = g2.get_vertices().begin();
          it != g2.get_vertices().end(); ++it)
     {
       if (!merged.has_vertex(*it))
@@ -405,27 +404,25 @@ namespace vishnyakov
       }
     }
 
-    for (LIter< std::pair< const Graph::EdgeKey, List< Graph::Weight > > > eit = g1.get_edges().begin();
-         eit != g1.get_edges().end(); ++eit)
+    List< Graph::EdgeKey > keys1 = g1.get_edges().get_keys();
+    for (LCIter< Graph::EdgeKey > kit = keys1.begin(); kit != keys1.end(); ++kit)
     {
-      const Graph::EdgeKey& key = eit->first;
-      const List< Graph::Weight >& weights = eit->second;
+      const List< Graph::Weight >& weights = g1.get_edges().at(*kit);
 
-      for (LIter< Graph::Weight > wit = weights.begin(); wit != weights.end(); ++wit)
+      for (LCIter< Graph::Weight > wit = weights.begin(); wit != weights.end(); ++wit)
       {
-        merged.add_edge(key.first, key.second, *wit);
+        merged.add_edge(kit->first, kit->second, *wit);
       }
     }
 
-    for (LIter< std::pair< const Graph::EdgeKey, List< Graph::Weight > > > eit = g2.get_edges().begin();
-         eit != g2.get_edges().end(); ++eit)
+    List< Graph::EdgeKey > keys2 = g2.get_edges().get_keys();
+    for (LCIter< Graph::EdgeKey > kit = keys2.begin(); kit != keys2.end(); ++kit)
     {
-      const Graph::EdgeKey& key = eit->first;
-      const List< Graph::Weight >& weights = eit->second;
+      const List< Graph::Weight >& weights = g2.get_edges().at(*kit);
 
-      for (LIter< Graph::Weight > wit = weights.begin(); wit != weights.end(); ++wit)
+      for (LCIter< Graph::Weight > wit = weights.begin(); wit != weights.end(); ++wit)
       {
-        merged.add_edge(key.first, key.second, *wit);
+        merged.add_edge(kit->first, kit->second, *wit);
       }
     }
 

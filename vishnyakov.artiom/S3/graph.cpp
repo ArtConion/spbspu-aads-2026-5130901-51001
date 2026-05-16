@@ -80,9 +80,9 @@ namespace vishnyakov
 
   bool Graph::has_vertex(const Vertex& v) const
   {
-    for (const Vertex& vertex : vertices_)
+    for (LCIter< Vertex > it = vertices_.begin(); it != vertices_.end(); ++it)
     {
-      if (vertex == v)
+      if (*it == v)
       {
         return true;
       }
@@ -102,9 +102,9 @@ namespace vishnyakov
 
     const List< Weight >& weights = edges_.at(key);
 
-    for (Weight w : weights)
+    for (LCIter< Weight > it = weights.begin(); it != weights.end(); ++it)
     {
-      if (w == weight)
+      if (*it == weight)
       {
         return true;
       }
@@ -127,12 +127,13 @@ namespace vishnyakov
   List< std::pair< Graph::Vertex, List< Graph::Weight > > > Graph::get_outbound(const Vertex& v) const
   {
     List< std::pair< Vertex, List< Weight > > > result;
+    List< EdgeKey > keys = edges_.get_keys();
 
-    for (const auto& pair : edges_)
+    for (LCIter< EdgeKey > kit = keys.begin(); kit != keys.end(); ++kit)
     {
-      if (pair.first.first == v)
+      if (kit->first == v)
       {
-        result.push_back(std::make_pair(pair.first.second, edges_.at(pair.first)));
+        result.push_back(std::make_pair(kit->second, edges_.at(*kit)));
       }
     }
 
@@ -142,12 +143,13 @@ namespace vishnyakov
   List< std::pair< Graph::Vertex, List< Graph::Weight > > > Graph::get_inbound(const Vertex& v) const
   {
     List< std::pair< Vertex, List< Weight > > > result;
+    List< EdgeKey > keys = edges_.get_keys();
 
-    for (const auto& pair : edges_)
+    for (LCIter< EdgeKey > kit = keys.begin(); kit != keys.end(); ++kit)
     {
-      if (pair.first.second == v)
+      if (kit->second == v)
       {
-        result.push_back(std::make_pair(pair.first.first, edges_.at(pair.first)));
+        result.push_back(std::make_pair(kit->first, edges_.at(*kit)));
       }
     }
 
@@ -158,9 +160,9 @@ namespace vishnyakov
   {
     List< Vertex > sorted;
 
-    for (const Vertex& v : vertices_)
+    for (LCIter< Vertex > it = vertices_.begin(); it != vertices_.end(); ++it)
     {
-      sorted.push_back(v);
+      sorted.push_back(*it);
     }
 
     for (LIter< Vertex > it = sorted.begin(); it != sorted.end(); ++it)
@@ -190,9 +192,9 @@ namespace vishnyakov
   {
     List< Weight > sorted;
 
-    for (Weight w : weights)
+    for (LCIter< Weight > it = weights.begin(); it != weights.end(); ++it)
     {
-      sorted.push_back(w);
+      sorted.push_back(*it);
     }
 
     for (LIter< Weight > it = sorted.begin(); it != sorted.end(); ++it)

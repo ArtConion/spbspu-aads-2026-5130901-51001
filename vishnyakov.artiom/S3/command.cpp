@@ -1,3 +1,4 @@
+// lab3/command.cpp
 #include "command.hpp"
 #include <sstream>
 #include <string>
@@ -82,7 +83,7 @@ namespace vishnyakov
 
     if (!commands_.has(cmd_name))
     {
-      out << "<INVALID COMMAND>" << std::endl;
+      out << "<INVALID COMMAND>" << '\n';
       return;
     }
 
@@ -92,18 +93,13 @@ namespace vishnyakov
     }
     catch (const std::exception&)
     {
-      out << "<INVALID COMMAND>" << std::endl;
+      out << "<INVALID COMMAND>" << '\n';
     }
   }
 
   void CommandHandler::cmd_graphs(std::istream&, std::ostream& out)
   {
-    List< std::string > names;
-
-    for (const auto& pair : graphs_)
-    {
-      names.push_back(pair.first);
-    }
+    List< std::string > names = graphs_.get_keys();
 
     for (LIter< std::string > it = names.begin(); it != names.end(); ++it)
     {
@@ -125,9 +121,9 @@ namespace vishnyakov
       }
     }
 
-    for (const std::string& name : names)
+    for (LIter< std::string > it = names.begin(); it != names.end(); ++it)
     {
-      out << name << std::endl;
+      out << *it << '\n';
     }
   }
 
@@ -144,9 +140,9 @@ namespace vishnyakov
     const Graph& graph = graphs_.at(graph_name);
     List< std::string > vertices = graph.get_sorted_vertices();
 
-    for (const std::string& v : vertices)
+    for (LIter< std::string > it = vertices.begin(); it != vertices.end(); ++it)
     {
-      out << v << std::endl;
+      out << *it << '\n';
     }
   }
 
@@ -177,9 +173,10 @@ namespace vishnyakov
 
     List< std::string > dest_vertices;
 
-    for (const auto& pair : outbound)
+    for (LIter< std::pair< std::string, List< unsigned long long > > > it = outbound.begin();
+         it != outbound.end(); ++it)
     {
-      dest_vertices.push_back(pair.first);
+      dest_vertices.push_back(it->first);
     }
 
     for (LIter< std::string > it = dest_vertices.begin(); it != dest_vertices.end(); ++it)
@@ -202,26 +199,29 @@ namespace vishnyakov
       }
     }
 
-    for (const std::string& dest : dest_vertices)
+    for (LIter< std::string > dit = dest_vertices.begin(); dit != dest_vertices.end(); ++dit)
     {
+      const std::string& dest = *dit;
       out << dest;
 
-      for (const auto& pair : outbound)
+      for (LIter< std::pair< std::string, List< unsigned long long > > > oit = outbound.begin();
+           oit != outbound.end(); ++oit)
       {
-        if (pair.first == dest)
+        if (oit->first == dest)
         {
-          List< unsigned long long > sorted_weights = graph.get_sorted_weights(pair.second);
+          List< unsigned long long > sorted_weights = graph.get_sorted_weights(oit->second);
 
-          for (unsigned long long w : sorted_weights)
+          for (LIter< unsigned long long > wit = sorted_weights.begin();
+               wit != sorted_weights.end(); ++wit)
           {
-            out << " " << w;
+            out << " " << *wit;
           }
 
           break;
         }
       }
 
-      out << std::endl;
+      out << '\n';
     }
   }
 
@@ -252,9 +252,10 @@ namespace vishnyakov
 
     List< std::string > src_vertices;
 
-    for (const auto& pair : inbound)
+    for (LIter< std::pair< std::string, List< unsigned long long > > > it = inbound.begin();
+         it != inbound.end(); ++it)
     {
-      src_vertices.push_back(pair.first);
+      src_vertices.push_back(it->first);
     }
 
     for (LIter< std::string > it = src_vertices.begin(); it != src_vertices.end(); ++it)
@@ -277,26 +278,29 @@ namespace vishnyakov
       }
     }
 
-    for (const std::string& src : src_vertices)
+    for (LIter< std::string > sit = src_vertices.begin(); sit != src_vertices.end(); ++sit)
     {
+      const std::string& src = *sit;
       out << src;
 
-      for (const auto& pair : inbound)
+      for (LIter< std::pair< std::string, List< unsigned long long > > > iit = inbound.begin();
+           iit != inbound.end(); ++iit)
       {
-        if (pair.first == src)
+        if (iit->first == src)
         {
-          List< unsigned long long > sorted_weights = graph.get_sorted_weights(pair.second);
+          List< unsigned long long > sorted_weights = graph.get_sorted_weights(iit->second);
 
-          for (unsigned long long w : sorted_weights)
+          for (LIter< unsigned long long > wit = sorted_weights.begin();
+               wit != sorted_weights.end(); ++wit)
           {
-            out << " " << w;
+            out << " " << *wit;
           }
 
           break;
         }
       }
 
-      out << std::endl;
+      out << '\n';
     }
   }
 
@@ -383,41 +387,45 @@ namespace vishnyakov
 
     Graph merged;
 
-    for (const std::string& v : g1.get_vertices())
+    for (LIter< std::string > it = g1.get_vertices().begin();
+         it != g1.get_vertices().end(); ++it)
     {
-      if (!merged.has_vertex(v))
+      if (!merged.has_vertex(*it))
       {
-        merged.get_vertices().push_back(v);
+        merged.get_vertices().push_back(*it);
       }
     }
 
-    for (const std::string& v : g2.get_vertices())
+    for (LIter< std::string > it = g2.get_vertices().begin();
+         it != g2.get_vertices().end(); ++it)
     {
-      if (!merged.has_vertex(v))
+      if (!merged.has_vertex(*it))
       {
-        merged.get_vertices().push_back(v);
+        merged.get_vertices().push_back(*it);
       }
     }
 
-    for (const auto& edge_pair : g1.get_edges())
+    for (LIter< std::pair< const Graph::EdgeKey, List< Graph::Weight > > > eit = g1.get_edges().begin();
+         eit != g1.get_edges().end(); ++eit)
     {
-      const auto& key = edge_pair.first;
-      const auto& weights = edge_pair.second;
+      const Graph::EdgeKey& key = eit->first;
+      const List< Graph::Weight >& weights = eit->second;
 
-      for (unsigned long long w : weights)
+      for (LIter< Graph::Weight > wit = weights.begin(); wit != weights.end(); ++wit)
       {
-        merged.add_edge(key.first, key.second, w);
+        merged.add_edge(key.first, key.second, *wit);
       }
     }
 
-    for (const auto& edge_pair : g2.get_edges())
+    for (LIter< std::pair< const Graph::EdgeKey, List< Graph::Weight > > > eit = g2.get_edges().begin();
+         eit != g2.get_edges().end(); ++eit)
     {
-      const auto& key = edge_pair.first;
-      const auto& weights = edge_pair.second;
+      const Graph::EdgeKey& key = eit->first;
+      const List< Graph::Weight >& weights = eit->second;
 
-      for (unsigned long long w : weights)
+      for (LIter< Graph::Weight > wit = weights.begin(); wit != weights.end(); ++wit)
       {
-        merged.add_edge(key.first, key.second, w);
+        merged.add_edge(key.first, key.second, *wit);
       }
     }
 
@@ -453,9 +461,9 @@ namespace vishnyakov
 
     const Graph& old_graph = graphs_.at(old_name);
 
-    for (const std::string& v : vertices)
+    for (LIter< std::string > it = vertices.begin(); it != vertices.end(); ++it)
     {
-      if (!old_graph.has_vertex(v))
+      if (!old_graph.has_vertex(*it))
       {
         throw std::runtime_error("Vertex not found");
       }
@@ -463,22 +471,24 @@ namespace vishnyakov
 
     Graph extracted;
 
-    for (const std::string& v : vertices)
+    for (LIter< std::string > it = vertices.begin(); it != vertices.end(); ++it)
     {
-      extracted.get_vertices().push_back(v);
+      extracted.get_vertices().push_back(*it);
     }
 
-    for (const std::string& from : vertices)
+    for (LIter< std::string > fit = vertices.begin(); fit != vertices.end(); ++fit)
     {
+      const std::string& from = *fit;
       List< std::pair< std::string, List< unsigned long long > > > outbound = old_graph.get_outbound(from);
 
-      for (const auto& pair : outbound)
+      for (LIter< std::pair< std::string, List< unsigned long long > > > oit = outbound.begin();
+           oit != outbound.end(); ++oit)
       {
         bool to_included = false;
 
-        for (const std::string& v : vertices)
+        for (LIter< std::string > vit = vertices.begin(); vit != vertices.end(); ++vit)
         {
-          if (v == pair.first)
+          if (*vit == oit->first)
           {
             to_included = true;
             break;
@@ -487,9 +497,10 @@ namespace vishnyakov
 
         if (to_included)
         {
-          for (unsigned long long w : pair.second)
+          for (LIter< unsigned long long > wit = oit->second.begin();
+               wit != oit->second.end(); ++wit)
           {
-            extracted.add_edge(from, pair.first, w);
+            extracted.add_edge(from, oit->first, *wit);
           }
         }
       }
@@ -498,4 +509,3 @@ namespace vishnyakov
     graphs_.add(new_name, extracted);
   }
 }
-

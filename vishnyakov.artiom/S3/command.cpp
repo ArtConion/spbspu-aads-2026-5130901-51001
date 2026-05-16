@@ -80,7 +80,7 @@ namespace vishnyakov
 
     if (!commands_.has(cmd_name))
     {
-      out << "<INVALID COMMAND>" << std::endl;
+      out << "<INVALID COMMAND>" << '\n';
       return;
     }
 
@@ -90,7 +90,7 @@ namespace vishnyakov
     }
     catch (const std::exception&)
     {
-      out << "<INVALID COMMAND>" << std::endl;
+      out << "<INVALID COMMAND>" << '\n';
     }
   }
 
@@ -125,7 +125,7 @@ namespace vishnyakov
 
     for (const std::string& name : names)
     {
-      out << name << std::endl;
+      out << name << '\n';
     }
   }
 
@@ -144,7 +144,7 @@ namespace vishnyakov
 
     for (const std::string& v : vertices)
     {
-      out << v << std::endl;
+      out << v << '\n';
     }
   }
 
@@ -167,6 +167,11 @@ namespace vishnyakov
     }
 
     List< std::pair< std::string, List< unsigned long long > > > outbound = graph.get_outbound(vertex);
+
+    if (outbound.empty())
+    {
+      return;
+    }
 
     List< std::string > dest_vertices;
 
@@ -214,7 +219,7 @@ namespace vishnyakov
         }
       }
 
-      out << std::endl;
+      out << '\n';
     }
   }
 
@@ -237,6 +242,11 @@ namespace vishnyakov
     }
 
     List< std::pair< std::string, List< unsigned long long > > > inbound = graph.get_inbound(vertex);
+
+    if (inbound.empty())
+    {
+      return;
+    }
 
     List< std::string > src_vertices;
 
@@ -284,7 +294,7 @@ namespace vishnyakov
         }
       }
 
-      out << std::endl;
+      out << '\n';
     }
   }
 

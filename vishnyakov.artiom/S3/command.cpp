@@ -103,6 +103,7 @@ void CommandHandler::cmd_graphs(std::istream&, std::ostream& out)
 
     if (names.empty())
     {
+      out << '\n';
       return;
     }
 

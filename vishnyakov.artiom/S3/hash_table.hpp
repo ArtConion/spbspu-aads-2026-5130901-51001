@@ -54,28 +54,42 @@ namespace vishnyakov
 
     std::pair< const Key, Value >& operator*()
     {
+      if (!impl_ || impl_->current_iter_ == impl_->array_[impl_->current_index_].end())
+      {
+        throw std::runtime_error("Dereferencing end iterator");
+      }
+
       return *impl_->current_iter_;
     }
 
     std::pair< const Key, Value >* operator->()
     {
+      if (!impl_ || impl_->current_iter_ == impl_->array_[impl_->current_index_].end())
+      {
+        throw std::runtime_error("Dereferencing end iterator");
+      }
+
       return &(*impl_->current_iter_);
     }
 
     Iter& operator++()
     {
+      if (!impl_)
+      {
+        throw std::runtime_error("Incrementing invalid iterator");
+      }
+
       ++(impl_->current_iter_);
 
-      while (impl_->current_iter_ == impl_->array_[impl_->current_index_].end())
+      while (impl_->current_index_ < impl_->array_capacity_ &&
+             impl_->current_iter_ == impl_->array_[impl_->current_index_].end())
       {
         ++(impl_->current_index_);
 
-        if (impl_->current_index_ >= impl_->array_capacity_)
+        if (impl_->current_index_ < impl_->array_capacity_)
         {
-          break;
+          impl_->current_iter_ = impl_->array_[impl_->current_index_].begin();
         }
-
-        impl_->current_iter_ = impl_->array_[impl_->current_index_].begin();
       }
 
       return *this;
@@ -209,28 +223,42 @@ namespace vishnyakov
 
     const std::pair< const Key, Value >& operator*() const
     {
+      if (!impl_ || impl_->current_iter_ == impl_->array_[impl_->current_index_].end())
+      {
+        throw std::runtime_error("Dereferencing end iterator");
+      }
+
       return *impl_->current_iter_;
     }
 
     const std::pair< const Key, Value >* operator->() const
     {
+      if (!impl_ || impl_->current_iter_ == impl_->array_[impl_->current_index_].end())
+      {
+        throw std::runtime_error("Dereferencing end iterator");
+      }
+
       return &(*impl_->current_iter_);
     }
 
     CIter& operator++()
     {
+      if (!impl_)
+      {
+        throw std::runtime_error("Incrementing invalid iterator");
+      }
+
       ++(impl_->current_iter_);
 
-      while (impl_->current_iter_ == impl_->array_[impl_->current_index_].end())
+      while (impl_->current_index_ < impl_->array_capacity_ &&
+             impl_->current_iter_ == impl_->array_[impl_->current_index_].end())
       {
         ++(impl_->current_index_);
 
-        if (impl_->current_index_ >= impl_->array_capacity_)
+        if (impl_->current_index_ < impl_->array_capacity_)
         {
-          break;
+          impl_->current_iter_ = impl_->array_[impl_->current_index_].begin();
         }
-
-        impl_->current_iter_ = impl_->array_[impl_->current_index_].begin();
       }
 
       return *this;

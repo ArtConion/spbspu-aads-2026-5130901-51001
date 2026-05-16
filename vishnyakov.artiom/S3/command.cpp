@@ -180,6 +180,7 @@ namespace vishnyakov
 
     if (outbound.empty())
     {
+      out << '\n';
       return;
     }
 
@@ -259,6 +260,7 @@ namespace vishnyakov
 
     if (inbound.empty())
     {
+      out << '\n';
       return;
     }
 

@@ -100,9 +100,8 @@ BOOST_AUTO_TEST_CASE(InvalidCommandsThroughout)
   handler.execute("extract new missing 1 a", out);
   handler.execute("extract new missing 1 a", out);
 
-  std::string result = out.str();
   int line_count = 0;
-  for (char c : result)
+  for (char c : out.str())
   {
     if (c == '\n') line_count++;
   }

@@ -84,13 +84,15 @@ namespace vishnyakov
           continue;
         }
 
-        auto it = dict.begin();
-        out << it->first << " " << it->second;
-        ++it;
-
-        for (; it != dict.end(); ++it)
+        bool first = true;
+        for (auto it = dict.begin(); it != dict.end(); ++it)
         {
-          out << " " << it->first << " " << it->second;
+          if (!first)
+          {
+            out << " ";
+          }
+          out << it->first << " " << it->second;
+          first = false;
         }
         out << "\n";
       }

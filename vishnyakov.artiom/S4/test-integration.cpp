@@ -16,11 +16,11 @@ BOOST_AUTO_TEST_CASE(FullWorkflow)
   std::istringstream commands(
     "print first\n"
     "print second\n"
-    "complement third first second\n"
+    "complement third second first\n"
     "print third\n"
-    "intersect fourth first second\n"
+    "intersect fourth second first\n"
     "print fourth\n"
-    "union fifth first second\n"
+    "union fifth second first\n"
     "print fifth\n"
   );
   std::ostringstream out;
@@ -30,9 +30,9 @@ BOOST_AUTO_TEST_CASE(FullWorkflow)
   std::string expected =
     "1 name 2 surname\n"
     "1 name 2 keyboard 4 mouse\n"
-    "2 surname\n"
-    "1 name 2 surname\n"
-    "1 name 2 surname 4 mouse\n";
+    "4 mouse\n"
+    "1 name 2 keyboard\n"
+    "1 name 2 keyboard 4 mouse\n";
 
   BOOST_CHECK_EQUAL(out.str(), expected);
 }

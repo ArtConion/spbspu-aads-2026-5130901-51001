@@ -195,8 +195,13 @@ BOOST_AUTO_TEST_CASE(ComplementExistingNewName)
 
   vishnyakov::process_commands(in, dicts, out);
 
-  std::string expected = "<INVALID COMMAND>\n";
-  BOOST_CHECK_EQUAL(out.str(), expected);
+  BOOST_CHECK(out.str().empty());
+
+  const auto& existing = dicts.at("existing");
+  BOOST_CHECK(existing.has(1));
+  BOOST_CHECK(!existing.has(2));
+  BOOST_CHECK_EQUAL(existing.size(), 1);
+  BOOST_CHECK_EQUAL(existing.at(1), "one");
 }
 
 BOOST_AUTO_TEST_CASE(ComplementMissingDict)

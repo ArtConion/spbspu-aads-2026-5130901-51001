@@ -179,7 +179,7 @@ namespace vishnyakov
         const Dictionary& dict2 = dicts.at(name2);
 
         Dictionary result;
-        
+
         for (auto it = dict1.begin(); it != dict1.end(); ++it)
         {
           if (dict2.has(it->first))
@@ -210,7 +210,7 @@ namespace vishnyakov
         const Dictionary& dict2 = dicts.at(name2);
 
         Dictionary result = dict1;
-        
+
         for (auto it = dict2.begin(); it != dict2.end(); ++it)
         {
           if (!result.has(it->first))

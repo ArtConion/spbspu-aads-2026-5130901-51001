@@ -5,89 +5,170 @@
 namespace vishnyakov
 {
 
-void parse_dict_file(std::istream& file, BSTree< std::string, Dictionary, std::less< std::string > >& dicts)
-{
-  std::string line;
-
-  while (std::getline(file, line))
+  Dictionary complement(const Dictionary& a, const Dictionary& b)
   {
-    if (line.empty())
+    Dictionary result;
+
+    for (auto it = a.begin(); it != a.end(); ++it)
     {
-      continue;
+      if (!b.has(it->first))
+      {
+        result.push(it->first, it->second);
+      }
     }
 
-    std::istringstream iss(line);
-    std::string dict_name;
-    iss >> dict_name;
-
-    if (dicts.has(dict_name))
-    {
-      throw std::runtime_error("Duplicate dictionary name");
-    }
-
-    Dictionary dict;
-    int key;
-    std::string value;
-
-    while (iss >> key >> value)
-    {
-      dict.push(key, value);
-    }
-
-    dicts.push(dict_name, dict);
+    return result;
   }
-}
 
-void process_commands(std::istream& in, BSTree< std::string, Dictionary, std::less< std::string > >& dicts, std::ostream& out)
-{
-  std::string line;
-
-  while (std::getline(in, line))
+  Dictionary intersect(const Dictionary& a, const Dictionary& b)
   {
-    if (line.empty())
+    Dictionary result;
+
+    for (auto it = a.begin(); it != a.end(); ++it)
     {
-      continue;
+      if (b.has(it->first))
+      {
+        result.push(it->first, it->second);
+      }
     }
 
-    std::istringstream iss(line);
-    std::string cmd;
-    iss >> cmd;
+    return result;
+  }
 
-    if (cmd == "print")
+  Dictionary unite(const Dictionary& a, const Dictionary& b)
+  {
+    Dictionary result = a;
+
+    for (auto it = b.begin(); it != b.end(); ++it)
     {
-      std::string name;
-      iss >> name;
+      if (!result.has(it->first))
+      {
+        result.push(it->first, it->second);
+      }
+    }
 
-      if (!dicts.has(name))
+    return result;
+  }
+
+  void process_commands(std::istream& in, BSTree< std::string, Dictionary, std::less< std::string > >& dicts, std::ostream& out)
+  {
+    std::string line;
+
+    while (std::getline(in, line))
+    {
+      if (line.empty())
+      {
+        continue;
+      }
+
+      std::istringstream iss(line);
+      std::string cmd;
+      iss >> cmd;
+
+      if (cmd == "print")
+      {
+        std::string name;
+        iss >> name;
+
+        if (!dicts.has(name))
+        {
+          out << "<INVALID COMMAND>\n";
+          continue;
+        }
+
+        const Dictionary& dict = dicts.at(name);
+
+        if (dict.empty())
+        {
+          out << "<EMPTY>\n";
+          continue;
+        }
+
+        auto it = dict.begin();
+        out << it->first << " " << it->second;
+        ++it;
+
+        for (; it != dict.end(); ++it)
+        {
+          out << " " << it->first << " " << it->second;
+        }
+        out << "\n";
+      }
+      else if (cmd == "complement")
+      {
+        std::string new_name, name1, name2;
+        iss >> new_name >> name1 >> name2;
+
+        if (dicts.has(new_name))
+        {
+          out << "<INVALID COMMAND>\n";
+          continue;
+        }
+
+        if (!dicts.has(name1) || !dicts.has(name2))
+        {
+          out << "<INVALID COMMAND>\n";
+          continue;
+        }
+
+        const Dictionary& dict1 = dicts.at(name1);
+        const Dictionary& dict2 = dicts.at(name2);
+
+        Dictionary result = complement(dict1, dict2);
+        dicts.push(new_name, result);
+      }
+      else if (cmd == "intersect")
+      {
+        std::string new_name, name1, name2;
+        iss >> new_name >> name1 >> name2;
+
+        if (dicts.has(new_name))
+        {
+          out << "<INVALID COMMAND>\n";
+          continue;
+        }
+
+        if (!dicts.has(name1) || !dicts.has(name2))
+        {
+          out << "<INVALID COMMAND>\n";
+          continue;
+        }
+
+        const Dictionary& dict1 = dicts.at(name1);
+        const Dictionary& dict2 = dicts.at(name2);
+
+        Dictionary result = intersect(dict1, dict2);
+        dicts.push(new_name, result);
+      }
+      else if (cmd == "union")
+      {
+        std::string new_name, name1, name2;
+        iss >> new_name >> name1 >> name2;
+
+        if (dicts.has(new_name))
+        {
+          out << "<INVALID COMMAND>\n";
+          continue;
+        }
+
+        if (!dicts.has(name1) || !dicts.has(name2))
+        {
+          out << "<INVALID COMMAND>\n";
+          continue;
+        }
+
+        const Dictionary& dict1 = dicts.at(name1);
+        const Dictionary& dict2 = dicts.at(name2);
+
+        Dictionary result = unite(dict1, dict2);
+        dicts.push(new_name, result);
+      }
+      else
       {
         out << "<INVALID COMMAND>\n";
-        continue;
       }
-
-      const Dictionary& dict = dicts.at(name);
-
-      if (dict.empty())
-      {
-        out << "<EMPTY>\n";
-        continue;
-      }
-
-      auto it = dict.begin();
-      out << it->first << " " << it->second;
-      ++it;
-
-      for (; it != dict.end(); ++it)
-      {
-        out << " " << it->first << " " << it->second;
-      }
-      out << "\n";
-    }
-    else
-    {
-      out << "<INVALID COMMAND>\n";
     }
   }
-}
 
 }
 

@@ -78,7 +78,27 @@ namespace vishnyakov
     }
 
   private:
-    using Node = typename BSTree< Key, Value, Compare >::Node;
+    struct Node
+    {
+      std::pair< const Key, Value > data_;
+      Node* left_;
+      Node* right_;
+      Node* parent_;
+
+      Node(const Key& key, const Value& value, Node* parent = nullptr):
+        data_(key, value),
+        left_(nullptr),
+        right_(nullptr),
+        parent_(parent)
+      {}
+
+      Node(Key&& key, Value&& value, Node* parent = nullptr):
+        data_(std::move(key), std::move(value)),
+        left_(nullptr),
+        right_(nullptr),
+        parent_(parent)
+      {}
+    };
 
     Node* node_;
     Stack< Node* > stack_;
@@ -161,7 +181,27 @@ namespace vishnyakov
     }
 
   private:
-    using Node = typename BSTree< Key, Value, Compare >::Node;
+    struct Node
+    {
+      std::pair< const Key, Value > data_;
+      Node* left_;
+      Node* right_;
+      Node* parent_;
+
+      Node(const Key& key, const Value& value, Node* parent = nullptr):
+        data_(key, value),
+        left_(nullptr),
+        right_(nullptr),
+        parent_(parent)
+      {}
+
+      Node(Key&& key, Value&& value, Node* parent = nullptr):
+        data_(std::move(key), std::move(value)),
+        left_(nullptr),
+        right_(nullptr),
+        parent_(parent)
+      {}
+    };
 
     const Node* node_;
     Stack< const Node* > stack_;
@@ -179,6 +219,7 @@ namespace vishnyakov
     using value_type = std::pair< const Key, Value >;
     using iterator = BSTIter< Key, Value, Compare >;
     using const_iterator = BSTCIter< Key, Value, Compare >;
+    using Node = typename iterator::Node;
 
     BSTree():
       root_(nullptr),
@@ -553,28 +594,6 @@ namespace vishnyakov
     }
 
   private:
-    struct Node
-    {
-      value_type data_;
-      Node* left_;
-      Node* right_;
-      Node* parent_;
-
-      Node(const Key& key, const Value& value, Node* parent = nullptr):
-        data_(key, value),
-        left_(nullptr),
-        right_(nullptr),
-        parent_(parent)
-      {}
-
-      Node(Key&& key, Value&& value, Node* parent = nullptr):
-        data_(std::move(key), std::move(value)),
-        left_(nullptr),
-        right_(nullptr),
-        parent_(parent)
-      {}
-    };
-
     Node* root_;
     size_t size_;
     Compare comp_;

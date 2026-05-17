@@ -1,10 +1,10 @@
 #include "utils.hpp"
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 namespace vishnyakov
 {
-
   Dictionary complement(const Dictionary& a, const Dictionary& b)
   {
     Dictionary result;
@@ -24,11 +24,24 @@ namespace vishnyakov
   {
     Dictionary result;
 
-    for (auto it = a.begin(); it != a.end(); ++it)
+    if (a.size() < b.size())
     {
-      if (b.has(it->first))
+      for (auto it = a.begin(); it != a.end(); ++it)
       {
-        result.push(it->first, it->second);
+        if (b.has(it->first))
+        {
+          result.push(it->first, it->second);
+        }
+      }
+    }
+    else
+    {
+      for (auto it = b.begin(); it != b.end(); ++it)
+      {
+        if (a.has(it->first))
+        {
+          result.push(it->first, a.at(it->first));
+        }
       }
     }
 
@@ -117,14 +130,25 @@ namespace vishnyakov
           continue;
         }
 
-        bool first = true;
+        std::vector< std::pair< int, std::string > > items;
         for (auto it = dict.begin(); it != dict.end(); ++it)
+        {
+          items.push_back(std::make_pair(it->first, it->second));
+        }
+
+        std::sort(items.begin(), items.end(),
+          [](const std::pair<int, std::string>& a, const std::pair<int, std::string>& b) {
+            return a.first < b.first;
+          });
+
+        bool first = true;
+        for (const auto& item : items)
         {
           if (!first)
           {
             out << " ";
           }
-          out << it->first << " " << it->second;
+          out << item.first << " " << item.second;
           first = false;
         }
         out << "\n";
@@ -166,7 +190,15 @@ namespace vishnyakov
         const Dictionary& dict1 = dicts.at(name1);
         const Dictionary& dict2 = dicts.at(name2);
 
-        Dictionary result = intersect(dict1, dict2);
+        Dictionary result;
+
+        for (auto it = dict1.begin(); it != dict1.end(); ++it)
+        {
+          if (dict2.has(it->first))
+          {
+            result.push(it->first, it->second);
+          }
+        }
 
         if (dicts.has(new_name))
         {
@@ -189,7 +221,15 @@ namespace vishnyakov
         const Dictionary& dict1 = dicts.at(name1);
         const Dictionary& dict2 = dicts.at(name2);
 
-        Dictionary result = unite(dict1, dict2);
+        Dictionary result = dict1;
+
+        for (auto it = dict2.begin(); it != dict2.end(); ++it)
+        {
+          if (!result.has(it->first))
+          {
+            result.push(it->first, it->second);
+          }
+        }
 
         if (dicts.has(new_name))
         {
@@ -204,6 +244,5 @@ namespace vishnyakov
       }
     }
   }
-
 }
 

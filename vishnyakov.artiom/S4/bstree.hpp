@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <utility>
 #include <stdexcept>
+#include <algorithm>
 
 namespace vishnyakov
 {
@@ -70,13 +71,55 @@ namespace vishnyakov
     using iterator = BSTIter< Key, Value, Compare >;
     using const_iterator = BSTCIter< Key, Value, Compare >;
 
-    BSTree();
-    BSTree(const BSTree& other);
-    BSTree(BSTree&& other) noexcept;
-    ~BSTree();
+    BSTree():
+      root_(nullptr),
+      size_(0),
+      comp_()
+    {}
 
-    BSTree& operator=(const BSTree& other);
-    BSTree& operator=(BSTree&& other) noexcept;
+    BSTree(const BSTree& other):
+      root_(nullptr),
+      size_(other.size_),
+      comp_(other.comp_)
+    {
+      root_ = copy_tree(other.root_, nullptr);
+    }
+
+    BSTree(BSTree&& other) noexcept:
+      root_(other.root_),
+      size_(other.size_),
+      comp_(std::move(other.comp_))
+    {
+      other.root_ = nullptr;
+      other.size_ = 0;
+    }
+
+    ~BSTree()
+    {
+      clear();
+    }
+
+    BSTree& operator=(const BSTree& other)
+    {
+      if (this != &other)
+      {
+        BSTree tmp(other);
+        swap(tmp);
+      }
+
+      return *this;
+    }
+
+    BSTree& operator=(BSTree&& other) noexcept
+    {
+      if (this != &other)
+      {
+        swap(other);
+        other.clear();
+      }
+
+      return *this;
+    }
 
     iterator begin() noexcept;
     iterator end() noexcept;
@@ -85,8 +128,15 @@ namespace vishnyakov
     const_iterator cbegin() const noexcept;
     const_iterator cend() const noexcept;
 
-    bool empty() const noexcept;
-    std::size_t size() const noexcept;
+    bool empty() const noexcept
+    {
+      return size_ == 0;
+    }
+
+    size_t size() const noexcept
+    {
+      return size_;
+    }
 
     Value& at(const Key& key);
     const Value& at(const Key& key) const;
@@ -105,13 +155,27 @@ namespace vishnyakov
     iterator rotate_left_large(iterator pos);
     iterator rotate_right_large(iterator pos);
 
-    std::size_t height() const;
-    std::size_t height(const_iterator pos) const;
+    size_t height() const;
+    size_t height(const_iterator pos) const;
 
-    void clear();
-    void swap(BSTree& other) noexcept;
+    void clear()
+    {
+      delete_tree(root_);
+      root_ = nullptr;
+      size_ = 0;
+    }
 
-    Compare key_comp() const;
+    void swap(BSTree& other) noexcept
+    {
+      std::swap(root_, other.root_);
+      std::swap(size_, other.size_);
+      std::swap(comp_, other.comp_);
+    }
+
+    Compare key_comp() const
+    {
+      return comp_;
+    }
 
   private:
     struct Node
@@ -121,33 +185,477 @@ namespace vishnyakov
       Node* right_;
       Node* parent_;
 
-      Node(const Key& key, const Value& value, Node* parent = nullptr);
-      Node(Key&& key, Value&& value, Node* parent = nullptr);
+      Node(const Key& key, const Value& value, Node* parent = nullptr):
+        data_(key, value),
+        left_(nullptr),
+        right_(nullptr),
+        parent_(parent)
+      {}
+
+      Node(Key&& key, Value&& value, Node* parent = nullptr):
+        data_(std::move(key), std::move(value)),
+        left_(nullptr),
+        right_(nullptr),
+        parent_(parent)
+      {}
     };
 
     Node* root_;
-    std::size_t size_;
+    size_t size_;
     Compare comp_;
 
-    Node* copy_tree(Node* node, Node* parent);
-    void delete_tree(Node* node);
-    Node* find_node(const Key& key) const;
-    Node* insert_node(Node* node, const Key& key, const Value& value, Node* parent);
-    Node* insert_node(Node* node, Key&& key, Value&& value, Node* parent);
-    Node* erase_node(Node* node, const Key& key);
-    Node* min_node(Node* node) const;
-    Node* max_node(Node* node) const;
-    std::size_t get_height(Node* node) const;
-    Node* rotate_left_impl(Node* node);
-    Node* rotate_right_impl(Node* node);
-    Node* rotate_left_large_impl(Node* node);
-    Node* rotate_right_large_impl(Node* node);
+    Node* copy_tree(Node* node, Node* parent)
+    {
+      if (!node)
+      {
+        return nullptr;
+      }
+
+      Node* new_node = new Node(node->data_.first, node->data_.second, parent);
+      new_node->left_ = copy_tree(node->left_, new_node);
+      new_node->right_ = copy_tree(node->right_, new_node);
+
+      return new_node;
+    }
+
+    void delete_tree(Node* node)
+    {
+      if (!node)
+      {
+        return;
+      }
+
+      delete_tree(node->left_);
+      delete_tree(node->right_);
+      delete node;
+    }
+
+    Node* find_node(const Key& key) const
+    {
+      Node* current = root_;
+
+      while (current)
+      {
+        if (comp_(key, current->data_.first))
+        {
+          current = current->left_;
+        }
+        else if (comp_(current->data_.first, key))
+        {
+          current = current->right_;
+        }
+        else
+        {
+          return current;
+        }
+      }
+
+      return nullptr;
+    }
+
+    Node* min_node(Node* node) const
+    {
+      while (node && node->left_)
+      {
+        node = node->left_;
+      }
+
+      return node;
+    }
+
+    Node* max_node(Node* node) const
+    {
+      while (node && node->right_)
+      {
+        node = node->right_;
+      }
+
+      return node;
+    }
+
+    size_t get_height(Node* node) const
+    {
+      if (!node)
+      {
+        return 0;
+      }
+
+      return 1 + std::max(get_height(node->left_), get_height(node->right_));
+    }
+
+    void push(const Key& key, const Value& value)
+    {
+      if (!root_)
+      {
+        root_ = new Node(key, value, nullptr);
+        ++size_;
+        return;
+      }
+
+      Node* current = root_;
+      Node* parent = nullptr;
+
+      while (current)
+      {
+        parent = current;
+
+        if (comp_(key, current->data_.first))
+        {
+          current = current->left_;
+        }
+        else if (comp_(current->data_.first, key))
+        {
+          current = current->right_;
+        }
+        else
+        {
+          return;
+        }
+      }
+
+      Node* new_node = new Node(key, value, parent);
+
+      if (comp_(key, parent->data_.first))
+      {
+        parent->left_ = new_node;
+      }
+      else
+      {
+        parent->right_ = new_node;
+      }
+
+      ++size_;
+    }
+
+    void push(Key&& key, Value&& value)
+    {
+      if (!root_)
+      {
+        root_ = new Node(std::move(key), std::move(value), nullptr);
+        ++size_;
+        return;
+      }
+
+      Node* current = root_;
+      Node* parent = nullptr;
+
+      while (current)
+      {
+        parent = current;
+
+        if (comp_(key, current->data_.first))
+        {
+          current = current->left_;
+        }
+        else if (comp_(current->data_.first, key))
+        {
+          current = current->right_;
+        }
+        else
+        {
+          return;
+        }
+      }
+
+      Node* new_node = new Node(std::move(key), std::move(value), parent);
+
+      if (comp_(key, parent->data_.first))
+      {
+        parent->left_ = new_node;
+      }
+      else
+      {
+        parent->right_ = new_node;
+      }
+
+      ++size_;
+    }
+
+    bool has(const Key& key) const
+    {
+      return find_node(key) != nullptr;
+    }
+
+    Value& at(const Key& key)
+    {
+      Node* node = find_node(key);
+
+      if (!node)
+      {
+        throw std::out_of_range("Key not found");
+      }
+
+      return node->data_.second;
+    }
+
+    const Value& at(const Key& key) const
+    {
+      Node* node = find_node(key);
+
+      if (!node)
+      {
+        throw std::out_of_range("Key not found");
+      }
+
+      return node->data_.second;
+    }
+
+    Value& operator[](const Key& key)
+    {
+      Node* node = find_node(key);
+
+      if (node)
+      {
+        return node->data_.second;
+      }
+
+      push(key, Value());
+      node = find_node(key);
+
+      return node->data_.second;
+    }
+
+    Value drop(const Key& key)
+    {
+      Node* node = find_node(key);
+
+      if (!node)
+      {
+        throw std::out_of_range("Key not found");
+      }
+
+      Value result = std::move(node->data_.second);
+      root_ = erase_node(root_, key);
+      --size_;
+
+      return result;
+    }
+
+    Node* erase_node(Node* node, const Key& key)
+    {
+      if (!node)
+      {
+        return nullptr;
+      }
+
+      if (comp_(key, node->data_.first))
+      {
+        node->left_ = erase_node(node->left_, key);
+        if (node->left_)
+        {
+          node->left_->parent_ = node;
+        }
+      }
+      else if (comp_(node->data_.first, key))
+      {
+        node->right_ = erase_node(node->right_, key);
+        if (node->right_)
+        {
+          node->right_->parent_ = node;
+        }
+      }
+      else
+      {
+        if (!node->left_)
+        {
+          Node* right = node->right_;
+          if (right)
+          {
+            right->parent_ = node->parent_;
+          }
+          delete node;
+          return right;
+        }
+        else if (!node->right_)
+        {
+          Node* left = node->left_;
+          if (left)
+          {
+            left->parent_ = node->parent_;
+          }
+          delete node;
+          return left;
+        }
+        else
+        {
+          Node* min = min_node(node->right_);
+          const_cast<Key&>(node->data_.first) = std::move(min->data_.first);
+          node->data_.second = std::move(min->data_.second);
+          node->right_ = erase_node(node->right_, min->data_.first);
+          if (node->right_)
+          {
+            node->right_->parent_ = node;
+          }
+        }
+      }
+
+      return node;
+    }
+
+    Node* rotate_left_impl(Node* node)
+    {
+      Node* right = node->right_;
+      Node* parent = node->parent_;
+
+      node->right_ = right->left_;
+      if (right->left_)
+      {
+        right->left_->parent_ = node;
+      }
+
+      right->left_ = node;
+      node->parent_ = right;
+      right->parent_ = parent;
+
+      if (parent)
+      {
+        if (parent->left_ == node)
+        {
+          parent->left_ = right;
+        }
+        else
+        {
+          parent->right_ = right;
+        }
+      }
+      else
+      {
+        root_ = right;
+      }
+
+      return right;
+    }
+
+    Node* rotate_right_impl(Node* node)
+    {
+      Node* left = node->left_;
+      Node* parent = node->parent_;
+
+      node->left_ = left->right_;
+      if (left->right_)
+      {
+        left->right_->parent_ = node;
+      }
+
+      left->right_ = node;
+      node->parent_ = left;
+      left->parent_ = parent;
+
+      if (parent)
+      {
+        if (parent->left_ == node)
+        {
+          parent->left_ = left;
+        }
+        else
+        {
+          parent->right_ = left;
+        }
+      }
+      else
+      {
+        root_ = left;
+      }
+
+      return left;
+    }
+
+    iterator rotate_left(iterator pos)
+    {
+      Node* node = pos.node_;
+
+      if (!node || !node->right_)
+      {
+        return pos;
+      }
+
+      Node* new_root = rotate_left_impl(node);
+      return make_iter(new_root);
+    }
+
+    iterator rotate_right(iterator pos)
+    {
+      Node* node = pos.node_;
+
+      if (!node || !node->left_)
+      {
+        return pos;
+      }
+
+      Node* new_root = rotate_right_impl(node);
+      return make_iter(new_root);
+    }
+
+    iterator rotate_left_large(iterator pos)
+    {
+      Node* node = pos.node_;
+
+      if (!node || !node->right_ || !node->right_->left_)
+      {
+        return pos;
+      }
+
+      Node* new_root = rotate_right_impl(node->right_);
+      node->right_ = new_root;
+      new_root->parent_ = node;
+      new_root = rotate_left_impl(node);
+
+      return make_iter(new_root);
+    }
+
+    iterator rotate_right_large(iterator pos)
+    {
+      Node* node = pos.node_;
+
+      if (!node || !node->left_ || !node->left_->right_)
+      {
+        return pos;
+      }
+
+      Node* new_root = rotate_left_impl(node->left_);
+      node->left_ = new_root;
+      new_root->parent_ = node;
+      new_root = rotate_right_impl(node);
+
+      return make_iter(new_root);
+    }
+
+    size_t height(const_iterator pos) const
+    {
+      if (pos.node_)
+      {
+        return get_height(pos.node_);
+      }
+
+      return 0;
+    }
+
+    size_t height() const
+    {
+      return get_height(root_);
+    }
+
+    iterator find(const Key& key)
+    {
+      Node* node = find_node(key);
+      return make_iter(node);
+    }
+
+    const_iterator find(const Key& key) const
+    {
+      Node* node = find_node(key);
+      return make_citer(node);
+    }
+
     iterator make_iter(Node* node) const;
     const_iterator make_citer(Node* node) const;
   };
 
   template< class Key, class Value, class Compare >
-  void swap(BSTree< Key, Value, Compare >& lhs, BSTree< Key, Value, Compare >& rhs) noexcept;
+  void swap(BSTree< Key, Value, Compare >& lhs, BSTree< Key, Value, Compare >& rhs) noexcept
+  {
+    lhs.swap(rhs);
+  }
 }
 
 #endif

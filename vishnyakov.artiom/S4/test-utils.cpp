@@ -217,3 +217,62 @@ BOOST_AUTO_TEST_CASE(ComplementMissingDict)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(DuplicateKeyTests)
+
+BOOST_AUTO_TEST_CASE(IntersectLeftPriority)
+{
+  vishnyakov::BSTree< std::string, vishnyakov::Dictionary, std::less< std::string > > dicts;
+  vishnyakov::Dictionary d1, d2;
+
+  d1.push(1, "left_one");
+  d1.push(2, "left_two");
+
+  d2.push(1, "right_one");
+  d2.push(3, "right_three");
+
+  dicts.push("left", d1);
+  dicts.push("right", d2);
+
+  std::istringstream in("intersect result left right\n");
+  std::ostringstream out;
+
+  vishnyakov::process_commands(in, dicts, out);
+
+  const auto& result = dicts.at("result");
+  BOOST_CHECK(result.has(1));
+  BOOST_CHECK_EQUAL(result.at(1), "left_one");
+  BOOST_CHECK(!result.has(2));
+  BOOST_CHECK(!result.has(3));
+}
+
+BOOST_AUTO_TEST_CASE(UnionLeftPriority)
+{
+  vishnyakov::BSTree< std::string, vishnyakov::Dictionary, std::less< std::string > > dicts;
+  vishnyakov::Dictionary d1, d2;
+
+  d1.push(1, "left_one");
+  d1.push(2, "left_two");
+
+  d2.push(1, "right_one");
+  d2.push(3, "right_three");
+
+  dicts.push("left", d1);
+  dicts.push("right", d2);
+
+  std::istringstream in("union result left right\n");
+  std::ostringstream out;
+
+  vishnyakov::process_commands(in, dicts, out);
+
+  const auto& result = dicts.at("result");
+  BOOST_CHECK(result.has(1));
+  BOOST_CHECK_EQUAL(result.at(1), "left_one");
+  BOOST_CHECK(result.has(2));
+  BOOST_CHECK_EQUAL(result.at(2), "left_two");
+  BOOST_CHECK(result.has(3));
+  BOOST_CHECK_EQUAL(result.at(3), "right_three");
+  BOOST_CHECK_EQUAL(result.size(), 3);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+

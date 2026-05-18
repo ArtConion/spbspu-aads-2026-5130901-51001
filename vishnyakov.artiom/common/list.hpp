@@ -334,6 +334,22 @@ namespace vishnyakov
       return LIter< T >(pos.node_->next_);
     }
 
+    LIter< T > erase(LIter< T > pos)
+    {
+      if (pos == begin())
+      {
+        pop_front();
+        return begin();
+      }
+
+      LIter< T > prev = begin();
+      while (prev.node_->next_ != pos.node_)
+      {
+        ++prev;
+      }
+      return erase_after(prev);
+    }
+
     void clear()
     {
       while (!empty())

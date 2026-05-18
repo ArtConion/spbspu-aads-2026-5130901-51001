@@ -1,8 +1,21 @@
 #include "commands.hpp"
 #include <sstream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
 
 namespace vishnyakov
 {
+  struct NearestResult
+  {
+    std::string name;
+    int x;
+    int z;
+    std::string type;
+    double distance;
+    double coefficient;
+  };
+
   void processCommands(std::istream& in, World& world, std::ostream& out)
   {
     std::string line;
@@ -29,7 +42,7 @@ namespace vishnyakov
         }
         else if (world.createMap(name))
         {
-          // success, nothing to output
+          out << "OK\n";
         }
         else
         {
@@ -47,7 +60,7 @@ namespace vishnyakov
         }
         else if (world.deleteMap(name))
         {
-          // success, nothing to output
+          out << "OK\n";
         }
         else
         {
@@ -84,6 +97,7 @@ namespace vishnyakov
         }
 
         map->addWaypoint(pointName, x, z, type);
+        out << "OK\n";
       }
       else if (cmd == "remove-point")
       {
@@ -106,6 +120,10 @@ namespace vishnyakov
         if (!map->removeWaypoint(pointName))
         {
           out << "<INVALID COMMAND>\n";
+        }
+        else
+        {
+          out << "OK\n";
         }
       }
       else if (cmd == "edit-point")
@@ -148,11 +166,12 @@ namespace vishnyakov
 
         if (newName != "-" && !newName.empty() && newName != pointName)
         {
-          // Изменение имени требует удаления и добавления с новым ключом
           Waypoint newWp(wp->x, wp->z, wp->type);
           map->removeWaypoint(pointName);
           map->addWaypoint(newName, newWp);
         }
+
+        out << "OK\n";
       }
       else if (cmd == "show-points")
       {
@@ -186,7 +205,68 @@ namespace vishnyakov
       }
       else if (cmd == "find-nearest")
       {
-        out << "Not implemented yet\n";
+        std::string mapName;
+        int x, z, k;
+        std::string typeFilter;
+        iss >> mapName >> x >> z >> k >> typeFilter;
+
+        if (mapName.empty() || k <= 0)
+        {
+          out << "<INVALID COMMAND>\n";
+          continue;
+        }
+
+        const Map* map = world.getMap(mapName);
+        if (!map)
+        {
+          out << "<INVALID COMMAND>\n";
+          continue;
+        }
+
+        std::vector<NearestResult> results;
+
+        for (auto it = map->begin(); it != map->end(); ++it)
+        {
+          const std::string& name = it->first;
+          const Waypoint& wp = it->second;
+
+          if (!typeFilter.empty() && wp.type != typeFilter)
+          {
+            continue;
+          }
+
+          double dist = wp.distanceTo(x, z);
+          results.push_back({name, wp.x, wp.z, wp.type, dist, 0.0});
+        }
+
+        if (results.empty())
+        {
+          out << "<EMPTY>\n";
+          continue;
+        }
+
+        std::sort(results.begin(), results.end(),
+          [](const NearestResult& a, const NearestResult& b)
+          {
+            return a.distance < b.distance;
+          });
+
+        double minDist = results[0].distance;
+        for (size_t i = 0; i < results.size() && i < static_cast<size_t>(k); ++i)
+        {
+          if (minDist > 0.0)
+          {
+            results[i].coefficient = (minDist / results[i].distance) * 100.0;
+          }
+          else
+          {
+            results[i].coefficient = (results[i].distance == 0.0) ? 100.0 : 0.0;
+          }
+
+          out << i + 1 << ". " << results[i].name << " ("
+              << results[i].x << ", " << results[i].z << ") dist: "
+              << results[i].distance << " coef: " << results[i].coefficient << "%\n";
+        }
       }
       else if (cmd == "find-by-type")
       {
@@ -223,6 +303,7 @@ namespace vishnyakov
         }
 
         map->clear();
+        out << "OK\n";
       }
       else if (cmd == "plan-route-greedy")
       {

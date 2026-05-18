@@ -26,8 +26,8 @@ namespace vishnyakov
   {
     if (this != &other)
     {
-      Map tmp(other);
-      swap(tmp);
+      name_ = other.name_;
+      waypoints_ = other.waypoints_;
     }
     return *this;
   }
@@ -50,6 +50,11 @@ namespace vishnyakov
   void Map::addWaypoint(const std::string& name, int x, int z, const std::string& type)
   {
     Waypoint wp(x, z, type);
+    waypoints_.push(name, wp);
+  }
+
+  void Map::addWaypoint(const std::string& name, const Waypoint& wp)
+  {
     waypoints_.push(name, wp);
   }
 

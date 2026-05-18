@@ -26,6 +26,7 @@ namespace vishnyakov
     const std::string& getName() const noexcept;
 
     void addWaypoint(const std::string& name, int x, int z, const std::string& type);
+    void addWaypoint(const std::string& name, const Waypoint& wp);
     void addWaypoint(const std::string& name, Waypoint&& wp);
     bool removeWaypoint(const std::string& name);
     const Waypoint* findWaypoint(const std::string& name) const;

@@ -166,9 +166,9 @@ namespace vishnyakov
 
         if (newName != "-" && !newName.empty() && newName != pointName)
         {
-          Waypoint newWp(wp->x, wp->z, wp->type);
-          map->removeWaypoint(pointName);
-          map->addWaypoint(newName, newWp);
+        Waypoint newWp(wp->x, wp->z, wp->type);
+        map->removeWaypoint(pointName);
+        map->addWaypoint(newName, newWp);
         }
 
         out << "OK\n";
@@ -254,18 +254,18 @@ namespace vishnyakov
         double minDist = results[0].distance;
         for (size_t i = 0; i < results.size() && i < static_cast<size_t>(k); ++i)
         {
-          if (minDist > 0.0)
-          {
-            results[i].coefficient = (minDist / results[i].distance) * 100.0;
-          }
-          else
-          {
+        if (minDist > 0.0)
+        {
+            results[i].coefficient = (results[i].distance / minDist) * 100.0;
+        }
+        else
+        {
             results[i].coefficient = (results[i].distance == 0.0) ? 100.0 : 0.0;
-          }
+        }
 
-          out << i + 1 << ". " << results[i].name << " ("
-              << results[i].x << ", " << results[i].z << ") dist: "
-              << results[i].distance << " coef: " << results[i].coefficient << "%\n";
+        out << i + 1 << ". " << results[i].name << " ("
+            << results[i].x << ", " << results[i].z << ") dist: "
+            << results[i].distance << " coef: " << results[i].coefficient << "%\n";
         }
       }
       else if (cmd == "find-by-type")

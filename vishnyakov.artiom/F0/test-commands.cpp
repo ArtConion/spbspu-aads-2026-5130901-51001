@@ -14,7 +14,7 @@ namespace vishnyakov
 
     processCommands(in, world, out);
 
-    BOOST_TEST(out.str() == "Overworld\n");
+    BOOST_TEST(out.str() == "OK\nOverworld\n");
   }
 
   BOOST_AUTO_TEST_CASE(CreateDuplicateMap)
@@ -29,7 +29,7 @@ namespace vishnyakov
 
     processCommands(in, world, out);
 
-    std::string expected = "<INVALID COMMAND>\nOverworld\n";
+    std::string expected = "OK\n<INVALID COMMAND>\nOverworld\n";
     BOOST_TEST(out.str() == expected);
   }
 
@@ -46,7 +46,7 @@ namespace vishnyakov
 
     processCommands(in, world, out);
 
-    BOOST_TEST(out.str() == "Nether\n");
+    BOOST_TEST(out.str() == "OK\nOK\nOK\nNether\n");
   }
 
   BOOST_AUTO_TEST_CASE(DeleteNonExistentMap)
@@ -72,7 +72,7 @@ namespace vishnyakov
 
     processCommands(in, world, out);
 
-    std::string expected = "home 100 64 house\n";
+    std::string expected = "OK\nOK\nhome 100 64 house\n";
     BOOST_TEST(out.str() == expected);
   }
 
@@ -100,7 +100,8 @@ namespace vishnyakov
 
     processCommands(in, world, out);
 
-    BOOST_TEST(out.str() == "home 100 64 house\n");
+    std::string expected = "OK\nOK\n<INVALID COMMAND>\nhome 100 64 house\n";
+    BOOST_TEST(out.str() == expected);
   }
 
   BOOST_AUTO_TEST_CASE(RemovePoint)
@@ -117,7 +118,8 @@ namespace vishnyakov
 
     processCommands(in, world, out);
 
-    BOOST_TEST(out.str() == "mine 250 30 cave\n");
+    std::string expected = "OK\nOK\nOK\nOK\nmine 250 30 cave\n";
+    BOOST_TEST(out.str() == expected);
   }
 
   BOOST_AUTO_TEST_CASE(RemoveNonExistentPoint)
@@ -131,7 +133,7 @@ namespace vishnyakov
 
     processCommands(in, world, out);
 
-    BOOST_TEST(out.str() == "<INVALID COMMAND>\n");
+    BOOST_TEST(out.str() == "OK\n<INVALID COMMAND>\n");
   }
 
   BOOST_AUTO_TEST_CASE(ShowPointsEmpty)
@@ -145,7 +147,7 @@ namespace vishnyakov
 
     processCommands(in, world, out);
 
-    BOOST_TEST(out.str() == "<EMPTY>\n");
+    BOOST_TEST(out.str() == "OK\n<EMPTY>\n");
   }
 
   BOOST_AUTO_TEST_CASE(ShowPointsNonExistentMap)
@@ -172,7 +174,7 @@ namespace vishnyakov
 
     processCommands(in, world, out);
 
-    std::string expected = "home 200 80 house\n";
+    std::string expected = "OK\nOK\nOK\nhome 200 80 house\n";
     BOOST_TEST(out.str() == expected);
   }
 
@@ -189,7 +191,7 @@ namespace vishnyakov
 
     processCommands(in, world, out);
 
-    std::string expected = "home 100 64 castle\n";
+    std::string expected = "OK\nOK\nOK\nhome 100 64 castle\n";
     BOOST_TEST(out.str() == expected);
   }
 
@@ -206,7 +208,7 @@ namespace vishnyakov
 
     processCommands(in, world, out);
 
-    std::string expected = "castle 100 64 house\n";
+    std::string expected = "OK\nOK\nOK\ncastle 100 64 house\n";
     BOOST_TEST(out.str() == expected);
   }
 
@@ -224,13 +226,79 @@ namespace vishnyakov
 
     processCommands(in, world, out);
 
-    BOOST_TEST(out.str() == "<EMPTY>\n");
+    std::string expected = "OK\nOK\nOK\nOK\n<EMPTY>\n";
+    BOOST_TEST(out.str() == expected);
   }
 
   BOOST_AUTO_TEST_CASE(ClearNonExistentMap)
   {
     World world;
     std::istringstream in("clear-map Nonexistent\nexit\n");
+    std::ostringstream out;
+
+    processCommands(in, world, out);
+
+    BOOST_TEST(out.str() == "<INVALID COMMAND>\n");
+  }
+
+  BOOST_AUTO_TEST_CASE(FindNearest)
+  {
+    World world;
+    std::istringstream in(
+      "create-map Overworld\n"
+      "add-point Overworld home 100 64 house\n"
+      "add-point Overworld mine 250 30 cave\n"
+      "add-point Overworld lake 300 50 water\n"
+      "find-nearest Overworld 110 70 2\nexit\n"
+    );
+    std::ostringstream out;
+
+    processCommands(in, world, out);
+
+    std::string result = out.str();
+    BOOST_TEST(result.find("1. home") != std::string::npos);
+    BOOST_TEST(result.find("coef: 100%") != std::string::npos);
+    BOOST_TEST(result.find("2. mine") != std::string::npos);
+  }
+
+  BOOST_AUTO_TEST_CASE(FindNearestWithTypeFilter)
+  {
+    World world;
+    std::istringstream in(
+      "create-map Overworld\n"
+      "add-point Overworld home 100 64 house\n"
+      "add-point Overworld mine 250 30 cave\n"
+      "add-point Overworld lake 300 50 water\n"
+      "find-nearest Overworld 110 70 5 house\nexit\n"
+    );
+    std::ostringstream out;
+
+    processCommands(in, world, out);
+
+    std::string result = out.str();
+    BOOST_TEST(result.find("home") != std::string::npos);
+    BOOST_TEST(result.find("mine") == std::string::npos);
+    BOOST_TEST(result.find("lake") == std::string::npos);
+  }
+
+  BOOST_AUTO_TEST_CASE(FindNearestEmpty)
+  {
+    World world;
+    std::istringstream in(
+      "create-map Overworld\n"
+      "find-nearest Overworld 110 70 2\nexit\n"
+    );
+    std::ostringstream out;
+
+    processCommands(in, world, out);
+
+    BOOST_TEST(out.str() == "OK\n<EMPTY>\n");
+  }
+
+  BOOST_AUTO_TEST_CASE(FindNearestInvalidMap)
+  {
+    World world;
+    std::istringstream in("find-nearest Nonexistent 110 70 2\nexit\n");
     std::ostringstream out;
 
     processCommands(in, world, out);
@@ -257,7 +325,7 @@ namespace vishnyakov
 
     processCommands(in, world, out);
 
-    BOOST_TEST(out.str() == "Overworld\n");
+    BOOST_TEST(out.str() == "OK\nOverworld\n");
   }
 
   BOOST_AUTO_TEST_SUITE_END()

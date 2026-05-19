@@ -55,6 +55,7 @@ namespace vishnyakov
     void push(const Key& key, const Value& value);
     void push(Key&& key, Value&& value);
     bool has(const Key& key) const;
+    Value drop(const Key& key);
 
     void clear();
     void swap(AVLTree& other) noexcept;
@@ -80,6 +81,7 @@ namespace vishnyakov
 
     Node* insert_node(Node* node, const Key& key, const Value& value);
     Node* insert_node(Node* node, Key&& key, Value&& value);
+    Node* erase_node(Node* node, const Key& key);
     Node* min_node(Node* node) const;
   };
 
@@ -176,6 +178,24 @@ namespace vishnyakov
   bool AVLTree< Key, Value, Compare >::has(const Key& key) const
   {
     return find_node(key) != nullptr;
+  }
+
+  template< class Key, class Value, class Compare >
+  Value AVLTree< Key, Value, Compare >::drop(const Key& key)
+  {
+    Node* node = find_node(key);
+    if (!node)
+    {
+      throw std::out_of_range("Key not found");
+    }
+    Value result = std::move(node->data_.second);
+    root_ = erase_node(root_, key);
+    if (root_)
+    {
+      root_->parent_ = nullptr;
+    }
+    --size_;
+    return result;
   }
 
   template< class Key, class Value, class Compare >
@@ -436,6 +456,58 @@ namespace vishnyakov
     else
     {
       return node;
+    }
+
+    return balance(node);
+  }
+
+  template< class Key, class Value, class Compare >
+  typename AVLTree< Key, Value, Compare >::Node* AVLTree< Key, Value, Compare >::erase_node(Node* node, const Key& key)
+  {
+    if (!node)
+    {
+      return nullptr;
+    }
+
+    if (comp_(key, node->data_.first))
+    {
+      node->left_ = erase_node(node->left_, key);
+      if (node->left_)
+      {
+        node->left_->parent_ = node;
+      }
+    }
+    else if (comp_(node->data_.first, key))
+    {
+      node->right_ = erase_node(node->right_, key);
+      if (node->right_)
+      {
+        node->right_->parent_ = node;
+      }
+    }
+    else
+    {
+      if (!node->left_ || !node->right_)
+      {
+        Node* child = node->left_ ? node->left_ : node->right_;
+        if (child)
+        {
+          child->parent_ = node->parent_;
+        }
+        delete node;
+        return child;
+      }
+      else
+      {
+        Node* successor = min_node(node->right_);
+        const_cast< Key& >(node->data_.first) = std::move(successor->data_.first);
+        node->data_.second = std::move(successor->data_.second);
+        node->right_ = erase_node(node->right_, successor->data_.first);
+        if (node->right_)
+        {
+          node->right_->parent_ = node;
+        }
+      }
     }
 
     return balance(node);

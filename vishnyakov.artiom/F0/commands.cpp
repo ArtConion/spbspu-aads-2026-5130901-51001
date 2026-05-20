@@ -887,7 +887,8 @@ namespace vishnyakov
         return;
       }
 
-      out << "Сравнение алгоритмов для карты \"" << mapName << "\" (старт " << startX << "," << startZ << ", время " << startTime << "):\n\n";
+      out << "Сравнение алгоритмов для карты \"" << mapName << "\" "
+          << "(старт " << startX << "," << startZ << ", время " << startTime << "):\n\n";
 
       struct AlgorithmResult
       {
@@ -984,35 +985,35 @@ namespace vishnyakov
           << "Управление точками:\n"
           << "  add-point <map> <name> <x> <z> <type> - добавить точку на карту\n"
           << "  remove-point <map> <name>             - удалить точку\n"
-          << "  edit-point <map> <name> <new-name> <x> <z> <type> "
-          << "- изменить точку (\"-\" = без изменений)\n"
+          << "  edit-point <map> <name> <new-name> <x> <z> <type>\n"
+          << "    - изменить точку (\"-\" = без изменений)\n"
           << "  show-points <map>                     - показать все точки карты\n\n"
           << "Поиск и навигация:\n"
           << "  find-nearest <map> <x> <z> <k> [type] - найти K ближайших точек\n"
           << "  find-by-type <map> <type>             - найти точки по типу\n"
-          << "  copy-point <src> <dst> <name>         - скопировать точку между картами\n"
-          << "  move-point <src> <dst> <name>         - переместить точку между картами\n\n"
+          << "  copy-point <src> <dst> <name>         - скопировать точку\n"
+          << "  move-point <src> <dst> <name>         - переместить точку\n\n"
           << "Операции с картами:\n"
           << "  merge-maps <new> <map1> <map2>        - объединить две карты\n"
           << "  clear-map <map>                       - очистить карту\n\n"
           << "Маршрутизация:\n"
-          << "  plan-route-greedy <map> <x> <z> <time> <ignore-count> "
-          << "[points...] [-short] - жадный алгоритм\n"
-          << "  plan-route-2opt <map> <x> <z> <time> <ignore-count> "
-          << "[points...] [-short]   - 2-opt улучшение\n"
-          << "  plan-route-mst <map> <x> <z> <time> <ignore-count> "
-          << "[points...] [-short]     - MST (Prim)\n"
-          << "  plan-route-ant <map> <x> <z> <time> <ignore-count> "
-          << "[points...] [-short]     - муравьиный алгоритм\n\n"
+          << "  plan-route-greedy <map> <x> <z> <time> <n> [p...] [-short]\n"
+          << "    - жадный алгоритм\n"
+          << "  plan-route-2opt <map> <x> <z> <time> <n> [p...] [-short]\n"
+          << "    - 2-opt улучшение\n"
+          << "  plan-route-mst <map> <x> <z> <time> <n> [p...] [-short]\n"
+          << "    - MST (Prim)\n"
+          << "  plan-route-ant <map> <x> <z> <time> <n> [p...] [-short]\n"
+          << "    - муравьиный алгоритм\n\n"
           << "Сравнение:\n"
-          << "  best-route <map> <x> <z> <time> <ignore-count> [points...] "
-          << "- сравнить все алгоритмы\n\n"
+          << "  best-route <map> <x> <z> <time> <n> [p...]\n"
+          << "    - сравнить все алгоритмы\n\n"
           << "Сохранение и загрузка:\n"
-          << "  save <filename>                       - сохранить все данные в файл\n"
+          << "  save <filename>                       - сохранить данные в файл\n"
           << "  load <filename>                       - загрузить данные из файла\n\n"
           << "Прочее:\n"
-          << "  help                                  - показать эту справку\n"
-          << "  exit                                  - выйти из программы\n";
+          << "  help                                  - показать справку\n"
+          << "  exit                                  - выйти\n";
     });
 
     std::string line;

@@ -323,7 +323,7 @@ namespace vishnyakov
     size_t resultPos = result.find("1. ");
     BOOST_REQUIRE(resultPos != std::string::npos);
     std::string afterResult = result.substr(resultPos);
-    
+
     BOOST_TEST(afterResult.find("home") != std::string::npos);
     BOOST_TEST(afterResult.find("mine") == std::string::npos);
     BOOST_TEST(afterResult.find("lake") == std::string::npos);
@@ -381,7 +381,7 @@ namespace vishnyakov
     }
     BOOST_REQUIRE(firstHousePos != std::string::npos);
     std::string afterFirstPoint = result.substr(firstHousePos);
-    
+
     BOOST_TEST(afterFirstPoint.find("home 100 64 house") != std::string::npos);
     BOOST_TEST(afterFirstPoint.find("castle 500 200 house") != std::string::npos);
     BOOST_TEST(afterFirstPoint.find("mine") == std::string::npos);
@@ -666,7 +666,7 @@ namespace vishnyakov
     size_t resultPos = result.find("Маршрут (greedy):");
     BOOST_REQUIRE(resultPos != std::string::npos);
     std::string afterResult = result.substr(resultPos);
-    
+
     BOOST_TEST(afterResult.find("home") != std::string::npos);
     BOOST_TEST(afterResult.find("lake") != std::string::npos);
     BOOST_TEST(afterResult.find("mine") == std::string::npos);
@@ -681,7 +681,7 @@ namespace vishnyakov
     processCommands(in, world, out);
 
     std::string expected = "Wrong usage. Use:\n"
-                           "  plan-route-greedy <map-name> <x> <z> <time> <ignore-count> [ignore-points...]\n";
+                           "  plan-route-greedy <map-name> <x> <z> <time> <ignore-count> [ignore-points...] [-short]\n";
     BOOST_TEST(out.str() == expected);
   }
 
@@ -698,8 +698,136 @@ namespace vishnyakov
 
     std::string expected = "# Карта \"Test\" создана\n"
                            "Wrong usage. Use:\n"
-                           "  plan-route-greedy <map-name> <x> <z> <time> <ignore-count> [ignore-points...]\n";
+                           "  plan-route-greedy <map-name> <x> <z> <time> <ignore-count> [ignore-points...] [-short]\n";
     BOOST_TEST(out.str() == expected);
+  }
+
+  BOOST_AUTO_TEST_CASE(GreedyRouteShortFlag)
+  {
+    World world;
+    std::istringstream in(
+      "create-map Test\n"
+      "add-point Test home 100 64 house\n"
+      "add-point Test mine 250 30 cave\n"
+      "add-point Test lake 500 200 water\n"
+      "plan-route-greedy Test 0 0 5 0 -short\nexit\n"
+    );
+    std::ostringstream out;
+
+    processCommands(in, world, out);
+
+    std::string result = out.str();
+
+    size_t headerPos = result.find("Маршрут (greedy):");
+    BOOST_REQUIRE(headerPos != std::string::npos);
+    std::string afterHeader = result.substr(headerPos);
+
+    BOOST_TEST(afterHeader.find("Маршрут (greedy):") != std::string::npos);
+
+    BOOST_TEST(afterHeader.find("Старт") == std::string::npos);
+    BOOST_TEST(afterHeader.find("home") == std::string::npos);
+
+    BOOST_TEST(afterHeader.find("Общая длина:") != std::string::npos);
+    BOOST_TEST(afterHeader.find("Общее время:") != std::string::npos);
+    BOOST_TEST(afterHeader.find("Потрачено голода:") != std::string::npos);
+    BOOST_TEST(afterHeader.find("Хлеба нужно:") != std::string::npos);
+  }
+
+  BOOST_AUTO_TEST_CASE(GreedyRouteShortFlagWithIgnore)
+  {
+    World world;
+    std::istringstream in(
+      "create-map Test\n"
+      "add-point Test home 100 64 house\n"
+      "add-point Test mine 250 30 cave\n"
+      "add-point Test lake 500 200 water\n"
+      "plan-route-greedy Test 0 0 5 1 mine -short\nexit\n"
+    );
+    std::ostringstream out;
+
+    processCommands(in, world, out);
+
+    std::string result = out.str();
+
+    size_t headerPos = result.find("Маршрут (greedy):");
+    BOOST_REQUIRE(headerPos != std::string::npos);
+    std::string afterHeader = result.substr(headerPos);
+
+    BOOST_TEST(afterHeader.find("mine") == std::string::npos);
+
+    BOOST_TEST(afterHeader.find("Общая длина:") != std::string::npos);
+  }
+
+  BOOST_AUTO_TEST_CASE(TwoOptShortFlag)
+  {
+    World world;
+    std::istringstream in(
+      "create-map Test\n"
+      "add-point Test home 100 64 house\n"
+      "add-point Test mine 250 30 cave\n"
+      "add-point Test lake 500 200 water\n"
+      "plan-route-2opt Test 0 0 5 0 -short\nexit\n"
+    );
+    std::ostringstream out;
+
+    processCommands(in, world, out);
+
+    std::string result = out.str();
+    size_t headerPos = result.find("Маршрут (2-opt):");
+    BOOST_REQUIRE(headerPos != std::string::npos);
+    std::string afterHeader = result.substr(headerPos);
+
+    BOOST_TEST(afterHeader.find("Маршрут (2-opt):") != std::string::npos);
+    BOOST_TEST(afterHeader.find("Старт") == std::string::npos);
+    BOOST_TEST(afterHeader.find("Общая длина:") != std::string::npos);
+  }
+
+  BOOST_AUTO_TEST_CASE(MSTShortFlag)
+  {
+    World world;
+    std::istringstream in(
+      "create-map Test\n"
+      "add-point Test home 100 64 house\n"
+      "add-point Test mine 250 30 cave\n"
+      "add-point Test lake 500 200 water\n"
+      "plan-route-mst Test 0 0 5 0 -short\nexit\n"
+    );
+    std::ostringstream out;
+
+    processCommands(in, world, out);
+
+    std::string result = out.str();
+    size_t headerPos = result.find("Маршрут (MST):");
+    BOOST_REQUIRE(headerPos != std::string::npos);
+    std::string afterHeader = result.substr(headerPos);
+
+    BOOST_TEST(afterHeader.find("Маршрут (MST):") != std::string::npos);
+    BOOST_TEST(afterHeader.find("Старт") == std::string::npos);
+    BOOST_TEST(afterHeader.find("Общая длина:") != std::string::npos);
+  }
+
+  BOOST_AUTO_TEST_CASE(AntShortFlag)
+  {
+    World world;
+    std::istringstream in(
+      "create-map Test\n"
+      "add-point Test home 100 64 house\n"
+      "add-point Test mine 250 30 cave\n"
+      "add-point Test lake 500 200 water\n"
+      "plan-route-ant Test 0 0 5 0 -short\nexit\n"
+    );
+    std::ostringstream out;
+
+    processCommands(in, world, out);
+
+    std::string result = out.str();
+    size_t headerPos = result.find("Маршрут (ant):");
+    BOOST_REQUIRE(headerPos != std::string::npos);
+    std::string afterHeader = result.substr(headerPos);
+
+    BOOST_TEST(afterHeader.find("Маршрут (ant):") != std::string::npos);
+    BOOST_TEST(afterHeader.find("Старт") == std::string::npos);
+    BOOST_TEST(afterHeader.find("Общая длина:") != std::string::npos);
   }
 
   BOOST_AUTO_TEST_CASE(HelpCommand)

@@ -82,19 +82,19 @@ namespace vishnyakov
     }
     else if (cmd == "plan-route-greedy")
     {
-      out << "  plan-route-greedy <map-name> <x> <z> <time> <ignore-count> [ignore-points...]\n";
+      out << "  plan-route-greedy <map-name> <x> <z> <time> <ignore-count> [ignore-points...] [-short]\n";
     }
     else if (cmd == "plan-route-2opt")
     {
-      out << "  plan-route-2opt <map-name> <x> <z> <time> <ignore-count> [ignore-points...]\n";
+      out << "  plan-route-2opt <map-name> <x> <z> <time> <ignore-count> [ignore-points...] [-short]\n";
     }
     else if (cmd == "plan-route-mst")
     {
-      out << "  plan-route-mst <map-name> <x> <z> <time> <ignore-count> [ignore-points...]\n";
+      out << "  plan-route-mst <map-name> <x> <z> <time> <ignore-count> [ignore-points...] [-short]\n";
     }
     else if (cmd == "plan-route-ant")
     {
-      out << "  plan-route-ant <map-name> <x> <z> <time> <ignore-count> [ignore-points...]\n";
+      out << "  plan-route-ant <map-name> <x> <z> <time> <ignore-count> [ignore-points...] [-short]\n";
     }
     else if (cmd == "help")
     {
@@ -110,44 +110,47 @@ namespace vishnyakov
     }
   }
 
-  void printRouteResult(std::ostream& out, const RouteResult& route, const std::string& algorithmName)
+  void printRouteResult(std::ostream& out, const RouteResult& route, const std::string& algorithmName, bool shortOutput)
   {
     out << "Маршрут (" << algorithmName << "):\n";
-    int stepNumber = 1;
-    for (auto it = route.allStops.cbegin(); it != route.allStops.cend(); ++it)
+    if (!shortOutput)
     {
-      const auto& stop = *it;
-      double roundedTime = std::round(stop.time * 100.0) / 100.0;
-      double roundedTravel = std::round(stop.travelTime * 100.0) / 100.0;
-      double roundedDist = std::round(stop.distanceFromPrev * 100.0) / 100.0;
+      int stepNumber = 1;
+      for (auto it = route.allStops.cbegin(); it != route.allStops.cend(); ++it)
+      {
+        const auto& stop = *it;
+        double roundedTime = std::round(stop.time * 100.0) / 100.0;
+        double roundedTravel = std::round(stop.travelTime * 100.0) / 100.0;
+        double roundedDist = std::round(stop.distanceFromPrev * 100.0) / 100.0;
 
-      if (stop.name == "start")
-      {
-        out << "  " << stepNumber << ". Старт (" << stop.x << ", " << stop.z << ")\n";
-        out << "      - Текущее время: " << roundedTime << " мин.\n";
-        stepNumber++;
-      }
-      else if (stop.isNightStop)
-      {
-        out << "  " << stepNumber << ". Остановка на ночь (" << stop.x << ", " << stop.z << ")\n";
-        if (stepNumber > 1)
+        if (stop.name == "start")
         {
-          out << "      - Затраченное время: " << roundedTravel << " мин.\n";
-          out << "      - Пройденная дистанция: " << roundedDist << " м.\n";
+          out << "  " << stepNumber << ". Старт (" << stop.x << ", " << stop.z << ")\n";
+          out << "      - Текущее время: " << roundedTime << " мин.\n";
+          stepNumber++;
         }
-        out << "      - Текущее время: " << roundedTime << " мин.\n";
-        stepNumber++;
-      }
-      else if (stop.isPoint)
-      {
-        out << "  " << stepNumber << ". " << stop.name << " (" << stop.x << ", " << stop.z << ")\n";
-        if (stepNumber > 1)
+        else if (stop.isNightStop)
         {
-          out << "      - Затраченное время: " << roundedTravel << " мин.\n";
-          out << "      - Пройденная дистанция: " << roundedDist << " м.\n";
+          out << "  " << stepNumber << ". Остановка на ночь (" << stop.x << ", " << stop.z << ")\n";
+          if (stepNumber > 1)
+          {
+            out << "      - Затраченное время: " << roundedTravel << " мин.\n";
+            out << "      - Пройденная дистанция: " << roundedDist << " м.\n";
+          }
+          out << "      - Текущее время: " << roundedTime << " мин.\n";
+          stepNumber++;
         }
-        out << "      - Текущее время: " << roundedTime << " мин.\n";
-        stepNumber++;
+        else if (stop.isPoint)
+        {
+          out << "  " << stepNumber << ". " << stop.name << " (" << stop.x << ", " << stop.z << ")\n";
+          if (stepNumber > 1)
+          {
+            out << "      - Затраченное время: " << roundedTravel << " мин.\n";
+            out << "      - Пройденная дистанция: " << roundedDist << " м.\n";
+          }
+          out << "      - Текущее время: " << roundedTime << " мин.\n";
+          stepNumber++;
+        }
       }
     }
 
@@ -715,10 +718,18 @@ namespace vishnyakov
       {
         std::string pointName;
         iss >> pointName;
-        if (!pointName.empty())
+        if (!pointName.empty() && pointName != "-short" && pointName != "--only-results")
         {
           ignorePoints.push_back(pointName);
         }
+      }
+
+      bool shortOutput = false;
+      std::string flag;
+      iss >> flag;
+      if (flag == "-short" || flag == "--only-results")
+      {
+        shortOutput = true;
       }
 
       const Map* map = world.getMap(mapName);
@@ -754,7 +765,7 @@ namespace vishnyakov
       }
 
       RouteResult route = buildGreedyRoute(points, startX, startZ, startTime);
-      printRouteResult(out, route, "greedy");
+      printRouteResult(out, route, "greedy", shortOutput);
     });
 
     commands.add("plan-route-2opt", [&](std::istringstream& iss, std::ostream& out)
@@ -777,10 +788,18 @@ namespace vishnyakov
       {
         std::string pointName;
         iss >> pointName;
-        if (!pointName.empty())
+        if (!pointName.empty() && pointName != "-short" && pointName != "--only-results")
         {
           ignorePoints.push_back(pointName);
         }
+      }
+
+      bool shortOutput = false;
+      std::string flag;
+      iss >> flag;
+      if (flag == "-short" || flag == "--only-results")
+      {
+        shortOutput = true;
       }
 
       const Map* map = world.getMap(mapName);
@@ -816,7 +835,7 @@ namespace vishnyakov
       }
 
       RouteResult route = improve2Opt(points, startX, startZ, startTime);
-      printRouteResult(out, route, "2-opt");
+      printRouteResult(out, route, "2-opt", shortOutput);
     });
 
     commands.add("plan-route-mst", [&](std::istringstream& iss, std::ostream& out)
@@ -839,10 +858,18 @@ namespace vishnyakov
       {
         std::string pointName;
         iss >> pointName;
-        if (!pointName.empty())
+        if (!pointName.empty() && pointName != "-short" && pointName != "--only-results")
         {
           ignorePoints.push_back(pointName);
         }
+      }
+
+      bool shortOutput = false;
+      std::string flag;
+      iss >> flag;
+      if (flag == "-short" || flag == "--only-results")
+      {
+        shortOutput = true;
       }
 
       const Map* map = world.getMap(mapName);
@@ -878,7 +905,7 @@ namespace vishnyakov
       }
 
       RouteResult route = buildMSTRoute(points, startX, startZ, startTime);
-      printRouteResult(out, route, "MST");
+      printRouteResult(out, route, "MST", shortOutput);
     });
 
     commands.add("plan-route-ant", [&](std::istringstream& iss, std::ostream& out)
@@ -901,10 +928,18 @@ namespace vishnyakov
       {
         std::string pointName;
         iss >> pointName;
-        if (!pointName.empty())
+        if (!pointName.empty() && pointName != "-short" && pointName != "--only-results")
         {
           ignorePoints.push_back(pointName);
         }
+      }
+
+      bool shortOutput = false;
+      std::string flag;
+      iss >> flag;
+      if (flag == "-short" || flag == "--only-results")
+      {
+        shortOutput = true;
       }
 
       const Map* map = world.getMap(mapName);
@@ -940,7 +975,7 @@ namespace vishnyakov
       }
 
       RouteResult route = buildAntRoute(points, startX, startZ, startTime, 100, 10);
-      printRouteResult(out, route, "ant");
+      printRouteResult(out, route, "ant", shortOutput);
     });
 
     commands.add("help", [&](std::istringstream&, std::ostream& out)
@@ -964,10 +999,10 @@ namespace vishnyakov
           << "  merge-maps <new> <map1> <map2>        - объединить две карты\n"
           << "  clear-map <map>                       - очистить карту\n\n"
           << "Маршрутизация:\n"
-          << "  plan-route-greedy <map> <x> <z> <time> <ignore-count> [points...] - жадный алгоритм\n"
-          << "  plan-route-2opt <map> <x> <z> <time> <ignore-count> [points...]   - 2-opt улучшение\n"
-          << "  plan-route-mst <map> <x> <z> <time> <ignore-count> [points...]     - MST (Prim)\n"
-          << "  plan-route-ant <map> <x> <z> <time> <ignore-count> [points...]     - муравьиный алгоритм\n\n"
+          << "  plan-route-greedy <map> <x> <z> <time> <ignore-count> [points...] [-short] - жадный алгоритм\n"
+          << "  plan-route-2opt <map> <x> <z> <time> <ignore-count> [points...] [-short]   - 2-opt улучшение\n"
+          << "  plan-route-mst <map> <x> <z> <time> <ignore-count> [points...] [-short]     - MST (Prim)\n"
+          << "  plan-route-ant <map> <x> <z> <time> <ignore-count> [points...] [-short]     - муравьиный алгоритм\n\n"
           << "Сохранение и загрузка:\n"
           << "  save <filename>                       - сохранить все данные в файл\n"
           << "  load <filename>                       - загрузить данные из файла\n\n"

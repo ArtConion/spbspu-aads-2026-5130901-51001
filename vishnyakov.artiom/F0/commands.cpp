@@ -942,28 +942,30 @@ namespace vishnyakov
       ant.route = antRoute;
       results.push_back(ant);
 
-      out << "Алгоритм      Длина (блоков)    Время (мин)    Голод (ед)    Хлеба (шт)\n";
-      out << "------------------------------------------------------------------------\n";
+      out << "+------------+----------------+------------+------------+------------+\n";
+      out << "| Алгоритм   | Длина(блоков)  | Время(мин) | Голод(ед)  | Хлеба(шт)  |\n";
+      out << "+------------+----------------+------------+------------+------------+\n";
 
       const AlgorithmResult* best = nullptr;
-      double bestDistance = std::numeric_limits< double >::max();
+      double bestDistance = std::numeric_limits<double>::max();
 
       for (auto it = results.cbegin(); it != results.cend(); ++it)
       {
-        const AlgorithmResult& r = *it;
-        out << r.name;
-        for (int i = r.name.size(); i < 14; ++i) out << " ";
-        out << std::fixed << std::setprecision(2) << r.distance;
-        out << "             " << r.time;
-        out << "             " << r.hunger;
-        out << "             " << r.bread << "\n";
+          const AlgorithmResult& r = *it;
+          out << "| " << std::left << std::setw(10) << r.name << " | ";
+          out << std::right << std::fixed << std::setprecision(2);
+          out << std::setw(14) << r.distance << " | ";
+          out << std::setw(10) << r.time << " | ";
+          out << std::setw(10) << r.hunger << " | ";
+          out << std::setw(10) << r.bread << " |\n";
 
-        if (r.distance < bestDistance)
-        {
-          bestDistance = r.distance;
-          best = &r;
-        }
+          if (r.distance < bestDistance)
+          {
+              bestDistance = r.distance;
+              best = &r;
+          }
       }
+      out << "+------------+----------------+------------+------------+------------+\n";
 
       if (best)
       {

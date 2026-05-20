@@ -2,6 +2,7 @@
 #define MAP_HPP
 
 #include "avltree.hpp"
+#include "cuckoo_ht.hpp"
 #include "waypoint.hpp"
 #include <string>
 
@@ -32,6 +33,8 @@ namespace vishnyakov
     const Waypoint* findWaypoint(const std::string& name) const;
     Waypoint* findWaypoint(const std::string& name);
 
+    void findByType(const std::string& type, std::ostream& out) const;
+
     bool empty() const noexcept;
     std::size_t size() const noexcept;
 
@@ -45,6 +48,7 @@ namespace vishnyakov
   private:
     std::string name_;
     WaypointTree waypoints_;
+    CuckooHashTable< std::string, List< std::string > > typeIndex_;
   };
 }
 

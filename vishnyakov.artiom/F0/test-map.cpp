@@ -143,6 +143,32 @@ namespace vishnyakov
     BOOST_TEST(names == expected);
   }
 
+  BOOST_AUTO_TEST_CASE(FindByTypeWithIndex)
+  {
+    Map map("Overworld");
+    map.addWaypoint("home", 100, 64, "house");
+    map.addWaypoint("mine", 250, 30, "cave");
+    map.addWaypoint("lake", 300, 50, "water");
+    map.addWaypoint("castle", 500, 200, "house");
+
+    std::ostringstream out;
+    map.findByType("house", out);
+
+    std::string result = out.str();
+    BOOST_TEST(result.find("home 100 64 house") != std::string::npos);
+    BOOST_TEST(result.find("castle 500 200 house") != std::string::npos);
+    BOOST_TEST(result.find("mine") == std::string::npos);
+    BOOST_TEST(result.find("lake") == std::string::npos);
+  }
+
+  BOOST_AUTO_TEST_CASE(FindByTypeEmpty)
+  {
+    Map map("Overworld");
+    std::ostringstream out;
+    map.findByType("house", out);
+    BOOST_TEST(out.str() == "<EMPTY>\n");
+  }
+
   BOOST_AUTO_TEST_SUITE_END()
 }
 

@@ -467,21 +467,7 @@ namespace vishnyakov
           continue;
         }
 
-        bool found = false;
-        for (auto it = map->begin(); it != map->end(); ++it)
-        {
-          if (it->second.type == type)
-          {
-            out << it->first << " " << it->second.x << " " << it->second.z
-                << " " << it->second.type << "\n";
-            found = true;
-          }
-        }
-
-        if (!found)
-        {
-          out << "<EMPTY>\n";
-        }
+        map->findByType(type, out);
       }
       else if (cmd == "copy-point")
       {

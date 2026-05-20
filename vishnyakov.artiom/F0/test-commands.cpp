@@ -374,18 +374,21 @@ namespace vishnyakov
     processCommands(in, world, out);
 
     std::string result = out.str();
-    size_t resultPos = result.find("castle 500 200 house");
-    if (resultPos == std::string::npos)
-    {
-      resultPos = result.find("home 100 64 house");
-    }
-    BOOST_REQUIRE(resultPos != std::string::npos);
-    std::string afterResult = result.substr(resultPos);
 
-    BOOST_TEST(afterResult.find("home 100 64 house") != std::string::npos);
-    BOOST_TEST(afterResult.find("castle 500 200 house") != std::string::npos);
-    BOOST_TEST(afterResult.find("mine") == std::string::npos);
-    BOOST_TEST(afterResult.find("lake") == std::string::npos);
+    size_t firstHousePos = result.find("home 100 64 house");
+    if (firstHousePos == std::string::npos)
+    {
+      firstHousePos = result.find("castle 500 200 house");
+    }
+    BOOST_REQUIRE(firstHousePos != std::string::npos);
+
+    std::string afterFirstPoint = result.substr(firstHousePos);
+
+    BOOST_TEST(afterFirstPoint.find("home 100 64 house") != std::string::npos);
+    BOOST_TEST(afterFirstPoint.find("castle 500 200 house") != std::string::npos);
+
+    BOOST_TEST(afterFirstPoint.find("mine") == std::string::npos);
+    BOOST_TEST(afterFirstPoint.find("lake") == std::string::npos);
   }
 
   BOOST_AUTO_TEST_CASE(FindByTypeEmpty)

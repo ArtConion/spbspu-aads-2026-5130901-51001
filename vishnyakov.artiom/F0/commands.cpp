@@ -21,102 +21,99 @@ namespace vishnyakov
 
   void printCommandUsage(std::ostream& out, const std::string& cmd)
   {
-    if (cmd == "create-map")
+    struct CommandInfo
     {
-      out << "  create-map <map-name>\n";
-    }
-    else if (cmd == "delete-map")
+      std::string name;
+      std::string syntax;
+      std::string description;
+      std::string category;
+    };
+
+    static const List< CommandInfo > allCommands = []() 
     {
-      out << "  delete-map <map-name>\n";
-    }
-    else if (cmd == "list-maps")
+      List< CommandInfo > cmds;
+      
+      cmds.push_back({"create-map", "create-map <name>", "создать новую карту", "maps"});
+      cmds.push_back({"delete-map", "delete-map <name>", "удалить карту", "maps"});
+      cmds.push_back({"list-maps", "list-maps", "показать все карты", "maps"});
+      
+      cmds.push_back({"add-point", "add-point <map> <name> <x> <z> <type>", "добавить точку на карту", "points"});
+      cmds.push_back({"remove-point", "remove-point <map> <name>", "удалить точку", "points"});
+      cmds.push_back({"edit-point", "edit-point <map> <name> <new-name> <x> <z> <type>", "изменить точку (\"-\" = без изменений)", "points"});
+      cmds.push_back({"show-points", "show-points <map>", "показать все точки карты", "points"});
+      
+      cmds.push_back({"find-nearest", "find-nearest <map> <x> <z> <k> [type]", "найти K ближайших точек", "search"});
+      cmds.push_back({"find-by-type", "find-by-type <map> <type>", "найти точки по типу", "search"});
+      cmds.push_back({"copy-point", "copy-point <src> <dst> <name>", "скопировать точку между картами", "search"});
+      cmds.push_back({"move-point", "move-point <src> <dst> <name>", "переместить точку между картами", "search"});
+      
+      cmds.push_back({"merge-maps", "merge-maps <new> <map1> <map2>", "объединить две карты", "operations"});
+      cmds.push_back({"clear-map", "clear-map <map>", "очистить карту", "operations"});
+      
+      cmds.push_back({"plan-route-greedy", "plan-route-greedy <map> <x> <z> <time> <n> [p...] [-short]", "жадный алгоритм", "routes"});
+      cmds.push_back({"plan-route-2opt", "plan-route-2opt <map> <x> <z> <time> <n> [p...] [-short]", "2-opt улучшение", "routes"});
+      cmds.push_back({"plan-route-mst", "plan-route-mst <map> <x> <z> <time> <n> [p...] [-short]", "MST (Prim)", "routes"});
+      cmds.push_back({"plan-route-ant", "plan-route-ant <map> <x> <z> <time> <n> [p...] [-short]", "муравьиный алгоритм", "routes"});
+      cmds.push_back({"best-route", "best-route <map> <x> <z> <time> <n> [p...]", "сравнить все алгоритмы", "routes"});
+      
+      cmds.push_back({"save", "save <filename>", "сохранить все данные в файл", "io"});
+      cmds.push_back({"load", "load <filename>", "загрузить данные из файла", "io"});
+      
+      cmds.push_back({"help", "help", "показать справку", "other"});
+      cmds.push_back({"exit", "exit", "выйти из программы", "other"});
+      
+      return cmds;
+    }();
+
+    if (cmd == "all" || cmd.empty())
     {
-      out << "  list-maps\n";
-    }
-    else if (cmd == "add-point")
-    {
-      out << "  add-point <map-name> <point-name> <x> <z> <type>\n";
-    }
-    else if (cmd == "remove-point")
-    {
-      out << "  remove-point <map-name> <point-name>\n";
-    }
-    else if (cmd == "edit-point")
-    {
-      out << "  edit-point <map-name> <point-name> <new-name> <x> <z> <type>\n";
-    }
-    else if (cmd == "show-points")
-    {
-      out << "  show-points <map-name>\n";
-    }
-    else if (cmd == "find-nearest")
-    {
-      out << "  find-nearest <map-name> <x> <z> <k> [type]\n";
-    }
-    else if (cmd == "find-by-type")
-    {
-      out << "  find-by-type <map-name> <type>\n";
-    }
-    else if (cmd == "copy-point")
-    {
-      out << "  copy-point <src-map> <dst-map> <point-name>\n";
-    }
-    else if (cmd == "move-point")
-    {
-      out << "  move-point <src-map> <dst-map> <point-name>\n";
-    }
-    else if (cmd == "merge-maps")
-    {
-      out << "  merge-maps <new-map-name> <map-name-1> <map-name-2>\n";
-    }
-    else if (cmd == "clear-map")
-    {
-      out << "  clear-map <map-name>\n";
-    }
-    else if (cmd == "save")
-    {
-      out << "  save <filename>\n";
-    }
-    else if (cmd == "load")
-    {
-      out << "  load <filename>\n";
-    }
-    else if (cmd == "plan-route-greedy")
-    {
-      out << "  plan-route-greedy <map-name> <x> <z> <time> <ignore-count> "
-          << "[ignore-points...] [-short]\n";
-    }
-    else if (cmd == "plan-route-2opt")
-    {
-      out << "  plan-route-2opt <map-name> <x> <z> <time> <ignore-count> "
-          << "[ignore-points...] [-short]\n";
-    }
-    else if (cmd == "plan-route-mst")
-    {
-      out << "  plan-route-mst <map-name> <x> <z> <time> <ignore-count> "
-          << "[ignore-points...] [-short]\n";
-    }
-    else if (cmd == "plan-route-ant")
-    {
-      out << "  plan-route-ant <map-name> <x> <z> <time> <ignore-count> "
-          << "[ignore-points...] [-short]\n";
-    }
-    else if (cmd == "best-route")
-    {
-      out << "  best-route <map-name> <x> <z> <time> <ignore-count> "
-          << "[ignore-points...]\n";
-    }
-    else if (cmd == "help")
-    {
-      out << "  help\n";
-    }
-    else if (cmd == "exit")
-    {
-      out << "  exit\n";
+      out << "Доступные команды:\n\n";
+      
+      std::string currentCategory;
+      bool firstCategory = true;
+      
+      for (auto it = allCommands.cbegin(); it != allCommands.cend(); ++it)
+      {
+        if (it->category != currentCategory)
+        {
+          if (!firstCategory)
+          {
+            out << "\n";
+          }
+          firstCategory = false;
+          currentCategory = it->category;
+          
+          if (currentCategory == "maps")
+            out << "=== Управление картами ===\n";
+          else if (currentCategory == "points")
+            out << "=== Управление точками ===\n";
+          else if (currentCategory == "search")
+            out << "=== Поиск и навигация ===\n";
+          else if (currentCategory == "operations")
+            out << "=== Операции с картами ===\n";
+          else if (currentCategory == "routes")
+            out << "=== Маршрутизация ===\n";
+          else if (currentCategory == "io")
+            out << "=== Сохранение и загрузка ===\n";
+          else if (currentCategory == "other")
+            out << "=== Прочее ===\n";
+        }
+        
+        out << "  " << std::left << std::setw(64) << it->syntax;
+        out << " - " << it->description << "\n";
+      }
     }
     else
     {
-      out << "<UNKNOWN COMMAND>\n";
+      for (auto it = allCommands.cbegin(); it != allCommands.cend(); ++it)
+      {
+        if (it->name == cmd)
+        {
+          out << "  " << it->syntax << "\n";
+          return;
+        }
+      }
+      out << "  Unknown command\n";
     }
   }
 
@@ -203,8 +200,7 @@ namespace vishnyakov
       }
       else
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "create-map");
+        out << "Map already exists\n";
       }
     });
 
@@ -223,8 +219,7 @@ namespace vishnyakov
       }
       else
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "delete-map");
+        out << "Map doesn't exist\n";
       }
     });
 
@@ -249,15 +244,13 @@ namespace vishnyakov
       Map* map = world.getMap(mapName);
       if (!map)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "add-point");
+        out << "Map doesn't exist\n";
         return;
       }
 
       if (map->findWaypoint(pointName))
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "add-point");
+        out << "Point already exists\n";
         return;
       }
 
@@ -280,15 +273,13 @@ namespace vishnyakov
       Map* map = world.getMap(mapName);
       if (!map)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "remove-point");
+        out << "Map doesn't exist\n";
         return;
       }
 
       if (!map->removeWaypoint(pointName))
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "remove-point");
+        out << "Point doesn't exist\n";
       }
       else
       {
@@ -311,16 +302,14 @@ namespace vishnyakov
       Map* map = world.getMap(mapName);
       if (!map)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "edit-point");
+        out << "Map doesn't exist\n";
         return;
       }
 
       Waypoint* wp = map->findWaypoint(pointName);
       if (!wp)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "edit-point");
+        out << "Point doesn't exist\n";
         return;
       }
 
@@ -339,6 +328,11 @@ namespace vishnyakov
 
       if (newName != "-" && !newName.empty() && newName != pointName)
       {
+        if (map->findWaypoint(newName))
+        {
+          out << "Point with new name already exists\n";
+          return;
+        }
         Waypoint newWp(wp->x, wp->z, wp->type);
         map->removeWaypoint(pointName);
         map->addWaypoint(newName, newWp);
@@ -362,8 +356,7 @@ namespace vishnyakov
       const Map* map = world.getMap(mapName);
       if (!map)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "show-points");
+        out << "Map doesn't exist\n";
         return;
       }
 
@@ -397,8 +390,7 @@ namespace vishnyakov
       const Map* map = world.getMap(mapName);
       if (!map)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "find-nearest");
+        out << "Map doesn't exist\n";
         return;
       }
 
@@ -481,8 +473,7 @@ namespace vishnyakov
       const Map* map = world.getMap(mapName);
       if (!map)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "find-by-type");
+        out << "Map doesn't exist\n";
         return;
       }
 
@@ -504,25 +495,27 @@ namespace vishnyakov
       Map* src = world.getMap(srcMap);
       Map* dst = world.getMap(dstMap);
 
-      if (!src || !dst)
+      if (!src)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "copy-point");
+        out << "Source map doesn't exist\n";
+        return;
+      }
+      if (!dst)
+      {
+        out << "Destination map doesn't exist\n";
         return;
       }
 
       const Waypoint* wp = src->findWaypoint(pointName);
       if (!wp)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "copy-point");
+        out << "Point doesn't exist\n";
         return;
       }
 
       if (dst->findWaypoint(pointName))
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "copy-point");
+        out << "Point already exists in destination map\n";
         return;
       }
 
@@ -546,25 +539,27 @@ namespace vishnyakov
       Map* src = world.getMap(srcMap);
       Map* dst = world.getMap(dstMap);
 
-      if (!src || !dst)
+      if (!src)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "move-point");
+        out << "Source map doesn't exist\n";
+        return;
+      }
+      if (!dst)
+      {
+        out << "Destination map doesn't exist\n";
         return;
       }
 
       const Waypoint* wp = src->findWaypoint(pointName);
       if (!wp)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "move-point");
+        out << "Point doesn't exist\n";
         return;
       }
 
       if (dst->findWaypoint(pointName))
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "move-point");
+        out << "Point already exists in destination map\n";
         return;
       }
 
@@ -593,8 +588,23 @@ namespace vishnyakov
       }
       else
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "merge-maps");
+        if (!world.hasMap(name1))
+        {
+          out << "Map \"" << name1 << "\" doesn't exist\n";
+        }
+        else if (!world.hasMap(name2))
+        {
+          out << "Map \"" << name2 << "\" doesn't exist\n";
+        }
+        else if (world.hasMap(newName))
+        {
+          out << "Map \"" << newName << "\" already exists\n";
+        }
+        else
+        {
+          out << "Wrong usage. Use:\n";
+          printCommandUsage(out, "merge-maps");
+        }
       }
     });
 
@@ -613,8 +623,7 @@ namespace vishnyakov
       Map* map = world.getMap(mapName);
       if (!map)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "clear-map");
+        out << "Map doesn't exist\n";
         return;
       }
 
@@ -637,8 +646,7 @@ namespace vishnyakov
       std::ofstream file(filename);
       if (!file.is_open())
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "save");
+        out << "Cannot open file for writing\n";
         return;
       }
 
@@ -672,8 +680,7 @@ namespace vishnyakov
       std::ifstream file(filename);
       if (!file.is_open())
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "load");
+        out << "Cannot open file for reading\n";
         return;
       }
 
@@ -703,7 +710,15 @@ namespace vishnyakov
           Map* map = newWorld.getMap(currentMapName);
           if (map)
           {
-            map->addWaypoint(pointName, x, z, type);
+            if (map->findWaypoint(pointName))
+            {
+              out << "# Предупреждение: точка \"" << pointName 
+                  << "\" пропущена (дубликат)\n";
+            }
+            else
+            {
+              map->addWaypoint(pointName, x, z, type);
+            }
           }
         }
       }
@@ -731,8 +746,7 @@ namespace vishnyakov
       const Map* map = world.getMap(mapName);
       if (!map)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "plan-route-greedy");
+        out << "Map doesn't exist\n";
         return;
       }
 
@@ -767,8 +781,7 @@ namespace vishnyakov
       const Map* map = world.getMap(mapName);
       if (!map)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "plan-route-2opt");
+        out << "Map doesn't exist\n";
         return;
       }
 
@@ -803,8 +816,7 @@ namespace vishnyakov
       const Map* map = world.getMap(mapName);
       if (!map)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "plan-route-mst");
+        out << "Map doesn't exist\n";
         return;
       }
 
@@ -839,8 +851,7 @@ namespace vishnyakov
       const Map* map = world.getMap(mapName);
       if (!map)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "plan-route-ant");
+        out << "Map doesn't exist\n";
         return;
       }
 
@@ -874,8 +885,7 @@ namespace vishnyakov
       const Map* map = world.getMap(mapName);
       if (!map)
       {
-        out << "Wrong usage. Use:\n";
-        printCommandUsage(out, "best-route");
+        out << "Map doesn't exist\n";
         return;
       }
 
@@ -951,19 +961,19 @@ namespace vishnyakov
 
       for (auto it = results.cbegin(); it != results.cend(); ++it)
       {
-          const AlgorithmResult& r = *it;
-          out << "| " << std::left << std::setw(10) << r.name << " | ";
-          out << std::right << std::fixed << std::setprecision(2);
-          out << std::setw(14) << r.distance << " | ";
-          out << std::setw(10) << r.time << " | ";
-          out << std::setw(10) << r.hunger << " | ";
-          out << std::setw(10) << r.bread << " |\n";
+        const AlgorithmResult& r = *it;
+        out << "| " << std::left << std::setw(10) << r.name << " | ";
+        out << std::right << std::fixed << std::setprecision(2);
+        out << std::setw(14) << r.distance << " | ";
+        out << std::setw(10) << r.time << " | ";
+        out << std::setw(10) << r.hunger << " | ";
+        out << std::setw(10) << r.bread << " |\n";
 
-          if (r.distance < bestDistance)
-          {
-              bestDistance = r.distance;
-              best = &r;
-          }
+        if (r.distance < bestDistance)
+        {
+          bestDistance = r.distance;
+          best = &r;
+        }
       }
       out << "+------------+----------------+------------+------------+------------+\n";
 
@@ -979,43 +989,7 @@ namespace vishnyakov
 
     commands.add("help", [&](std::istringstream&, std::ostream& out)
     {
-      out << "Доступные команды:\n\n"
-          << "Управление картами:\n"
-          << "  create-map <name>                     - создать новую карту\n"
-          << "  delete-map <name>                     - удалить карту\n"
-          << "  list-maps                             - показать все карты\n\n"
-          << "Управление точками:\n"
-          << "  add-point <map> <name> <x> <z> <type> - добавить точку на карту\n"
-          << "  remove-point <map> <name>             - удалить точку\n"
-          << "  edit-point <map> <name> <new-name> <x> <z> <type>\n"
-          << "    - изменить точку (\"-\" = без изменений)\n"
-          << "  show-points <map>                     - показать все точки карты\n\n"
-          << "Поиск и навигация:\n"
-          << "  find-nearest <map> <x> <z> <k> [type] - найти K ближайших точек\n"
-          << "  find-by-type <map> <type>             - найти точки по типу\n"
-          << "  copy-point <src> <dst> <name>         - скопировать точку\n"
-          << "  move-point <src> <dst> <name>         - переместить точку\n\n"
-          << "Операции с картами:\n"
-          << "  merge-maps <new> <map1> <map2>        - объединить две карты\n"
-          << "  clear-map <map>                       - очистить карту\n\n"
-          << "Маршрутизация:\n"
-          << "  plan-route-greedy <map> <x> <z> <time> <n> [p...] [-short]\n"
-          << "    - жадный алгоритм\n"
-          << "  plan-route-2opt <map> <x> <z> <time> <n> [p...] [-short]\n"
-          << "    - 2-opt улучшение\n"
-          << "  plan-route-mst <map> <x> <z> <time> <n> [p...] [-short]\n"
-          << "    - MST (Prim)\n"
-          << "  plan-route-ant <map> <x> <z> <time> <n> [p...] [-short]\n"
-          << "    - муравьиный алгоритм\n\n"
-          << "Сравнение:\n"
-          << "  best-route <map> <x> <z> <time> <n> [p...]\n"
-          << "    - сравнить все алгоритмы\n\n"
-          << "Сохранение и загрузка:\n"
-          << "  save <filename>                       - сохранить данные в файл\n"
-          << "  load <filename>                       - загрузить данные из файла\n\n"
-          << "Прочее:\n"
-          << "  help                                  - показать справку\n"
-          << "  exit                                  - выйти\n";
+      printCommandUsage(out, "all");
     });
 
     std::string line;

@@ -78,6 +78,14 @@ namespace vishnyakov
     int startX, int startZ,
     double startTime
   );
+
+  RouteResult buildAntRoute(
+    const List< std::pair< std::string, Waypoint > >& points,
+    int startX, int startZ,
+    double startTime,
+    int iterations = 100,
+    int antsCount = 10
+  );
 }
 
 #endif

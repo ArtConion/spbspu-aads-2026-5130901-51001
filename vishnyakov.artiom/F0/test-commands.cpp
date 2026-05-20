@@ -323,7 +323,7 @@ namespace vishnyakov
     size_t resultPos = result.find("1. ");
     BOOST_REQUIRE(resultPos != std::string::npos);
     std::string afterResult = result.substr(resultPos);
-
+    
     BOOST_TEST(afterResult.find("home") != std::string::npos);
     BOOST_TEST(afterResult.find("mine") == std::string::npos);
     BOOST_TEST(afterResult.find("lake") == std::string::npos);
@@ -374,19 +374,16 @@ namespace vishnyakov
     processCommands(in, world, out);
 
     std::string result = out.str();
-
     size_t firstHousePos = result.find("home 100 64 house");
     if (firstHousePos == std::string::npos)
     {
       firstHousePos = result.find("castle 500 200 house");
     }
     BOOST_REQUIRE(firstHousePos != std::string::npos);
-
     std::string afterFirstPoint = result.substr(firstHousePos);
-
+    
     BOOST_TEST(afterFirstPoint.find("home 100 64 house") != std::string::npos);
     BOOST_TEST(afterFirstPoint.find("castle 500 200 house") != std::string::npos);
-
     BOOST_TEST(afterFirstPoint.find("mine") == std::string::npos);
     BOOST_TEST(afterFirstPoint.find("lake") == std::string::npos);
   }
@@ -629,6 +626,28 @@ namespace vishnyakov
     BOOST_TEST(result.find("lake") != std::string::npos);
   }
 
+  BOOST_AUTO_TEST_CASE(GreedyRouteAnt)
+  {
+    World world;
+    std::istringstream in(
+      "create-map Test\n"
+      "add-point Test home 100 64 house\n"
+      "add-point Test mine 250 30 cave\n"
+      "add-point Test lake 500 200 water\n"
+      "plan-route-ant Test 0 0 5 0\nexit\n"
+    );
+    std::ostringstream out;
+
+    processCommands(in, world, out);
+
+    std::string result = out.str();
+    BOOST_TEST(result.find("Маршрут (ant):") != std::string::npos);
+    BOOST_TEST(result.find("Старт") != std::string::npos);
+    BOOST_TEST(result.find("home") != std::string::npos);
+    BOOST_TEST(result.find("mine") != std::string::npos);
+    BOOST_TEST(result.find("lake") != std::string::npos);
+  }
+
   BOOST_AUTO_TEST_CASE(GreedyRouteWithIgnore)
   {
     World world;
@@ -647,7 +666,7 @@ namespace vishnyakov
     size_t resultPos = result.find("Маршрут (greedy):");
     BOOST_REQUIRE(resultPos != std::string::npos);
     std::string afterResult = result.substr(resultPos);
-
+    
     BOOST_TEST(afterResult.find("home") != std::string::npos);
     BOOST_TEST(afterResult.find("lake") != std::string::npos);
     BOOST_TEST(afterResult.find("mine") == std::string::npos);

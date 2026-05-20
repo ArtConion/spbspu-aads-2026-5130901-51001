@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <limits>
 #include <vector>
+#include <random>
 
 namespace vishnyakov
 {
@@ -470,6 +471,151 @@ namespace vishnyakov
     }
 
     return buildRouteFromOrder(mstOrder, startX, startZ, startTime);
+  }
+
+  RouteResult buildAntRoute(
+    const List< std::pair< std::string, Waypoint > >& points,
+    int startX, int startZ,
+    double startTime,
+    int iterations,
+    int antsCount)
+  {
+    if (points.size() < 2)
+    {
+      return buildGreedyRoute(points, startX, startZ, startTime);
+    }
+
+    const double ALPHA = 1.0;
+    const double BETA = 2.0;
+    const double EVAPORATION = 0.5;
+    const double Q = 100.0;
+
+    size_t n = points.size();
+    std::vector< std::pair< std::string, Waypoint > > pointVec;
+    for (auto it = points.cbegin(); it != points.cend(); ++it)
+    {
+      pointVec.push_back(*it);
+    }
+
+    std::vector< std::vector< double > > dist(n, std::vector< double >(n, 0.0));
+    for (size_t i = 0; i < n; ++i)
+    {
+      for (size_t j = 0; j < n; ++j)
+      {
+        if (i != j)
+        {
+          dist[i][j] = distanceBetween(pointVec[i].second, pointVec[j].second);
+        }
+      }
+    }
+
+    std::vector< std::vector< double > > pheromone(n, std::vector< double >(n, 1.0));
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0);
+
+    std::vector< int > bestPath;
+    double bestLength = std::numeric_limits< double >::max();
+
+    for (int iter = 0; iter < iterations; ++iter)
+    {
+      std::vector< std::vector< int > > antPaths(antsCount);
+      std::vector< double > antLengths(antsCount, 0.0);
+
+      for (int ant = 0; ant < antsCount; ++ant)
+      {
+        std::vector< bool > visited(n, false);
+        std::vector< int > path;
+        path.reserve(n);
+
+        std::uniform_int_distribution<> startDist(0, n - 1);
+        int current = startDist(gen);
+        path.push_back(current);
+        visited[current] = true;
+
+        for (size_t step = 1; step < n; ++step)
+        {
+          std::vector< double > probs(n, 0.0);
+          double sum = 0.0;
+
+          for (size_t next = 0; next < n; ++next)
+          {
+            if (!visited[next])
+            {
+              double pherom = std::pow(pheromone[current][next], ALPHA);
+              double heuristic = std::pow(1.0 / dist[current][next], BETA);
+              probs[next] = pherom * heuristic;
+              sum += probs[next];
+            }
+          }
+
+          if (sum > 0)
+          {
+            double r = dis(gen);
+            double cumulative = 0.0;
+            int selected = -1;
+            for (size_t next = 0; next < n; ++next)
+            {
+              if (!visited[next])
+              {
+                cumulative += probs[next] / sum;
+                if (r <= cumulative)
+                {
+                  selected = next;
+                  break;
+                }
+              }
+            }
+            if (selected != -1)
+            {
+              antLengths[ant] += dist[current][selected];
+              current = selected;
+              path.push_back(current);
+              visited[current] = true;
+            }
+          }
+        }
+
+        antPaths[ant] = path;
+      }
+
+      for (size_t i = 0; i < n; ++i)
+      {
+        for (size_t j = 0; j < n; ++j)
+        {
+          pheromone[i][j] *= (1.0 - EVAPORATION);
+        }
+      }
+
+      for (int ant = 0; ant < antsCount; ++ant)
+      {
+        double length = antLengths[ant];
+        double delta = Q / length;
+
+        for (size_t k = 0; k < n - 1; ++k)
+        {
+          int from = antPaths[ant][k];
+          int to = antPaths[ant][k + 1];
+          pheromone[from][to] += delta;
+          pheromone[to][from] += delta;
+        }
+
+        if (length < bestLength)
+        {
+          bestLength = length;
+          bestPath = antPaths[ant];
+        }
+      }
+    }
+
+    List< std::pair< std::string, Waypoint > > orderedPoints;
+    for (int idx : bestPath)
+    {
+      orderedPoints.push_back(pointVec[idx]);
+    }
+
+    return buildRouteFromOrder(orderedPoints, startX, startZ, startTime);
   }
 }
 

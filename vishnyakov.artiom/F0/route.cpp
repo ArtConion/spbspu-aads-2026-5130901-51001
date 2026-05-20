@@ -2,6 +2,7 @@
 #include <cmath>
 #include <algorithm>
 #include <limits>
+#include <vector>
 
 namespace vishnyakov
 {
@@ -123,7 +124,14 @@ namespace vishnyakov
     return result;
   }
 
-  RouteResult buildGreedyRoute(
+  double distanceBetween(const Waypoint& a, const Waypoint& b)
+  {
+    double dx = static_cast< double >(a.x - b.x);
+    double dz = static_cast< double >(a.z - b.z);
+    return std::sqrt(dx * dx + dz * dz);
+  }
+
+  RouteResult buildRouteFromOrder(
     const List< std::pair< std::string, Waypoint > >& points,
     int startX, int startZ,
     double startTime)
@@ -136,12 +144,6 @@ namespace vishnyakov
     if (points.empty())
     {
       return result;
-    }
-
-    List< bool > visited;
-    for (size_t i = 0; i < points.size(); ++i)
-    {
-      visited.push_back(false);
     }
 
     int currentX = startX;
@@ -161,6 +163,69 @@ namespace vishnyakov
     startStop.travelTime = 0.0;
     startStop.distanceFromPrev = 0.0;
     allStops.push_back(startStop);
+
+    for (auto it = points.cbegin(); it != points.cend(); ++it)
+    {
+      const auto& point = *it;
+      const Waypoint& wp = point.second;
+
+      SegmentResult seg = traverseSegment(
+        currentPointName, currentX, currentZ,
+        point.first, wp.x, wp.z,
+        currentTime,
+        isAtPoint
+      );
+
+      double segmentDistance = 0.0;
+      for (const auto& stop : seg.stops)
+      {
+        allStops.push_back(stop);
+        segmentDistance += stop.distanceFromPrev;
+      }
+
+      result.totalDistance += segmentDistance;
+      currentTime = seg.endTime;
+      currentX = wp.x;
+      currentZ = wp.z;
+      currentPointName = point.first;
+      isAtPoint = true;
+      result.totalNightTime += seg.totalNightTime;
+    }
+
+    result.allStops = allStops;
+    result.totalTime = currentTime + result.totalNightTime;
+    result.totalHunger = result.totalDistance / 40.0;
+    result.breadNeeded = static_cast< int >(std::ceil(result.totalHunger / 5.0));
+
+    return result;
+  }
+
+  RouteResult buildGreedyRoute(
+    const List< std::pair< std::string, Waypoint > >& points,
+    int startX, int startZ,
+    double startTime)
+  {
+    if (points.empty())
+    {
+      RouteResult empty;
+      empty.totalDistance = 0.0;
+      empty.totalTime = 0.0;
+      empty.totalNightTime = 0.0;
+      return empty;
+    }
+
+    List< bool > visited;
+    for (size_t i = 0; i < points.size(); ++i)
+    {
+      visited.push_back(false);
+    }
+
+    int currentX = startX;
+    int currentZ = startZ;
+    double currentTime = startTime;
+    bool isAtPoint = false;
+    std::string currentPointName = "start";
+    List< std::pair< std::string, Waypoint > > greedyOrder;
 
     int visitedCount = 0;
     while (visitedCount < static_cast< int >(points.size()))
@@ -216,30 +281,22 @@ namespace vishnyakov
         break;
       }
 
-      const auto& point = *selectedPoint;
-      const Waypoint& wp = point.second;
+      greedyOrder.push_back(*selectedPoint);
+
+      const auto& wp = selectedPoint->second;
 
       SegmentResult seg = traverseSegment(
         currentPointName, currentX, currentZ,
-        point.first, wp.x, wp.z,
+        selectedPoint->first, wp.x, wp.z,
         currentTime,
         isAtPoint
       );
 
-      double segmentDistance = 0.0;
-      for (const auto& stop : seg.stops)
-      {
-        allStops.push_back(stop);
-        segmentDistance += stop.distanceFromPrev;
-      }
-
-      result.totalDistance += segmentDistance;
       currentTime = seg.endTime;
       currentX = wp.x;
       currentZ = wp.z;
-      currentPointName = point.first;
+      currentPointName = selectedPoint->first;
       isAtPoint = true;
-      result.totalNightTime += seg.totalNightTime;
 
       int vIdx = 0;
       for (auto vIt = visited.begin(); vIt != visited.end(); ++vIt, ++vIdx)
@@ -253,19 +310,7 @@ namespace vishnyakov
       ++visitedCount;
     }
 
-    result.allStops = allStops;
-    result.totalTime = currentTime + result.totalNightTime;
-    result.totalHunger = result.totalDistance / 40.0;
-    result.breadNeeded = static_cast< int >(std::ceil(result.totalHunger / 5.0));
-
-    return result;
-  }
-
-  double distanceBetween(const Waypoint& a, const Waypoint& b)
-  {
-    double dx = static_cast< double >(a.x - b.x);
-    double dz = static_cast< double >(a.z - b.z);
-    return std::sqrt(dx * dx + dz * dz);
+    return buildRouteFromOrder(greedyOrder, startX, startZ, startTime);
   }
 
   RouteResult improve2Opt(
@@ -273,93 +318,57 @@ namespace vishnyakov
     int startX, int startZ,
     double startTime)
   {
-    if (points.size() < 2)
+    if (points.size() < 3)
     {
       return buildGreedyRoute(points, startX, startZ, startTime);
     }
 
-    List< std::pair< std::string, Waypoint > > pointList = points;
-    bool improved = true;
+    std::vector< std::pair< std::string, Waypoint > > pointVec;
+    for (auto it = points.cbegin(); it != points.cend(); ++it)
+    {
+      pointVec.push_back(*it);
+    }
 
-    while (improved)
+    bool improved = true;
+    int iteration = 0;
+    const int maxIterations = 100;
+
+    while (improved && iteration < maxIterations)
     {
       improved = false;
+      ++iteration;
 
-      int idx1 = 0;
-      for (auto it1 = pointList.cbegin(); it1 != pointList.cend(); ++it1, ++idx1)
+      for (size_t i = 0; i < pointVec.size() - 1; ++i)
       {
-        int idx2 = 0;
-        for (auto it2 = pointList.cbegin(); it2 != pointList.cend(); ++it2, ++idx2)
+        for (size_t j = i + 2; j < pointVec.size(); ++j)
         {
-          if (idx2 <= idx1 + 1)
-          {
-            continue;
-          }
+          size_t next_i = i + 1;
+          size_t next_j = (j + 1) % pointVec.size();
 
-          auto it1Next = it1;
-          ++it1Next;
-
-          auto it2Next = it2;
-          ++it2Next;
-
-          if (it1Next == pointList.cend() || it2Next == pointList.cend())
-          {
-            continue;
-          }
-
-          const Waypoint& a = it1->second;
-          const Waypoint& b = it1Next->second;
-          const Waypoint& c = it2->second;
-          const Waypoint& d = it2Next->second;
+          const Waypoint& a = pointVec[i].second;
+          const Waypoint& b = pointVec[next_i].second;
+          const Waypoint& c = pointVec[j].second;
+          const Waypoint& d = pointVec[next_j].second;
 
           double currentDist = distanceBetween(a, b) + distanceBetween(c, d);
           double newDist = distanceBetween(a, c) + distanceBetween(b, d);
 
           if (newDist < currentDist - 1e-6)
           {
-            List< std::pair< std::string, Waypoint > > newList;
-            int pos = 0;
-            for (auto it = pointList.cbegin(); it != pointList.cend(); ++it, ++pos)
-            {
-              if (pos <= idx1 || pos > idx2)
-              {
-                newList.push_back(*it);
-              }
-              else
-              {
-                List< std::pair< std::string, Waypoint > > reversed;
-                for (int r = idx2; r > idx1; --r)
-                {
-                  int rpos = 0;
-                  for (auto rit = pointList.cbegin(); rit != pointList.cend(); ++rit, ++rpos)
-                  {
-                    if (rpos == r)
-                    {
-                      reversed.push_back(*rit);
-                      break;
-                    }
-                  }
-                }
-                for (const auto& rev : reversed)
-                {
-                  newList.push_back(rev);
-                }
-                pos = idx2;
-              }
-            }
-            pointList = newList;
+            std::reverse(pointVec.begin() + next_i, pointVec.begin() + j + 1);
             improved = true;
-            break;
           }
-        }
-        if (improved)
-        {
-          break;
         }
       }
     }
 
-    return buildGreedyRoute(pointList, startX, startZ, startTime);
+    List< std::pair< std::string, Waypoint > > optimizedPoints;
+    for (const auto& p : pointVec)
+    {
+      optimizedPoints.push_back(p);
+    }
+
+    return buildRouteFromOrder(optimizedPoints, startX, startZ, startTime);
   }
 }
 

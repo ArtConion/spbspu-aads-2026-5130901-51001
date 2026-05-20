@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
+#include <functional>
 
 namespace vishnyakov
 {
@@ -162,8 +163,756 @@ namespace vishnyakov
 
   void processCommands(std::istream& in, World& world, std::ostream& out)
   {
-    std::string line;
+    using CommandHandler = std::function< void(std::istringstream&, std::ostream&) >;
 
+    CuckooHashTable< std::string, CommandHandler > commands;
+
+    commands.add("create-map", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string name;
+      iss >> name;
+      if (name.empty())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "create-map");
+      }
+      else if (world.createMap(name))
+      {
+        out << "# Карта \"" << name << "\" создана\n";
+      }
+      else
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "create-map");
+      }
+    });
+
+    commands.add("delete-map", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string name;
+      iss >> name;
+      if (name.empty())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "delete-map");
+      }
+      else if (world.deleteMap(name))
+      {
+        out << "# Карта \"" << name << "\" удалена\n";
+      }
+      else
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "delete-map");
+      }
+    });
+
+    commands.add("list-maps", [&](std::istringstream&, std::ostream& out)
+    {
+      world.listMaps(out);
+    });
+
+    commands.add("add-point", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string mapName, pointName, type;
+      int x, z;
+      iss >> mapName >> pointName >> x >> z >> type;
+
+      if (mapName.empty() || pointName.empty() || type.empty())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "add-point");
+        return;
+      }
+
+      Map* map = world.getMap(mapName);
+      if (!map)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "add-point");
+        return;
+      }
+
+      if (map->findWaypoint(pointName))
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "add-point");
+        return;
+      }
+
+      map->addWaypoint(pointName, x, z, type);
+      out << "# Точка \"" << pointName << "\" добавлена на карту \"" << mapName << "\"\n";
+    });
+
+    commands.add("remove-point", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string mapName, pointName;
+      iss >> mapName >> pointName;
+
+      if (mapName.empty() || pointName.empty())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "remove-point");
+        return;
+      }
+
+      Map* map = world.getMap(mapName);
+      if (!map)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "remove-point");
+        return;
+      }
+
+      if (!map->removeWaypoint(pointName))
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "remove-point");
+      }
+      else
+      {
+        out << "# Точка \"" << pointName << "\" удалена с карты \"" << mapName << "\"\n";
+      }
+    });
+
+    commands.add("edit-point", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string mapName, pointName, newName, xStr, zStr, type;
+      iss >> mapName >> pointName >> newName >> xStr >> zStr >> type;
+
+      if (mapName.empty() || pointName.empty())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "edit-point");
+        return;
+      }
+
+      Map* map = world.getMap(mapName);
+      if (!map)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "edit-point");
+        return;
+      }
+
+      Waypoint* wp = map->findWaypoint(pointName);
+      if (!wp)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "edit-point");
+        return;
+      }
+
+      if (xStr != "-")
+      {
+        wp->x = std::stoi(xStr);
+      }
+      if (zStr != "-")
+      {
+        wp->z = std::stoi(zStr);
+      }
+      if (type != "-" && !type.empty())
+      {
+        wp->type = type;
+      }
+
+      if (newName != "-" && !newName.empty() && newName != pointName)
+      {
+        Waypoint newWp(wp->x, wp->z, wp->type);
+        map->removeWaypoint(pointName);
+        map->addWaypoint(newName, newWp);
+      }
+
+      out << "# Точка \"" << pointName << "\" изменена на карте \"" << mapName << "\"\n";
+    });
+
+    commands.add("show-points", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string mapName;
+      iss >> mapName;
+
+      if (mapName.empty())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "show-points");
+        return;
+      }
+
+      const Map* map = world.getMap(mapName);
+      if (!map)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "show-points");
+        return;
+      }
+
+      if (map->empty())
+      {
+        out << "<EMPTY>\n";
+        return;
+      }
+
+      for (auto it = map->begin(); it != map->end(); ++it)
+      {
+        out << it->first << " " << it->second.x << " " << it->second.z
+            << " " << it->second.type << "\n";
+      }
+    });
+
+    commands.add("find-nearest", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string mapName;
+      int x, z, k;
+      std::string typeFilter;
+      iss >> mapName >> x >> z >> k >> typeFilter;
+
+      if (mapName.empty() || k <= 0)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "find-nearest");
+        return;
+      }
+
+      const Map* map = world.getMap(mapName);
+      if (!map)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "find-nearest");
+        return;
+      }
+
+      List< NearestResult > results;
+
+      for (auto it = map->begin(); it != map->end(); ++it)
+      {
+        const std::string& name = it->first;
+        const Waypoint& wp = it->second;
+
+        if (!typeFilter.empty() && wp.type != typeFilter)
+        {
+          continue;
+        }
+
+        double dist = wp.distanceTo(x, z);
+        NearestResult nr;
+        nr.name = name;
+        nr.x = wp.x;
+        nr.z = wp.z;
+        nr.type = wp.type;
+        nr.distance = dist;
+        nr.coefficient = 0.0;
+        results.push_back(nr);
+      }
+
+      if (results.empty())
+      {
+        out << "<EMPTY>\n";
+        return;
+      }
+
+      List< NearestResult > sortedResults;
+      while (!results.empty())
+      {
+        auto minIt = results.begin();
+        for (auto it = results.begin(); it != results.end(); ++it)
+        {
+          if (it->distance < minIt->distance)
+          {
+            minIt = it;
+          }
+        }
+        sortedResults.push_back(*minIt);
+        results.erase(minIt);
+      }
+
+      double minDist = sortedResults.cbegin()->distance;
+      int count = 0;
+      for (auto it = sortedResults.cbegin(); it != sortedResults.cend() && count < k; ++it, ++count)
+      {
+        NearestResult res = *it;
+        if (minDist > 0.0)
+        {
+          res.coefficient = (res.distance / minDist) * 100.0;
+        }
+        else
+        {
+          res.coefficient = (res.distance == 0.0) ? 100.0 : 0.0;
+        }
+
+        out << count + 1 << ". " << res.name << " ("
+            << res.x << ", " << res.z << ") dist: "
+            << res.distance << " coef: " << res.coefficient << "%\n";
+      }
+    });
+
+    commands.add("find-by-type", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string mapName, type;
+      iss >> mapName >> type;
+
+      if (mapName.empty() || type.empty())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "find-by-type");
+        return;
+      }
+
+      const Map* map = world.getMap(mapName);
+      if (!map)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "find-by-type");
+        return;
+      }
+
+      map->findByType(type, out);
+    });
+
+    commands.add("copy-point", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string srcMap, dstMap, pointName;
+      iss >> srcMap >> dstMap >> pointName;
+
+      if (srcMap.empty() || dstMap.empty() || pointName.empty())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "copy-point");
+        return;
+      }
+
+      Map* src = world.getMap(srcMap);
+      Map* dst = world.getMap(dstMap);
+
+      if (!src || !dst)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "copy-point");
+        return;
+      }
+
+      const Waypoint* wp = src->findWaypoint(pointName);
+      if (!wp)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "copy-point");
+        return;
+      }
+
+      if (dst->findWaypoint(pointName))
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "copy-point");
+        return;
+      }
+
+      dst->addWaypoint(pointName, *wp);
+      out << "# Точка \"" << pointName << "\" скопирована с карты \""
+          << srcMap << "\" на карту \"" << dstMap << "\"\n";
+    });
+
+    commands.add("move-point", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string srcMap, dstMap, pointName;
+      iss >> srcMap >> dstMap >> pointName;
+
+      if (srcMap.empty() || dstMap.empty() || pointName.empty())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "move-point");
+        return;
+      }
+
+      Map* src = world.getMap(srcMap);
+      Map* dst = world.getMap(dstMap);
+
+      if (!src || !dst)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "move-point");
+        return;
+      }
+
+      const Waypoint* wp = src->findWaypoint(pointName);
+      if (!wp)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "move-point");
+        return;
+      }
+
+      if (dst->findWaypoint(pointName))
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "move-point");
+        return;
+      }
+
+      dst->addWaypoint(pointName, *wp);
+      src->removeWaypoint(pointName);
+      out << "# Точка \"" << pointName << "\" перемещена с карты \""
+          << srcMap << "\" на карту \"" << dstMap << "\"\n";
+    });
+
+    commands.add("merge-maps", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string newName, name1, name2;
+      iss >> newName >> name1 >> name2;
+
+      if (newName.empty() || name1.empty() || name2.empty())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "merge-maps");
+        return;
+      }
+
+      if (world.mergeMaps(newName, name1, name2))
+      {
+        out << "# Карты \"" << name1 << "\" и \"" << name2
+            << "\" объединены в \"" << newName << "\"\n";
+      }
+      else
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "merge-maps");
+      }
+    });
+
+    commands.add("clear-map", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string mapName;
+      iss >> mapName;
+
+      if (mapName.empty())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "clear-map");
+        return;
+      }
+
+      Map* map = world.getMap(mapName);
+      if (!map)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "clear-map");
+        return;
+      }
+
+      map->clear();
+      out << "# Карта \"" << mapName << "\" очищена\n";
+    });
+
+    commands.add("save", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string filename;
+      iss >> filename;
+
+      if (filename.empty())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "save");
+        return;
+      }
+
+      std::ofstream file(filename);
+      if (!file.is_open())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "save");
+        return;
+      }
+
+      for (auto mapIt = world.begin(); mapIt != world.end(); ++mapIt)
+      {
+        file << mapIt->getName() << "\n";
+        for (auto pointIt = mapIt->begin(); pointIt != mapIt->end(); ++pointIt)
+        {
+          file << pointIt->first << " "
+               << pointIt->second.x << " "
+               << pointIt->second.z << " "
+               << pointIt->second.type << "\n";
+        }
+      }
+
+      out << "# Данные сохранены в файл \"" << filename << "\"\n";
+    });
+
+    commands.add("load", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string filename;
+      iss >> filename;
+
+      if (filename.empty())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "load");
+        return;
+      }
+
+      std::ifstream file(filename);
+      if (!file.is_open())
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "load");
+        return;
+      }
+
+      World newWorld;
+      std::string mapLine;
+      std::string currentMapName;
+
+      while (std::getline(file, mapLine))
+      {
+        if (mapLine.empty())
+        {
+          continue;
+        }
+
+        if (mapLine.find(' ') == std::string::npos)
+        {
+          currentMapName = mapLine;
+          newWorld.createMap(currentMapName);
+        }
+        else
+        {
+          std::istringstream pointIss(mapLine);
+          std::string pointName, type;
+          int x, z;
+          pointIss >> pointName >> x >> z >> type;
+
+          Map* map = newWorld.getMap(currentMapName);
+          if (map)
+          {
+            map->addWaypoint(pointName, x, z, type);
+          }
+        }
+      }
+
+      world = std::move(newWorld);
+      out << "# Данные загружены из файла \"" << filename << "\"\n";
+    });
+
+    commands.add("plan-route-greedy", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string mapName;
+      int startX, startZ;
+      double startTime;
+      int ignoreCount;
+      iss >> mapName >> startX >> startZ >> startTime >> ignoreCount;
+
+      if (mapName.empty() || startTime < 0.0 || startTime >= CYCLE_LENGTH || ignoreCount < 0)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "plan-route-greedy");
+        return;
+      }
+
+      List< std::string > ignorePoints;
+      for (int i = 0; i < ignoreCount; ++i)
+      {
+        std::string pointName;
+        iss >> pointName;
+        if (!pointName.empty())
+        {
+          ignorePoints.push_back(pointName);
+        }
+      }
+
+      const Map* map = world.getMap(mapName);
+      if (!map)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "plan-route-greedy");
+        return;
+      }
+
+      List< std::pair< std::string, Waypoint > > points;
+      for (auto it = map->begin(); it != map->end(); ++it)
+      {
+        bool ignored = false;
+        for (auto ignIt = ignorePoints.cbegin(); ignIt != ignorePoints.cend(); ++ignIt)
+        {
+          if (it->first == *ignIt)
+          {
+            ignored = true;
+            break;
+          }
+        }
+        if (!ignored)
+        {
+          points.push_back(std::make_pair(it->first, it->second));
+        }
+      }
+
+      if (points.empty())
+      {
+        out << "<EMPTY>\n";
+        return;
+      }
+
+      RouteResult route = buildGreedyRoute(points, startX, startZ, startTime);
+      printRouteResult(out, route, "greedy");
+    });
+
+    commands.add("plan-route-2opt", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string mapName;
+      int startX, startZ;
+      double startTime;
+      int ignoreCount;
+      iss >> mapName >> startX >> startZ >> startTime >> ignoreCount;
+
+      if (mapName.empty() || startTime < 0.0 || startTime >= CYCLE_LENGTH || ignoreCount < 0)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "plan-route-2opt");
+        return;
+      }
+
+      List< std::string > ignorePoints;
+      for (int i = 0; i < ignoreCount; ++i)
+      {
+        std::string pointName;
+        iss >> pointName;
+        if (!pointName.empty())
+        {
+          ignorePoints.push_back(pointName);
+        }
+      }
+
+      const Map* map = world.getMap(mapName);
+      if (!map)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "plan-route-2opt");
+        return;
+      }
+
+      List< std::pair< std::string, Waypoint > > points;
+      for (auto it = map->begin(); it != map->end(); ++it)
+      {
+        bool ignored = false;
+        for (auto ignIt = ignorePoints.cbegin(); ignIt != ignorePoints.cend(); ++ignIt)
+        {
+          if (it->first == *ignIt)
+          {
+            ignored = true;
+            break;
+          }
+        }
+        if (!ignored)
+        {
+          points.push_back(std::make_pair(it->first, it->second));
+        }
+      }
+
+      if (points.empty())
+      {
+        out << "<EMPTY>\n";
+        return;
+      }
+
+      RouteResult route = improve2Opt(points, startX, startZ, startTime);
+      printRouteResult(out, route, "2-opt");
+    });
+
+    commands.add("plan-route-mst", [&](std::istringstream& iss, std::ostream& out)
+    {
+      std::string mapName;
+      int startX, startZ;
+      double startTime;
+      int ignoreCount;
+      iss >> mapName >> startX >> startZ >> startTime >> ignoreCount;
+
+      if (mapName.empty() || startTime < 0.0 || startTime >= CYCLE_LENGTH || ignoreCount < 0)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "plan-route-mst");
+        return;
+      }
+
+      List< std::string > ignorePoints;
+      for (int i = 0; i < ignoreCount; ++i)
+      {
+        std::string pointName;
+        iss >> pointName;
+        if (!pointName.empty())
+        {
+          ignorePoints.push_back(pointName);
+        }
+      }
+
+      const Map* map = world.getMap(mapName);
+      if (!map)
+      {
+        out << "Wrong usage. Use:\n";
+        printCommandUsage(out, "plan-route-mst");
+        return;
+      }
+
+      List< std::pair< std::string, Waypoint > > points;
+      for (auto it = map->begin(); it != map->end(); ++it)
+      {
+        bool ignored = false;
+        for (auto ignIt = ignorePoints.cbegin(); ignIt != ignorePoints.cend(); ++ignIt)
+        {
+          if (it->first == *ignIt)
+          {
+            ignored = true;
+            break;
+          }
+        }
+        if (!ignored)
+        {
+          points.push_back(std::make_pair(it->first, it->second));
+        }
+      }
+
+      if (points.empty())
+      {
+        out << "<EMPTY>\n";
+        return;
+      }
+
+      RouteResult route = buildMSTRoute(points, startX, startZ, startTime);
+      printRouteResult(out, route, "MST");
+    });
+
+    commands.add("help", [&](std::istringstream&, std::ostream& out)
+    {
+      out << "Доступные команды:\n\n"
+          << "Управление картами:\n"
+          << "  create-map <name>                     - создать новую карту\n"
+          << "  delete-map <name>                     - удалить карту\n"
+          << "  list-maps                             - показать все карты\n\n"
+          << "Управление точками:\n"
+          << "  add-point <map> <name> <x> <z> <type> - добавить точку на карту\n"
+          << "  remove-point <map> <name>             - удалить точку\n"
+          << "  edit-point <map> <name> <new-name> <x> <z> <type> - изменить точку (\"-\" = без изменений)\n"
+          << "  show-points <map>                     - показать все точки карты\n\n"
+          << "Поиск и навигация:\n"
+          << "  find-nearest <map> <x> <z> <k> [type] - найти K ближайших точек\n"
+          << "  find-by-type <map> <type>             - найти точки по типу\n"
+          << "  copy-point <src> <dst> <name>         - скопировать точку между картами\n"
+          << "  move-point <src> <dst> <name>         - переместить точку между картами\n\n"
+          << "Операции с картами:\n"
+          << "  merge-maps <new> <map1> <map2>        - объединить две карты\n"
+          << "  clear-map <map>                       - очистить карту\n\n"
+          << "Маршрутизация:\n"
+          << "  plan-route-greedy <map> <x> <z> <time> <ignore-count> [points...] - жадный алгоритм\n"
+          << "  plan-route-2opt <map> <x> <z> <time> <ignore-count> [points...]   - 2-opt улучшение\n"
+          << "  plan-route-mst <map> <x> <z> <time> <ignore-count> [points...]     - MST (Prim)\n\n"
+          << "Сохранение и загрузка:\n"
+          << "  save <filename>                       - сохранить все данные в файл\n"
+          << "  load <filename>                       - загрузить данные из файла\n\n"
+          << "Прочее:\n"
+          << "  help                                  - показать эту справку\n"
+          << "  exit                                  - выйти из программы\n";
+    });
+
+    commands.add("exit", [&](std::istringstream&, std::ostream&)
+    {});
+
+    std::string line;
     while (std::getline(in, line))
     {
       if (line.empty())
@@ -175,734 +924,14 @@ namespace vishnyakov
       std::string cmd;
       iss >> cmd;
 
-      if (cmd == "create-map")
-      {
-        std::string name;
-        iss >> name;
-
-        if (name.empty())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "create-map");
-        }
-        else if (world.createMap(name))
-        {
-          out << "# Карта \"" << name << "\" создана\n";
-        }
-        else
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "create-map");
-        }
-      }
-      else if (cmd == "delete-map")
-      {
-        std::string name;
-        iss >> name;
-
-        if (name.empty())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "delete-map");
-        }
-        else if (world.deleteMap(name))
-        {
-          out << "# Карта \"" << name << "\" удалена\n";
-        }
-        else
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "delete-map");
-        }
-      }
-      else if (cmd == "list-maps")
-      {
-        world.listMaps(out);
-      }
-      else if (cmd == "add-point")
-      {
-        std::string mapName, pointName, type;
-        int x, z;
-        iss >> mapName >> pointName >> x >> z >> type;
-
-        if (mapName.empty() || pointName.empty() || type.empty())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "add-point");
-          continue;
-        }
-
-        Map* map = world.getMap(mapName);
-        if (!map)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "add-point");
-          continue;
-        }
-
-        if (map->findWaypoint(pointName))
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "add-point");
-          continue;
-        }
-
-        map->addWaypoint(pointName, x, z, type);
-        out << "# Точка \"" << pointName << "\" добавлена на карту \"" << mapName << "\"\n";
-      }
-      else if (cmd == "remove-point")
-      {
-        std::string mapName, pointName;
-        iss >> mapName >> pointName;
-
-        if (mapName.empty() || pointName.empty())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "remove-point");
-          continue;
-        }
-
-        Map* map = world.getMap(mapName);
-        if (!map)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "remove-point");
-          continue;
-        }
-
-        if (!map->removeWaypoint(pointName))
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "remove-point");
-        }
-        else
-        {
-          out << "# Точка \"" << pointName << "\" удалена с карты \"" << mapName << "\"\n";
-        }
-      }
-      else if (cmd == "edit-point")
-      {
-        std::string mapName, pointName, newName, xStr, zStr, type;
-        iss >> mapName >> pointName >> newName >> xStr >> zStr >> type;
-
-        if (mapName.empty() || pointName.empty())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "edit-point");
-          continue;
-        }
-
-        Map* map = world.getMap(mapName);
-        if (!map)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "edit-point");
-          continue;
-        }
-
-        Waypoint* wp = map->findWaypoint(pointName);
-        if (!wp)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "edit-point");
-          continue;
-        }
-
-        if (xStr != "-")
-        {
-          wp->x = std::stoi(xStr);
-        }
-        if (zStr != "-")
-        {
-          wp->z = std::stoi(zStr);
-        }
-        if (type != "-" && !type.empty())
-        {
-          wp->type = type;
-        }
-
-        if (newName != "-" && !newName.empty() && newName != pointName)
-        {
-          Waypoint newWp(wp->x, wp->z, wp->type);
-          map->removeWaypoint(pointName);
-          map->addWaypoint(newName, newWp);
-        }
-
-        out << "# Точка \"" << pointName << "\" изменена на карте \"" << mapName << "\"\n";
-      }
-      else if (cmd == "show-points")
-      {
-        std::string mapName;
-        iss >> mapName;
-
-        if (mapName.empty())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "show-points");
-          continue;
-        }
-
-        const Map* map = world.getMap(mapName);
-        if (!map)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "show-points");
-          continue;
-        }
-
-        if (map->empty())
-        {
-          out << "<EMPTY>\n";
-          continue;
-        }
-
-        for (auto it = map->begin(); it != map->end(); ++it)
-        {
-          out << it->first << " " << it->second.x << " " << it->second.z
-              << " " << it->second.type << "\n";
-        }
-      }
-      else if (cmd == "find-nearest")
-      {
-        std::string mapName;
-        int x, z, k;
-        std::string typeFilter;
-        iss >> mapName >> x >> z >> k >> typeFilter;
-
-        if (mapName.empty() || k <= 0)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "find-nearest");
-          continue;
-        }
-
-        const Map* map = world.getMap(mapName);
-        if (!map)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "find-nearest");
-          continue;
-        }
-
-        List< NearestResult > results;
-
-        for (auto it = map->begin(); it != map->end(); ++it)
-        {
-          const std::string& name = it->first;
-          const Waypoint& wp = it->second;
-
-          if (!typeFilter.empty() && wp.type != typeFilter)
-          {
-            continue;
-          }
-
-          double dist = wp.distanceTo(x, z);
-          NearestResult nr;
-          nr.name = name;
-          nr.x = wp.x;
-          nr.z = wp.z;
-          nr.type = wp.type;
-          nr.distance = dist;
-          nr.coefficient = 0.0;
-          results.push_back(nr);
-        }
-
-        if (results.empty())
-        {
-          out << "<EMPTY>\n";
-          continue;
-        }
-
-        List< NearestResult > sortedResults;
-        while (!results.empty())
-        {
-          auto minIt = results.begin();
-          for (auto it = results.begin(); it != results.end(); ++it)
-          {
-            if (it->distance < minIt->distance)
-            {
-              minIt = it;
-            }
-          }
-          sortedResults.push_back(*minIt);
-          results.erase(minIt);
-        }
-
-        double minDist = sortedResults.cbegin()->distance;
-        int count = 0;
-        for (auto it = sortedResults.cbegin(); it != sortedResults.cend() && count < k; ++it, ++count)
-        {
-          NearestResult res = *it;
-          if (minDist > 0.0)
-          {
-            res.coefficient = (res.distance / minDist) * 100.0;
-          }
-          else
-          {
-            res.coefficient = (res.distance == 0.0) ? 100.0 : 0.0;
-          }
-
-          out << count + 1 << ". " << res.name << " ("
-              << res.x << ", " << res.z << ") dist: "
-              << res.distance << " coef: " << res.coefficient << "%\n";
-        }
-      }
-      else if (cmd == "find-by-type")
-      {
-        std::string mapName, type;
-        iss >> mapName >> type;
-
-        if (mapName.empty() || type.empty())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "find-by-type");
-          continue;
-        }
-
-        const Map* map = world.getMap(mapName);
-        if (!map)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "find-by-type");
-          continue;
-        }
-
-        map->findByType(type, out);
-      }
-      else if (cmd == "copy-point")
-      {
-        std::string srcMap, dstMap, pointName;
-        iss >> srcMap >> dstMap >> pointName;
-
-        if (srcMap.empty() || dstMap.empty() || pointName.empty())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "copy-point");
-          continue;
-        }
-
-        Map* src = world.getMap(srcMap);
-        Map* dst = world.getMap(dstMap);
-
-        if (!src || !dst)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "copy-point");
-          continue;
-        }
-
-        const Waypoint* wp = src->findWaypoint(pointName);
-        if (!wp)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "copy-point");
-          continue;
-        }
-
-        if (dst->findWaypoint(pointName))
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "copy-point");
-          continue;
-        }
-
-        dst->addWaypoint(pointName, *wp);
-        out << "# Точка \"" << pointName << "\" скопирована с карты \""
-            << srcMap << "\" на карту \"" << dstMap << "\"\n";
-      }
-      else if (cmd == "move-point")
-      {
-        std::string srcMap, dstMap, pointName;
-        iss >> srcMap >> dstMap >> pointName;
-
-        if (srcMap.empty() || dstMap.empty() || pointName.empty())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "move-point");
-          continue;
-        }
-
-        Map* src = world.getMap(srcMap);
-        Map* dst = world.getMap(dstMap);
-
-        if (!src || !dst)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "move-point");
-          continue;
-        }
-
-        const Waypoint* wp = src->findWaypoint(pointName);
-        if (!wp)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "move-point");
-          continue;
-        }
-
-        if (dst->findWaypoint(pointName))
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "move-point");
-          continue;
-        }
-
-        dst->addWaypoint(pointName, *wp);
-        src->removeWaypoint(pointName);
-        out << "# Точка \"" << pointName << "\" перемещена с карты \""
-            << srcMap << "\" на карту \"" << dstMap << "\"\n";
-      }
-      else if (cmd == "merge-maps")
-      {
-        std::string newName, name1, name2;
-        iss >> newName >> name1 >> name2;
-
-        if (newName.empty() || name1.empty() || name2.empty())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "merge-maps");
-          continue;
-        }
-
-        if (world.mergeMaps(newName, name1, name2))
-        {
-          out << "# Карты \"" << name1 << "\" и \"" << name2
-              << "\" объединены в \"" << newName << "\"\n";
-        }
-        else
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "merge-maps");
-        }
-      }
-      else if (cmd == "clear-map")
-      {
-        std::string mapName;
-        iss >> mapName;
-
-        if (mapName.empty())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "clear-map");
-          continue;
-        }
-
-        Map* map = world.getMap(mapName);
-        if (!map)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "clear-map");
-          continue;
-        }
-
-        map->clear();
-        out << "# Карта \"" << mapName << "\" очищена\n";
-      }
-      else if (cmd == "save")
-      {
-        std::string filename;
-        iss >> filename;
-
-        if (filename.empty())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "save");
-          continue;
-        }
-
-        std::ofstream file(filename);
-        if (!file.is_open())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "save");
-          continue;
-        }
-
-        for (auto mapIt = world.begin(); mapIt != world.end(); ++mapIt)
-        {
-          file << mapIt->getName() << "\n";
-          for (auto pointIt = mapIt->begin(); pointIt != mapIt->end(); ++pointIt)
-          {
-            file << pointIt->first << " "
-                 << pointIt->second.x << " "
-                 << pointIt->second.z << " "
-                 << pointIt->second.type << "\n";
-          }
-        }
-
-        out << "# Данные сохранены в файл \"" << filename << "\"\n";
-      }
-      else if (cmd == "load")
-      {
-        std::string filename;
-        iss >> filename;
-
-        if (filename.empty())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "load");
-          continue;
-        }
-
-        std::ifstream file(filename);
-        if (!file.is_open())
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "load");
-          continue;
-        }
-
-        World newWorld;
-        std::string mapLine;
-        std::string currentMapName;
-
-        while (std::getline(file, mapLine))
-        {
-          if (mapLine.empty())
-          {
-            continue;
-          }
-
-          if (mapLine.find(' ') == std::string::npos)
-          {
-            currentMapName = mapLine;
-            newWorld.createMap(currentMapName);
-          }
-          else
-          {
-            std::istringstream pointIss(mapLine);
-            std::string pointName, type;
-            int x, z;
-            pointIss >> pointName >> x >> z >> type;
-
-            Map* map = newWorld.getMap(currentMapName);
-            if (map)
-            {
-              map->addWaypoint(pointName, x, z, type);
-            }
-          }
-        }
-
-        world = std::move(newWorld);
-        out << "# Данные загружены из файла \"" << filename << "\"\n";
-      }
-      else if (cmd == "plan-route-greedy")
-      {
-        std::string mapName;
-        int startX, startZ;
-        double startTime;
-        int ignoreCount;
-        iss >> mapName >> startX >> startZ >> startTime >> ignoreCount;
-
-        if (mapName.empty() || startTime < 0.0 || startTime >= CYCLE_LENGTH || ignoreCount < 0)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "plan-route-greedy");
-          continue;
-        }
-
-        List< std::string > ignorePoints;
-        for (int i = 0; i < ignoreCount; ++i)
-        {
-          std::string pointName;
-          iss >> pointName;
-          if (!pointName.empty())
-          {
-            ignorePoints.push_back(pointName);
-          }
-        }
-
-        const Map* map = world.getMap(mapName);
-        if (!map)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "plan-route-greedy");
-          continue;
-        }
-
-        List< std::pair< std::string, Waypoint > > points;
-        for (auto it = map->begin(); it != map->end(); ++it)
-        {
-          bool ignored = false;
-          for (auto ignIt = ignorePoints.cbegin(); ignIt != ignorePoints.cend(); ++ignIt)
-          {
-            if (it->first == *ignIt)
-            {
-              ignored = true;
-              break;
-            }
-          }
-          if (!ignored)
-          {
-            points.push_back(std::make_pair(it->first, it->second));
-          }
-        }
-
-        if (points.empty())
-        {
-          out << "<EMPTY>\n";
-          continue;
-        }
-
-        RouteResult route = buildGreedyRoute(points, startX, startZ, startTime);
-        printRouteResult(out, route, "greedy");
-      }
-      else if (cmd == "plan-route-2opt")
-      {
-        std::string mapName;
-        int startX, startZ;
-        double startTime;
-        int ignoreCount;
-        iss >> mapName >> startX >> startZ >> startTime >> ignoreCount;
-
-        if (mapName.empty() || startTime < 0.0 || startTime >= CYCLE_LENGTH || ignoreCount < 0)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "plan-route-2opt");
-          continue;
-        }
-
-        List< std::string > ignorePoints;
-        for (int i = 0; i < ignoreCount; ++i)
-        {
-          std::string pointName;
-          iss >> pointName;
-          if (!pointName.empty())
-          {
-            ignorePoints.push_back(pointName);
-          }
-        }
-
-        const Map* map = world.getMap(mapName);
-        if (!map)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "plan-route-2opt");
-          continue;
-        }
-
-        List< std::pair< std::string, Waypoint > > points;
-        for (auto it = map->begin(); it != map->end(); ++it)
-        {
-          bool ignored = false;
-          for (auto ignIt = ignorePoints.cbegin(); ignIt != ignorePoints.cend(); ++ignIt)
-          {
-            if (it->first == *ignIt)
-            {
-              ignored = true;
-              break;
-            }
-          }
-          if (!ignored)
-          {
-            points.push_back(std::make_pair(it->first, it->second));
-          }
-        }
-
-        if (points.empty())
-        {
-          out << "<EMPTY>\n";
-          continue;
-        }
-
-        RouteResult route = improve2Opt(points, startX, startZ, startTime);
-        printRouteResult(out, route, "2-opt");
-      }
-      else if (cmd == "plan-route-mst")
-      {
-        std::string mapName;
-        int startX, startZ;
-        double startTime;
-        int ignoreCount;
-        iss >> mapName >> startX >> startZ >> startTime >> ignoreCount;
-
-        if (mapName.empty() || startTime < 0.0 || startTime >= CYCLE_LENGTH || ignoreCount < 0)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "plan-route-mst");
-          continue;
-        }
-
-        List< std::string > ignorePoints;
-        for (int i = 0; i < ignoreCount; ++i)
-        {
-          std::string pointName;
-          iss >> pointName;
-          if (!pointName.empty())
-          {
-            ignorePoints.push_back(pointName);
-          }
-        }
-
-        const Map* map = world.getMap(mapName);
-        if (!map)
-        {
-          out << "Wrong usage. Use:\n";
-          printCommandUsage(out, "plan-route-mst");
-          continue;
-        }
-
-        List< std::pair< std::string, Waypoint > > points;
-        for (auto it = map->begin(); it != map->end(); ++it)
-        {
-          bool ignored = false;
-          for (auto ignIt = ignorePoints.cbegin(); ignIt != ignorePoints.cend(); ++ignIt)
-          {
-            if (it->first == *ignIt)
-            {
-              ignored = true;
-              break;
-            }
-          }
-          if (!ignored)
-          {
-            points.push_back(std::make_pair(it->first, it->second));
-          }
-        }
-
-        if (points.empty())
-        {
-          out << "<EMPTY>\n";
-          continue;
-        }
-
-        RouteResult route = buildMSTRoute(points, startX, startZ, startTime);
-        printRouteResult(out, route, "MST");
-      }
-      else if (cmd == "help")
-      {
-        out << "Доступные команды:\n\n"
-            << "Управление картами:\n"
-            << "  create-map <name>                     - создать новую карту\n"
-            << "  delete-map <name>                     - удалить карту\n"
-            << "  list-maps                             - показать все карты\n\n"
-            << "Управление точками:\n"
-            << "  add-point <map> <name> <x> <z> <type> - добавить точку на карту\n"
-            << "  remove-point <map> <name>             - удалить точку\n"
-            << "  edit-point <map> <name> <new-name> <x> <z> <type> - изменить точку (\"-\" = без изменений)\n"
-            << "  show-points <map>                     - показать все точки карты\n\n"
-            << "Поиск и навигация:\n"
-            << "  find-nearest <map> <x> <z> <k> [type] - найти K ближайших точек\n"
-            << "  find-by-type <map> <type>             - найти точки по типу\n"
-            << "  copy-point <src> <dst> <name>         - скопировать точку между картами\n"
-            << "  move-point <src> <dst> <name>         - переместить точку между картами\n\n"
-            << "Операции с картами:\n"
-            << "  merge-maps <new> <map1> <map2>        - объединить две карты\n"
-            << "  clear-map <map>                       - очистить карту\n\n"
-            << "Маршрутизация:\n"
-            << "  plan-route-greedy <map> <x> <z> <time> <ignore-count> [points...] - жадный алгоритм\n"
-            << "  plan-route-2opt <map> <x> <z> <time> <ignore-count> [points...]   - 2-opt улучшение\n"
-            << "  plan-route-mst <map> <x> <z> <time> <ignore-count> [points...]     - MST (Prim)\n\n"
-            << "Сохранение и загрузка:\n"
-            << "  save <filename>                       - сохранить все данные в файл\n"
-            << "  load <filename>                       - загрузить данные из файла\n\n"
-            << "Прочее:\n"
-            << "  help                                  - показать эту справку\n"
-            << "  exit                                  - выйти из программы\n";
-      }
-      else if (cmd == "exit")
+      if (cmd == "exit")
       {
         break;
+      }
+
+      if (commands.has(cmd))
+      {
+        commands.at(cmd)(iss, out);
       }
       else
       {

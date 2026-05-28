@@ -2,7 +2,7 @@
 #include "graph.hpp"
 #include "siphash.hpp"
 #include "utils.hpp"
-#include "../common/list.hpp"
+#include <list.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>

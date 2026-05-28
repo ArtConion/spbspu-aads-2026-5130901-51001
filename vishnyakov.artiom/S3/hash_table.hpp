@@ -1,7 +1,7 @@
 #ifndef HASH_TABLE_HPP
 #define HASH_TABLE_HPP
 
-#include "../common/list.hpp"
+#include <list.hpp>
 #include <cstddef>
 #include <utility>
 #include <stdexcept>

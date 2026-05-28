@@ -134,7 +134,7 @@ namespace vishnyakov
     map.addWaypoint("mine", 250, 30, "cave");
 
     std::vector< std::string > names;
-    for (auto it = map.begin(); it != map.end(); ++it)
+    for (Map::iterator it = map.begin(); it != map.end(); ++it)
     {
       names.push_back(it->first);
     }

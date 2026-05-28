@@ -94,7 +94,7 @@ namespace vishnyakov
       std::string currentCategory;
       bool firstCategory = true;
 
-      for (auto it = allCommands.cbegin(); it != allCommands.cend(); ++it)
+      for (LCIter< CommandInfo > it = allCommands.cbegin(); it != allCommands.cend(); ++it)
       {
         if (it->category != currentCategory)
         {
@@ -127,7 +127,7 @@ namespace vishnyakov
     }
     else
     {
-      for (auto it = allCommands.cbegin(); it != allCommands.cend(); ++it)
+      for (LCIter< CommandInfo > it = allCommands.cbegin(); it != allCommands.cend(); ++it)
       {
         if (it->name == cmd)
         {
@@ -146,9 +146,9 @@ namespace vishnyakov
     if (!shortOutput)
     {
       int stepNumber = 1;
-      for (auto it = route.allStops.cbegin(); it != route.allStops.cend(); ++it)
+      for (LCIter< RouteStop > it = route.allStops.cbegin(); it != route.allStops.cend(); ++it)
       {
-        const auto& stop = *it;
+        const RouteStop& stop = *it;
         double roundedTime = std::round(stop.time * 100.0) / 100.0;
         double roundedTravel = std::round(stop.travelTime * 100.0) / 100.0;
         double roundedDist = std::round(stop.distanceFromPrev * 100.0) / 100.0;
@@ -388,7 +388,7 @@ namespace vishnyakov
         return;
       }
 
-      for (auto it = map->begin(); it != map->end(); ++it)
+      for (LIter< std::pair< const std::string, Waypoint > > it = map->begin(); it != map->end(); ++it)
       {
         out << it->first << " " << it->second.x << " " << it->second.z
             << " " << it->second.type << "\n";
@@ -418,7 +418,7 @@ namespace vishnyakov
 
       List< NearestResult > results;
 
-      for (auto it = map->begin(); it != map->end(); ++it)
+      for (LIter< std::pair< const std::string, Waypoint > > it = map->begin(); it != map->end(); ++it)
       {
         const std::string& name = it->first;
         const Waypoint& wp = it->second;
@@ -448,8 +448,8 @@ namespace vishnyakov
       List< NearestResult > sortedResults;
       while (!results.empty())
       {
-        auto minIt = results.begin();
-        for (auto it = results.begin(); it != results.end(); ++it)
+        LIter< NearestResult > minIt = results.begin();
+        for (LIter< NearestResult > it = results.begin(); it != results.end(); ++it)
         {
           if (it->distance < minIt->distance)
           {
@@ -462,7 +462,7 @@ namespace vishnyakov
 
       double minDist = sortedResults.cbegin()->distance;
       int count = 0;
-      for (auto it = sortedResults.cbegin(); it != sortedResults.cend() && count < k; ++it, ++count)
+      for (LCIter< NearestResult > it = sortedResults.cbegin(); it != sortedResults.cend() && count < k; ++it, ++count)
       {
         NearestResult res = *it;
         if (minDist > 0.0)
@@ -672,10 +672,10 @@ namespace vishnyakov
         return;
       }
 
-      for (auto mapIt = world.begin(); mapIt != world.end(); ++mapIt)
+      for (LIter< Map > mapIt = world.begin(); mapIt != world.end(); ++mapIt)
       {
         file << mapIt->getName() << "\n";
-        for (auto pointIt = mapIt->begin(); pointIt != mapIt->end(); ++pointIt)
+        for (LIter< std::pair< const std::string, Waypoint > > pointIt = mapIt->begin(); pointIt != mapIt->end(); ++pointIt)
         {
           file << pointIt->first << " "
                << pointIt->second.x << " "
@@ -978,10 +978,10 @@ namespace vishnyakov
       out << "| Алгоритм   | Длина(блоков)  | Время(мин) | Голод(ед)  | Хлеба(шт)  |\n";
       out << "+------------+----------------+------------+------------+------------+\n";
 
-      const AlgorithmResult* best = nullptr;
+      const AlgorithmResult* best = NULL;
       double bestDistance = std::numeric_limits<double>::max();
 
-      for (auto it = results.cbegin(); it != results.cend(); ++it)
+      for (LCIter< AlgorithmResult > it = results.cbegin(); it != results.cend(); ++it)
       {
         const AlgorithmResult& r = *it;
         out << "| " << std::left << std::setw(10) << r.name << " | ";

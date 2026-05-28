@@ -166,7 +166,7 @@ namespace vishnyakov
     world.createMap("B");
 
     std::vector< std::string > names;
-    for (auto it = world.begin(); it != world.end(); ++it)
+    for (World::iterator it = world.begin(); it != world.end(); ++it)
     {
       names.push_back(it->getName());
     }

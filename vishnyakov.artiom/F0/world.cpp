@@ -35,7 +35,7 @@ namespace vishnyakov
 
   World::iterator World::findMap(const std::string& name)
   {
-    for (auto it = maps_.begin(); it != maps_.end(); ++it)
+    for (LIter< Map > it = maps_.begin(); it != maps_.end(); ++it)
     {
       if (it->getName() == name)
       {
@@ -47,7 +47,7 @@ namespace vishnyakov
 
   World::const_iterator World::findMap(const std::string& name) const
   {
-    for (auto it = maps_.cbegin(); it != maps_.cend(); ++it)
+    for (LCIter< Map > it = maps_.cbegin(); it != maps_.cend(); ++it)
     {
       if (it->getName() == name)
       {
@@ -69,7 +69,7 @@ namespace vishnyakov
 
   bool World::deleteMap(const std::string& name)
   {
-    auto it = findMap(name);
+    LIter< Map > it = findMap(name);
     if (it == maps_.end())
     {
       return false;
@@ -80,7 +80,7 @@ namespace vishnyakov
 
   Map* World::getMap(const std::string& name)
   {
-    auto it = findMap(name);
+    LIter< Map > it = findMap(name);
     if (it == maps_.end())
     {
       return nullptr;
@@ -90,7 +90,7 @@ namespace vishnyakov
 
   const Map* World::getMap(const std::string& name) const
   {
-    auto it = findMap(name);
+    LCIter< Map > it = findMap(name);
     if (it == maps_.cend())
     {
       return nullptr;
@@ -121,7 +121,7 @@ namespace vishnyakov
       return;
     }
 
-    for (auto it = maps_.cbegin(); it != maps_.cend(); ++it)
+    for (LCIter< Map > it = maps_.cbegin(); it != maps_.cend(); ++it)
     {
       out << it->getName() << "\n";
     }
@@ -144,12 +144,12 @@ namespace vishnyakov
 
     Map newMap(newName);
 
-    for (auto it = map1->begin(); it != map1->end(); ++it)
+    for (LIter< std::pair< const std::string, Waypoint > > it = map1->begin(); it != map1->end(); ++it)
     {
       newMap.addWaypoint(it->first, it->second);
     }
 
-    for (auto it = map2->begin(); it != map2->end(); ++it)
+    for (LIter< std::pair< const std::string, Waypoint > > it = map2->begin(); it != map2->end(); ++it)
     {
       if (!newMap.findWaypoint(it->first))
       {

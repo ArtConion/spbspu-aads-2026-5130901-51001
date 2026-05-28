@@ -153,7 +153,7 @@ namespace vishnyakov
     Vector< int > v;
     v.push_back(1);
     v.push_back(3);
-    auto it = v.begin();
+    Vector< int >::iterator it = v.begin();
     ++it;
     v.insert(it, 2);
     BOOST_TEST(v.size() == 3);
@@ -167,7 +167,7 @@ namespace vishnyakov
     Vector< int > v;
     v.push_back(1);
     v.push_back(4);
-    auto it = v.begin();
+    Vector< int >::iterator it = v.begin();
     ++it;
     v.insert(it, 2, 42);
     BOOST_TEST(v.size() == 4);
@@ -183,7 +183,7 @@ namespace vishnyakov
     v.push_back(1);
     v.push_back(2);
     v.push_back(3);
-    auto it = v.begin();
+    Vector< int >::iterator it = v.begin();
     ++it;
     v.erase(it);
     BOOST_TEST(v.size() == 2);
@@ -198,9 +198,9 @@ namespace vishnyakov
     v.push_back(2);
     v.push_back(3);
     v.push_back(4);
-    auto first = v.begin();
+    Vector< int >::iterator first = v.begin();
     ++first;
-    auto last = v.end();
+    Vector< int >::iterator last = v.end();
     --last;
     v.erase(first, last);
     BOOST_TEST(v.size() == 2);
@@ -226,7 +226,7 @@ namespace vishnyakov
     v.push_back(2);
     v.push_back(3);
     int sum = 0;
-    for (auto it = v.begin(); it != v.end(); ++it)
+    for (Vector< int >::iterator it = v.begin(); it != v.end(); ++it)
     {
       sum += *it;
     }

@@ -316,38 +316,6 @@ namespace vishnyakov
     return buildRouteFromOrder(greedyOrder, startX, startZ, startTime);
   }
 
-  void reverseListRange(List< std::pair< std::string, Waypoint > >& lst,
-                         LIter< std::pair< std::string, Waypoint > > first,
-                         LIter< std::pair< std::string, Waypoint > > last)
-  {
-    if (first == last)
-    {
-      return;
-    }
-
-    List< std::pair< std::string, Waypoint > > temp;
-    LIter< std::pair< std::string, Waypoint > > it = first;
-    while (it != last)
-    {
-      temp.push_back(*it);
-      ++it;
-    }
-    temp.push_back(*last);
-
-    List< std::pair< std::string, Waypoint > > reversed;
-    for (LCIter< std::pair< std::string, Waypoint > > rit = temp.cend(); rit != temp.cbegin(); )
-    {
-      --rit;
-      reversed.push_back(*rit);
-    }
-
-    it = first;
-    for (LCIter< std::pair< std::string, Waypoint > > rit = reversed.cbegin(); rit != reversed.cend(); ++rit, ++it)
-    {
-      *it = *rit;
-    }
-  }
-
   RouteResult improve2Opt(
     const List< std::pair< std::string, Waypoint > >& points,
     int startX, int startZ,
@@ -746,7 +714,7 @@ namespace vishnyakov
     const List< std::string >& ignorePoints)
   {
     List< std::pair< std::string, Waypoint > > points;
-    for (Map::const_iterator it = map->cbegin(); it != map->cend(); ++it)
+    for (Map::const_iterator it = map->begin(); it != map->end(); ++it)
     {
       bool ignored = false;
       for (LCIter< std::string > ignIt = ignorePoints.cbegin(); ignIt != ignorePoints.cend(); ++ignIt)

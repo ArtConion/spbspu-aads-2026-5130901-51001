@@ -144,12 +144,12 @@ namespace vishnyakov
 
     Map newMap(newName);
 
-    for (Map::const_iterator it = map1->cbegin(); it != map1->cend(); ++it)
+    for (Map::const_iterator it = map1->begin(); it != map1->end(); ++it)
     {
       newMap.addWaypoint(it->first, it->second);
     }
 
-    for (Map::const_iterator it = map2->cbegin(); it != map2->cend(); ++it)
+    for (Map::const_iterator it = map2->begin(); it != map2->end(); ++it)
     {
       if (!newMap.findWaypoint(it->first))
       {

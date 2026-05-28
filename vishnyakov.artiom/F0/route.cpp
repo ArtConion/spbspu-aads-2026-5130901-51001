@@ -703,7 +703,7 @@ namespace vishnyakov
     int& ignoreCount)
   {
     iss >> mapName >> startX >> startZ >> startTime >> ignoreCount;
-    
+
     if (iss.fail() || mapName.empty() || startTime < 0.0 || startTime >= CYCLE_LENGTH || ignoreCount < 0)
     {
       out << "Wrong usage. Use:\n";

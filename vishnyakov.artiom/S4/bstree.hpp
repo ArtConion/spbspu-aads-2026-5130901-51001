@@ -5,7 +5,7 @@
 #include <utility>
 #include <stdexcept>
 #include <algorithm>
-#include "../common/stack.hpp"
+#include <stack.hpp>
 
 namespace vishnyakov
 {

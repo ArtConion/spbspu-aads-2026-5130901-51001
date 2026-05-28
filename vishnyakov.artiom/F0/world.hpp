@@ -1,7 +1,7 @@
 #ifndef WORLD_HPP
 #define WORLD_HPP
 
-#include "../common/list.hpp"
+#include <list.hpp>
 #include "map.hpp"
 #include <string>
 #include <iostream>

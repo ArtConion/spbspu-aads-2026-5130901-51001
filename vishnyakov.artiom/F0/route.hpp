@@ -3,7 +3,7 @@
 
 #include "waypoint.hpp"
 #include "map.hpp"
-#include "../common/list.hpp"
+#include <list.hpp>
 #include <string>
 #include <utility>
 #include <sstream>

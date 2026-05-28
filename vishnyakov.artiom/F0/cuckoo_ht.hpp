@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <functional>
-#include "../common/siphash.hpp"
+#include <siphash.hpp>
 
 namespace vishnyakov
 {

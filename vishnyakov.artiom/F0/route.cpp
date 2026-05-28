@@ -619,8 +619,6 @@ namespace vishnyakov
     return buildRouteFromOrder(orderedPoints, startX, startZ, startTime);
   }
 
-  // ========== Вспомогательные функции для парсинга ==========
-
   List< std::string > parseIgnorePoints(std::istringstream& iss, int ignoreCount)
   {
     List< std::string > ignorePoints;

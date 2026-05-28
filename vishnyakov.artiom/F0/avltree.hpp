@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iostream>
-#include "../common/stack.hpp"
+#include <stack.hpp>
 
 namespace vishnyakov
 {
@@ -166,8 +166,6 @@ namespace vishnyakov
 
     AVLCIter(const Node* node, const Stack< const Node* >& stack = Stack< const Node* >());
   };
-
-  // ========== AVLTree implementation ==========
 
   template< class Key, class Value, class Compare >
   AVLTree< Key, Value, Compare >::AVLTree():

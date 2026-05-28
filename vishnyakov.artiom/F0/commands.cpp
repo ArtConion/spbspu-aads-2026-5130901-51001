@@ -388,7 +388,7 @@ namespace vishnyakov
         return;
       }
 
-      for (LIter< std::pair< const std::string, Waypoint > > it = map->begin(); it != map->end(); ++it)
+      for (Map::const_iterator it = map->begin(); it != map->end(); ++it)
       {
         out << it->first << " " << it->second.x << " " << it->second.z
             << " " << it->second.type << "\n";
@@ -418,7 +418,7 @@ namespace vishnyakov
 
       List< NearestResult > results;
 
-      for (LIter< std::pair< const std::string, Waypoint > > it = map->begin(); it != map->end(); ++it)
+      for (Map::const_iterator it = map->begin(); it != map->end(); ++it)
       {
         const std::string& name = it->first;
         const Waypoint& wp = it->second;
@@ -672,10 +672,10 @@ namespace vishnyakov
         return;
       }
 
-      for (LIter< Map > mapIt = world.begin(); mapIt != world.end(); ++mapIt)
+      for (World::iterator mapIt = world.begin(); mapIt != world.end(); ++mapIt)
       {
         file << mapIt->getName() << "\n";
-        for (LIter< std::pair< const std::string, Waypoint > > pointIt = mapIt->begin(); pointIt != mapIt->end(); ++pointIt)
+        for (Map::const_iterator pointIt = mapIt->begin(); pointIt != mapIt->end(); ++pointIt)
         {
           file << pointIt->first << " "
                << pointIt->second.x << " "

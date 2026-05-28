@@ -14,11 +14,11 @@ namespace vishnyakov
   {
   private:
     static constexpr std::pair<std::uint64_t, std::uint64_t> KEY = {0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL};
-    
+
     struct hasher
     {
       using result_type = std::size_t;
-      
+
       result_type operator()(const void* data, std::size_t len) const noexcept
       {
         boost::hash2::siphash_128 hash(KEY.first, KEY.second);
@@ -26,16 +26,16 @@ namespace vishnyakov
         return static_cast<result_type>(hash.finalize());
       }
     };
-    
+
     hasher hash_impl_;
-    
+
   public:
     SipHash() = default;
-    
+
     template <class T>
     std::size_t operator()(const T& key) const
     {
-      if constexpr (std::is_same_v<T, std::string> || 
+      if constexpr (std::is_same_v<T, std::string> ||
                     std::is_same_v<T, std::string_view> ||
                     std::is_same_v<T, const char*>)
       {

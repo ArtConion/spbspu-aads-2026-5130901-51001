@@ -1,5 +1,6 @@
 #include "route.hpp"
 #include "commands.hpp"
+#include "vector.hpp"
 #include <cmath>
 #include <algorithm>
 #include <limits>
@@ -324,20 +325,26 @@ namespace vishnyakov
       return;
     }
 
-    LIter< std::pair< std::string, Waypoint > > left = first;
-    LIter< std::pair< std::string, Waypoint > > right = last;
-
-    while (left != right)
+    List< std::pair< std::string, Waypoint > > temp;
+    LIter< std::pair< std::string, Waypoint > > it = first;
+    while (it != last)
     {
-      LIter< std::pair< std::string, Waypoint > > nextLeft = left;
-      ++nextLeft;
-      if (nextLeft == right)
-      {
-        break;
-      }
-      std::swap(*left, *right);
-      ++left;
-      --right;
+      temp.push_back(*it);
+      ++it;
+    }
+    temp.push_back(*last);
+
+    List< std::pair< std::string, Waypoint > > reversed;
+    for (LCIter< std::pair< std::string, Waypoint > > rit = temp.cend(); rit != temp.cbegin(); )
+    {
+      --rit;
+      reversed.push_back(*rit);
+    }
+
+    it = first;
+    for (LCIter< std::pair< std::string, Waypoint > > rit = reversed.cbegin(); rit != reversed.cend(); ++rit, ++it)
+    {
+      *it = *rit;
     }
   }
 
@@ -739,7 +746,7 @@ namespace vishnyakov
     const List< std::string >& ignorePoints)
   {
     List< std::pair< std::string, Waypoint > > points;
-    for (LCIter< std::pair< const std::string, Waypoint > > it = map->begin(); it != map->end(); ++it)
+    for (Map::const_iterator it = map->cbegin(); it != map->cend(); ++it)
     {
       bool ignored = false;
       for (LCIter< std::string > ignIt = ignorePoints.cbegin(); ignIt != ignorePoints.cend(); ++ignIt)

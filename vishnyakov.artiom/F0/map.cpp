@@ -19,7 +19,7 @@ namespace vishnyakov
     waypoints_(other.waypoints_),
     typeIndex_()
   {
-    for (LIter< std::pair< const std::string, Waypoint > > it = waypoints_.begin(); it != waypoints_.end(); ++it)
+    for (WaypointTree::const_iterator it = waypoints_.cbegin(); it != waypoints_.cend(); ++it)
     {
       typeIndex_[it->second.type].push_back(it->first);
     }
@@ -38,7 +38,7 @@ namespace vishnyakov
       name_ = other.name_;
       waypoints_ = other.waypoints_;
       typeIndex_.clear();
-      for (LIter< std::pair< const std::string, Waypoint > > it = waypoints_.begin(); it != waypoints_.end(); ++it)
+      for (WaypointTree::const_iterator it = waypoints_.cbegin(); it != waypoints_.cend(); ++it)
       {
         typeIndex_[it->second.type].push_back(it->first);
       }
@@ -114,8 +114,8 @@ namespace vishnyakov
 
   const Waypoint* Map::findWaypoint(const std::string& name) const
   {
-    AVLTree< std::string, Waypoint, std::less< std::string > >::const_iterator it = waypoints_.find(name);
-    if (it == waypoints_.end())
+    WaypointTree::const_iterator it = waypoints_.find(name);
+    if (it == waypoints_.cend())
     {
       return nullptr;
     }
@@ -124,7 +124,7 @@ namespace vishnyakov
 
   Waypoint* Map::findWaypoint(const std::string& name)
   {
-    AVLTree< std::string, Waypoint, std::less< std::string > >::iterator it = waypoints_.find(name);
+    WaypointTree::iterator it = waypoints_.find(name);
     if (it == waypoints_.end())
     {
       return nullptr;

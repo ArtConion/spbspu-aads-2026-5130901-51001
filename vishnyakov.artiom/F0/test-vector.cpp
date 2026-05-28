@@ -233,6 +233,90 @@ namespace vishnyakov
     BOOST_TEST(sum == 6);
   }
 
+  BOOST_AUTO_TEST_CASE(EqualityOperatorEqual)
+  {
+    Vector< int > v1;
+    v1.push_back(1);
+    v1.push_back(2);
+    v1.push_back(3);
+
+    Vector< int > v2;
+    v2.push_back(1);
+    v2.push_back(2);
+    v2.push_back(3);
+
+    BOOST_TEST(v1 == v2);
+    BOOST_TEST(!(v1 != v2));
+  }
+
+  BOOST_AUTO_TEST_CASE(EqualityOperatorDifferentValues)
+  {
+    Vector< int > v1;
+    v1.push_back(1);
+    v1.push_back(2);
+    v1.push_back(3);
+
+    Vector< int > v2;
+    v2.push_back(1);
+    v2.push_back(2);
+    v2.push_back(4);
+
+    BOOST_TEST(v1 != v2);
+    BOOST_TEST(!(v1 == v2));
+  }
+
+  BOOST_AUTO_TEST_CASE(EqualityOperatorDifferentSize)
+  {
+    Vector< int > v1;
+    v1.push_back(1);
+    v1.push_back(2);
+    v1.push_back(3);
+
+    Vector< int > v2;
+    v2.push_back(1);
+    v2.push_back(2);
+
+    BOOST_TEST(v1 != v2);
+    BOOST_TEST(!(v1 == v2));
+  }
+
+  BOOST_AUTO_TEST_CASE(EqualityOperatorBothEmpty)
+  {
+    Vector< int > v1;
+    Vector< int > v2;
+    BOOST_TEST(v1 == v2);
+    BOOST_TEST(!(v1 != v2));
+  }
+
+  BOOST_AUTO_TEST_CASE(EqualityOperatorOneEmpty)
+  {
+    Vector< int > v1;
+    v1.push_back(1);
+
+    Vector< int > v2;
+
+    BOOST_TEST(v1 != v2);
+    BOOST_TEST(!(v1 == v2));
+  }
+
+  BOOST_AUTO_TEST_CASE(EqualityOperatorWithStrings)
+  {
+    Vector< std::string > v1;
+    v1.push_back("hello");
+    v1.push_back("world");
+
+    Vector< std::string > v2;
+    v2.push_back("hello");
+    v2.push_back("world");
+
+    Vector< std::string > v3;
+    v3.push_back("hello");
+    v3.push_back("WORLD");
+
+    BOOST_TEST(v1 == v2);
+    BOOST_TEST(v1 != v3);
+  }
+
   BOOST_AUTO_TEST_SUITE_END()
 }
 

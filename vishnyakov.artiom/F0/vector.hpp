@@ -176,6 +176,29 @@ namespace vishnyakov
   }
 
   template< class T >
+  bool operator==(const Vector< T >& lhs, const Vector< T >& rhs)
+  {
+    if (lhs.size() != rhs.size())
+    {
+      return false;
+    }
+    for (size_t i = 0; i < lhs.size(); ++i)
+    {
+      if (lhs[i] != rhs[i])
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  template< class T >
+  bool operator!=(const Vector< T >& lhs, const Vector< T >& rhs)
+  {
+    return !(lhs == rhs);
+  }
+
+  template< class T >
   typename Vector< T >::iterator Vector< T >::begin() noexcept
   {
     return data_;

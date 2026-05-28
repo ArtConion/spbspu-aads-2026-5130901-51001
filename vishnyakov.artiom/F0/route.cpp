@@ -3,7 +3,6 @@
 #include <cmath>
 #include <algorithm>
 #include <limits>
-#include <vector>
 #include <random>
 
 namespace vishnyakov
@@ -166,9 +165,9 @@ namespace vishnyakov
     startStop.distanceFromPrev = 0.0;
     allStops.push_back(startStop);
 
-    for (auto it = points.cbegin(); it != points.cend(); ++it)
+    for (LCIter< std::pair< std::string, Waypoint > > it = points.cbegin(); it != points.cend(); ++it)
     {
-      const auto& point = *it;
+      const std::pair< std::string, Waypoint >& point = *it;
       const Waypoint& wp = point.second;
 
       SegmentResult seg = traverseSegment(
@@ -179,10 +178,10 @@ namespace vishnyakov
       );
 
       double segmentDistance = 0.0;
-      for (const auto& stop : seg.stops)
+      for (LCIter< RouteStop > stopIt = seg.stops.cbegin(); stopIt != seg.stops.cend(); ++stopIt)
       {
-        allStops.push_back(stop);
-        segmentDistance += stop.distanceFromPrev;
+        allStops.push_back(*stopIt);
+        segmentDistance += stopIt->distanceFromPrev;
       }
 
       result.totalDistance += segmentDistance;
@@ -236,10 +235,11 @@ namespace vishnyakov
       double bestDist = std::numeric_limits< double >::max();
 
       int idx = 0;
-      for (auto it = points.cbegin(); it != points.cend(); ++it, ++idx)
+      for (LCIter< std::pair< std::string, Waypoint > > it = points.cbegin(); it != points.cend(); ++it, ++idx)
       {
         int vIdx = 0;
-        for (auto vIt = visited.cbegin(); vIt != visited.cend(); ++vIt, ++vIdx)
+        LCIter< bool > vIt = visited.cbegin();
+        for (; vIt != visited.cend(); ++vIt, ++vIdx)
         {
           if (vIdx == idx)
           {
@@ -247,7 +247,7 @@ namespace vishnyakov
             {
               break;
             }
-            const auto& wp = it->second;
+            const Waypoint& wp = it->second;
             double dx = static_cast< double >(wp.x - currentX);
             double dz = static_cast< double >(wp.z - currentZ);
             double dist = std::sqrt(dx * dx + dz * dz);
@@ -268,8 +268,8 @@ namespace vishnyakov
       }
 
       int pointIdx = 0;
-      const std::pair< std::string, Waypoint >* selectedPoint = nullptr;
-      for (auto it = points.cbegin(); it != points.cend(); ++it, ++pointIdx)
+      const std::pair< std::string, Waypoint >* selectedPoint = NULL;
+      for (LCIter< std::pair< std::string, Waypoint > > it = points.cbegin(); it != points.cend(); ++it, ++pointIdx)
       {
         if (pointIdx == bestIndex)
         {
@@ -285,7 +285,7 @@ namespace vishnyakov
 
       greedyOrder.push_back(*selectedPoint);
 
-      const auto& wp = selectedPoint->second;
+      const Waypoint& wp = selectedPoint->second;
 
       SegmentResult seg = traverseSegment(
         currentPointName, currentX, currentZ,
@@ -301,7 +301,7 @@ namespace vishnyakov
       isAtPoint = true;
 
       int vIdx = 0;
-      for (auto vIt = visited.begin(); vIt != visited.end(); ++vIt, ++vIdx)
+      for (LIter< bool > vIt = visited.begin(); vIt != visited.end(); ++vIt, ++vIdx)
       {
         if (vIdx == bestIndex)
         {
@@ -315,6 +315,32 @@ namespace vishnyakov
     return buildRouteFromOrder(greedyOrder, startX, startZ, startTime);
   }
 
+  void reverseListRange(List< std::pair< std::string, Waypoint > >& lst,
+                         LIter< std::pair< std::string, Waypoint > > first,
+                         LIter< std::pair< std::string, Waypoint > > last)
+  {
+    if (first == last)
+    {
+      return;
+    }
+
+    LIter< std::pair< std::string, Waypoint > > left = first;
+    LIter< std::pair< std::string, Waypoint > > right = last;
+
+    while (left != right)
+    {
+      LIter< std::pair< std::string, Waypoint > > nextLeft = left;
+      ++nextLeft;
+      if (nextLeft == right)
+      {
+        break;
+      }
+      std::swap(*left, *right);
+      ++left;
+      --right;
+    }
+  }
+
   RouteResult improve2Opt(
     const List< std::pair< std::string, Waypoint > >& points,
     int startX, int startZ,
@@ -325,8 +351,8 @@ namespace vishnyakov
       return buildGreedyRoute(points, startX, startZ, startTime);
     }
 
-    std::vector< std::pair< std::string, Waypoint > > pointVec;
-    for (auto it = points.cbegin(); it != points.cend(); ++it)
+    Vector< std::pair< std::string, Waypoint > > pointVec;
+    for (LCIter< std::pair< std::string, Waypoint > > it = points.cbegin(); it != points.cend(); ++it)
     {
       pointVec.push_back(*it);
     }
@@ -357,7 +383,14 @@ namespace vishnyakov
 
           if (newDist < currentDist - 1e-6)
           {
-            std::reverse(pointVec.begin() + next_i, pointVec.begin() + j + 1);
+            size_t left = next_i;
+            size_t right = j;
+            while (left < right)
+            {
+              std::swap(pointVec[left], pointVec[right]);
+              ++left;
+              --right;
+            }
             improved = true;
           }
         }
@@ -365,9 +398,9 @@ namespace vishnyakov
     }
 
     List< std::pair< std::string, Waypoint > > optimizedPoints;
-    for (const auto& p : pointVec)
+    for (size_t i = 0; i < pointVec.size(); ++i)
     {
-      optimizedPoints.push_back(p);
+      optimizedPoints.push_back(pointVec[i]);
     }
 
     return buildRouteFromOrder(optimizedPoints, startX, startZ, startTime);
@@ -388,25 +421,36 @@ namespace vishnyakov
     }
 
     size_t n = points.size();
-    std::vector< std::pair< std::string, Waypoint > > pointVec;
-    for (auto it = points.cbegin(); it != points.cend(); ++it)
+
+    Vector< std::pair< std::string, Waypoint > > pointVec;
+    for (LCIter< std::pair< std::string, Waypoint > > it = points.cbegin(); it != points.cend(); ++it)
     {
       pointVec.push_back(*it);
     }
 
-    std::vector< bool > inMST(n, false);
-    std::vector< double > minDist(n, std::numeric_limits< double >::max());
-    std::vector< int > parent(n, -1);
+    Vector< bool > inMST;
+    Vector< double > minDist;
+    Vector< int > parent;
+
+    for (size_t i = 0; i < n; ++i)
+    {
+      inMST.push_back(false);
+      minDist.push_back(std::numeric_limits< double >::max());
+      parent.push_back(-1);
+    }
 
     minDist[0] = 0.0;
 
     for (size_t i = 0; i < n; ++i)
     {
       int u = -1;
+      double bestDist = std::numeric_limits< double >::max();
+
       for (size_t j = 0; j < n; ++j)
       {
-        if (!inMST[j] && (u == -1 || minDist[j] < minDist[u]))
+        if (!inMST[j] && minDist[j] < bestDist)
         {
+          bestDist = minDist[j];
           u = j;
         }
       }
@@ -418,11 +462,14 @@ namespace vishnyakov
 
       inMST[u] = true;
 
+      const Waypoint& pointU = pointVec[u].second;
+
       for (size_t v = 0; v < n; ++v)
       {
         if (!inMST[v])
         {
-          double dist = distanceBetween(pointVec[u].second, pointVec[v].second);
+          const Waypoint& pointV = pointVec[v].second;
+          double dist = distanceBetween(pointU, pointV);
           if (dist < minDist[v])
           {
             minDist[v] = dist;
@@ -432,7 +479,12 @@ namespace vishnyakov
       }
     }
 
-    std::vector< std::vector< int > > tree(n);
+    Vector< Vector< int > > tree;
+    for (size_t i = 0; i < n; ++i)
+    {
+      tree.push_back(Vector< int >());
+    }
+
     for (size_t i = 1; i < n; ++i)
     {
       if (parent[i] != -1)
@@ -442,10 +494,14 @@ namespace vishnyakov
       }
     }
 
-    std::vector< int > order;
-    std::vector< bool > visited(n, false);
+    Vector< int > order;
+    Vector< bool > visited;
+    for (size_t i = 0; i < n; ++i)
+    {
+      visited.push_back(false);
+    }
 
-    std::vector< int > stack;
+    Vector< int > stack;
     stack.push_back(0);
     visited[0] = true;
 
@@ -455,8 +511,9 @@ namespace vishnyakov
       stack.pop_back();
       order.push_back(u);
 
-      for (int v : tree[u])
+      for (size_t i = 0; i < tree[u].size(); ++i)
       {
+        int v = tree[u][i];
         if (!visited[v])
         {
           visited[v] = true;
@@ -466,9 +523,9 @@ namespace vishnyakov
     }
 
     List< std::pair< std::string, Waypoint > > mstOrder;
-    for (int idx : order)
+    for (size_t i = 0; i < order.size(); ++i)
     {
-      mstOrder.push_back(pointVec[idx]);
+      mstOrder.push_back(pointVec[order[i]]);
     }
 
     return buildRouteFromOrder(mstOrder, startX, startZ, startTime);
@@ -492,43 +549,57 @@ namespace vishnyakov
     const double Q = 100.0;
 
     size_t n = points.size();
-    std::vector< std::pair< std::string, Waypoint > > pointVec;
-    for (auto it = points.cbegin(); it != points.cend(); ++it)
+
+    Vector< std::pair< std::string, Waypoint > > pointVec;
+    for (LCIter< std::pair< std::string, Waypoint > > it = points.cbegin(); it != points.cend(); ++it)
     {
       pointVec.push_back(*it);
     }
 
-    std::vector< std::vector< double > > dist(n, std::vector< double >(n, 0.0));
+    Vector< Vector< double > > dist;
+    Vector< Vector< double > > pheromone;
+
     for (size_t i = 0; i < n; ++i)
     {
+      dist.push_back(Vector< double >());
+      pheromone.push_back(Vector< double >());
       for (size_t j = 0; j < n; ++j)
       {
         if (i != j)
         {
-          dist[i][j] = distanceBetween(pointVec[i].second, pointVec[j].second);
+          double d = distanceBetween(pointVec[i].second, pointVec[j].second);
+          dist.back().push_back(d);
+          pheromone.back().push_back(1.0);
+        }
+        else
+        {
+          dist.back().push_back(0.0);
+          pheromone.back().push_back(0.0);
         }
       }
     }
-
-    std::vector< std::vector< double > > pheromone(n, std::vector< double >(n, 1.0));
 
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0.0, 1.0);
 
-    std::vector< int > bestPath;
+    Vector< int > bestPath;
     double bestLength = std::numeric_limits< double >::max();
 
     for (int iter = 0; iter < iterations; ++iter)
     {
-      std::vector< std::vector< int > > antPaths(antsCount);
-      std::vector< double > antLengths(antsCount, 0.0);
+      Vector< Vector< int > > antPaths;
+      Vector< double > antLengths;
 
       for (int ant = 0; ant < antsCount; ++ant)
       {
-        std::vector< bool > visited(n, false);
-        std::vector< int > path;
-        path.reserve(n);
+        Vector< bool > visited;
+        for (size_t i = 0; i < n; ++i)
+        {
+          visited.push_back(false);
+        }
+
+        Vector< int > path;
 
         std::uniform_int_distribution<> startDist(0, n - 1);
         int current = startDist(gen);
@@ -537,7 +608,7 @@ namespace vishnyakov
 
         for (size_t step = 1; step < n; ++step)
         {
-          std::vector< double > probs(n, 0.0);
+          Vector< double > probs;
           double sum = 0.0;
 
           for (size_t next = 0; next < n; ++next)
@@ -546,8 +617,13 @@ namespace vishnyakov
             {
               double pherom = std::pow(pheromone[current][next], ALPHA);
               double heuristic = std::pow(1.0 / dist[current][next], BETA);
-              probs[next] = pherom * heuristic;
-              sum += probs[next];
+              double prob = pherom * heuristic;
+              probs.push_back(prob);
+              sum += prob;
+            }
+            else
+            {
+              probs.push_back(0.0);
             }
           }
 
@@ -570,7 +646,8 @@ namespace vishnyakov
             }
             if (selected != -1)
             {
-              antLengths[ant] += dist[current][selected];
+              antLengths.push_back(0.0);
+              antLengths.back() += dist[current][selected];
               current = selected;
               path.push_back(current);
               visited[current] = true;
@@ -578,7 +655,7 @@ namespace vishnyakov
           }
         }
 
-        antPaths[ant] = path;
+        antPaths.push_back(path);
       }
 
       for (size_t i = 0; i < n; ++i)
@@ -611,9 +688,9 @@ namespace vishnyakov
     }
 
     List< std::pair< std::string, Waypoint > > orderedPoints;
-    for (int idx : bestPath)
+    for (size_t i = 0; i < bestPath.size(); ++i)
     {
-      orderedPoints.push_back(pointVec[idx]);
+      orderedPoints.push_back(pointVec[bestPath[i]]);
     }
 
     return buildRouteFromOrder(orderedPoints, startX, startZ, startTime);
@@ -662,10 +739,10 @@ namespace vishnyakov
     const List< std::string >& ignorePoints)
   {
     List< std::pair< std::string, Waypoint > > points;
-    for (auto it = map->begin(); it != map->end(); ++it)
+    for (LCIter< std::pair< const std::string, Waypoint > > it = map->begin(); it != map->end(); ++it)
     {
       bool ignored = false;
-      for (auto ignIt = ignorePoints.cbegin(); ignIt != ignorePoints.cend(); ++ignIt)
+      for (LCIter< std::string > ignIt = ignorePoints.cbegin(); ignIt != ignorePoints.cend(); ++ignIt)
       {
         if (it->first == *ignIt)
         {

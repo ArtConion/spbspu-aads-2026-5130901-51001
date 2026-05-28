@@ -755,9 +755,8 @@ namespace vishnyakov
       int startX, startZ;
       double startTime;
       int ignoreCount;
-      iss >> mapName >> startX >> startZ >> startTime >> ignoreCount;
 
-      if (!validateRouteParams(mapName, startTime, ignoreCount, out, "plan-route-greedy"))
+      if (!validateRouteParams(iss, out, "plan-route-greedy", mapName, startX, startZ, startTime, ignoreCount))
       {
         return;
       }
@@ -790,12 +789,12 @@ namespace vishnyakov
       int startX, startZ;
       double startTime;
       int ignoreCount;
-      iss >> mapName >> startX >> startZ >> startTime >> ignoreCount;
 
-      if (!validateRouteParams(mapName, startTime, ignoreCount, out, "plan-route-2opt"))
+      if (!validateRouteParams(iss, out, "plan-route-2opt", mapName, startX, startZ, startTime, ignoreCount))
       {
         return;
       }
+
 
       List< std::string > ignorePoints = parseIgnorePoints(iss, ignoreCount);
       bool shortOutput = parseShortFlag(iss);
@@ -825,12 +824,12 @@ namespace vishnyakov
       int startX, startZ;
       double startTime;
       int ignoreCount;
-      iss >> mapName >> startX >> startZ >> startTime >> ignoreCount;
 
-      if (!validateRouteParams(mapName, startTime, ignoreCount, out, "plan-route-mst"))
+      if (!validateRouteParams(iss, out, "plan-route-mst", mapName, startX, startZ, startTime, ignoreCount))
       {
         return;
       }
+
 
       List< std::string > ignorePoints = parseIgnorePoints(iss, ignoreCount);
       bool shortOutput = parseShortFlag(iss);
@@ -860,12 +859,12 @@ namespace vishnyakov
       int startX, startZ;
       double startTime;
       int ignoreCount;
-      iss >> mapName >> startX >> startZ >> startTime >> ignoreCount;
 
-      if (!validateRouteParams(mapName, startTime, ignoreCount, out, "plan-route-ant"))
+      if (!validateRouteParams(iss, out, "plan-route-ant", mapName, startX, startZ, startTime, ignoreCount))
       {
         return;
       }
+
 
       List< std::string > ignorePoints = parseIgnorePoints(iss, ignoreCount);
       bool shortOutput = parseShortFlag(iss);
@@ -895,9 +894,8 @@ namespace vishnyakov
       int startX, startZ;
       double startTime;
       int ignoreCount;
-      iss >> mapName >> startX >> startZ >> startTime >> ignoreCount;
 
-      if (!validateRouteParams(mapName, startTime, ignoreCount, out, "best-route"))
+      if (!validateRouteParams(iss, out, "best-route", mapName, startX, startZ, startTime, ignoreCount))
       {
         return;
       }

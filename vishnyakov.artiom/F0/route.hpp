@@ -98,11 +98,13 @@ namespace vishnyakov
   bool parseShortFlag(std::istringstream& iss);
 
   bool validateRouteParams(
-    const std::string& mapName,
-    double startTime,
-    int ignoreCount,
+    std::istringstream& iss,
     std::ostream& out,
-    const std::string& cmdName
+    const std::string& cmdName,
+    std::string& mapName,
+    int& startX, int& startZ,
+    double& startTime,
+    int& ignoreCount
   );
 
   List< std::pair< std::string, Waypoint > > collectPoints(

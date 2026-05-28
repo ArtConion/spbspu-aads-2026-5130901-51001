@@ -694,13 +694,17 @@ namespace vishnyakov
   }
 
   bool validateRouteParams(
-    const std::string& mapName,
-    double startTime,
-    int ignoreCount,
+    std::istringstream& iss,
     std::ostream& out,
-    const std::string& cmdName)
+    const std::string& cmdName,
+    std::string& mapName,
+    int& startX, int& startZ,
+    double& startTime,
+    int& ignoreCount)
   {
-    if (mapName.empty() || startTime < 0.0 || startTime >= CYCLE_LENGTH || ignoreCount < 0)
+    iss >> mapName >> startX >> startZ >> startTime >> ignoreCount;
+    
+    if (iss.fail() || mapName.empty() || startTime < 0.0 || startTime >= CYCLE_LENGTH || ignoreCount < 0)
     {
       out << "Wrong usage. Use:\n";
       printCommandUsage(out, cmdName);

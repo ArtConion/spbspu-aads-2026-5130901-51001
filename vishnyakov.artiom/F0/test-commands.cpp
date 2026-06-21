@@ -320,7 +320,7 @@ namespace vishnyakov
     processCommands(in, world, out);
 
     std::string result = out.str();
-    std::size_t resultPos = result.find("1. ");
+    size_t resultPos = result.find("1. ");
     BOOST_REQUIRE(resultPos != std::string::npos);
     std::string afterResult = result.substr(resultPos);
 
@@ -374,7 +374,7 @@ namespace vishnyakov
     processCommands(in, world, out);
 
     std::string result = out.str();
-    std::size_t firstHousePos = result.find("home 100 64 house");
+    size_t firstHousePos = result.find("home 100 64 house");
     if (firstHousePos == std::string::npos)
     {
       firstHousePos = result.find("castle 500 200 house");
@@ -663,7 +663,7 @@ namespace vishnyakov
     processCommands(in, world, out);
 
     std::string result = out.str();
-    std::size_t resultPos = result.find("Маршрут (greedy):");
+    size_t resultPos = result.find("Маршрут (greedy):");
     BOOST_REQUIRE(resultPos != std::string::npos);
     std::string afterResult = result.substr(resultPos);
 
@@ -718,7 +718,7 @@ namespace vishnyakov
 
     std::string result = out.str();
 
-    std::size_t headerPos = result.find("Маршрут (greedy):");
+    size_t headerPos = result.find("Маршрут (greedy):");
     BOOST_REQUIRE(headerPos != std::string::npos);
     std::string afterHeader = result.substr(headerPos);
 
@@ -747,7 +747,7 @@ namespace vishnyakov
 
     std::string result = out.str();
 
-    std::size_t headerPos = result.find("Маршрут (greedy):");
+    size_t headerPos = result.find("Маршрут (greedy):");
     BOOST_REQUIRE(headerPos != std::string::npos);
     std::string afterHeader = result.substr(headerPos);
 
@@ -770,7 +770,7 @@ namespace vishnyakov
     processCommands(in, world, out);
 
     std::string result = out.str();
-    std::size_t headerPos = result.find("Маршрут (2-opt):");
+    size_t headerPos = result.find("Маршрут (2-opt):");
     BOOST_REQUIRE(headerPos != std::string::npos);
     std::string afterHeader = result.substr(headerPos);
 
@@ -794,7 +794,7 @@ namespace vishnyakov
     processCommands(in, world, out);
 
     std::string result = out.str();
-    std::size_t headerPos = result.find("Маршрут (MST):");
+    size_t headerPos = result.find("Маршрут (MST):");
     BOOST_REQUIRE(headerPos != std::string::npos);
     std::string afterHeader = result.substr(headerPos);
 
@@ -818,7 +818,7 @@ namespace vishnyakov
     processCommands(in, world, out);
 
     std::string result = out.str();
-    std::size_t headerPos = result.find("Маршрут (ant):");
+    size_t headerPos = result.find("Маршрут (ant):");
     BOOST_REQUIRE(headerPos != std::string::npos);
     std::string afterHeader = result.substr(headerPos);
 

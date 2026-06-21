@@ -103,7 +103,7 @@ namespace vishnyakov
     return findMap(name) != maps_.cend();
   }
 
-  std::size_t World::mapCount() const noexcept
+  size_t World::mapCount() const noexcept
   {
     return maps_.size();
   }

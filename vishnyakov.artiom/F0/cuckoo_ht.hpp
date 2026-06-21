@@ -15,7 +15,7 @@ namespace vishnyakov
   {
   public:
     CuckooHashTable();
-    explicit CuckooHashTable(std::size_t initial_capacity);
+    explicit CuckooHashTable(size_t initial_capacity);
     CuckooHashTable(const CuckooHashTable& other);
     CuckooHashTable(CuckooHashTable&& other) noexcept;
     ~CuckooHashTable();
@@ -24,8 +24,8 @@ namespace vishnyakov
     CuckooHashTable& operator=(CuckooHashTable&& other) noexcept;
 
     bool empty() const noexcept;
-    std::size_t size() const noexcept;
-    std::size_t capacity() const noexcept;
+    size_t size() const noexcept;
+    size_t capacity() const noexcept;
 
     void add(const Key& key, const Value& value);
     void add(Key&& key, Value&& value);
@@ -38,9 +38,9 @@ namespace vishnyakov
     void clear() noexcept;
 
   private:
-    static constexpr std::size_t DEFAULT_CAPACITY = 16;
-    static constexpr std::size_t MAX_LOOP = 100;
-    static constexpr std::size_t GOLDEN_RATIO = 2654435761U;
+    static constexpr size_t DEFAULT_CAPACITY = 16;
+    static constexpr size_t MAX_LOOP = 100;
+    static constexpr size_t GOLDEN_RATIO = 2654435761U;
 
     struct Bucket
     {
@@ -53,14 +53,14 @@ namespace vishnyakov
 
     Bucket* table1_;
     Bucket* table2_;
-    std::size_t table_size_;
-    std::size_t size_;
+    size_t table_size_;
+    size_t size_;
     Hash hash1_;
     Hash hash2_;
     Equal equal_;
 
-    std::size_t index1(const Key& key) const;
-    std::size_t index2(const Key& key) const;
+    size_t index1(const Key& key) const;
+    size_t index2(const Key& key) const;
     void rehash();
     int find_bucket(const Key& key) const;
   };
@@ -80,7 +80,7 @@ namespace vishnyakov
   }
 
   template< class Key, class Value, class Hash, class Equal >
-  CuckooHashTable< Key, Value, Hash, Equal >::CuckooHashTable(std::size_t initial_capacity):
+  CuckooHashTable< Key, Value, Hash, Equal >::CuckooHashTable(size_t initial_capacity):
     table1_(nullptr),
     table2_(nullptr),
     table_size_(initial_capacity > 0 ? initial_capacity : DEFAULT_CAPACITY),
@@ -105,7 +105,7 @@ namespace vishnyakov
   {
     table1_ = new Bucket[table_size_];
     table2_ = new Bucket[table_size_];
-    for (std::size_t i = 0; i < table_size_; ++i)
+    for (size_t i = 0; i < table_size_; ++i)
     {
       table1_[i] = other.table1_[i];
       table2_[i] = other.table2_[i];
@@ -181,25 +181,25 @@ namespace vishnyakov
   }
 
   template< class Key, class Value, class Hash, class Equal >
-  std::size_t CuckooHashTable< Key, Value, Hash, Equal >::size() const noexcept
+  size_t CuckooHashTable< Key, Value, Hash, Equal >::size() const noexcept
   {
     return size_;
   }
 
   template< class Key, class Value, class Hash, class Equal >
-  std::size_t CuckooHashTable< Key, Value, Hash, Equal >::capacity() const noexcept
+  size_t CuckooHashTable< Key, Value, Hash, Equal >::capacity() const noexcept
   {
     return table_size_;
   }
 
   template< class Key, class Value, class Hash, class Equal >
-  std::size_t CuckooHashTable< Key, Value, Hash, Equal >::index1(const Key& key) const
+  size_t CuckooHashTable< Key, Value, Hash, Equal >::index1(const Key& key) const
   {
     return hash1_(key) % table_size_;
   }
 
   template< class Key, class Value, class Hash, class Equal >
-  std::size_t CuckooHashTable< Key, Value, Hash, Equal >::index2(const Key& key) const
+  size_t CuckooHashTable< Key, Value, Hash, Equal >::index2(const Key& key) const
   {
     return (hash2_(key) * GOLDEN_RATIO) % table_size_;
   }
@@ -207,13 +207,13 @@ namespace vishnyakov
   template< class Key, class Value, class Hash, class Equal >
   int CuckooHashTable< Key, Value, Hash, Equal >::find_bucket(const Key& key) const
   {
-    std::size_t idx1 = index1(key);
+    size_t idx1 = index1(key);
     if (table1_[idx1].occupied && equal_(table1_[idx1].key, key))
     {
       return static_cast<int>(idx1);
     }
 
-    std::size_t idx2 = index2(key);
+    size_t idx2 = index2(key);
     if (table2_[idx2].occupied && equal_(table2_[idx2].key, key))
     {
       return static_cast<int>(idx2 + table_size_);
@@ -238,9 +238,9 @@ namespace vishnyakov
     Key k = key;
     Value v = value;
 
-    for (std::size_t loop = 0; loop < MAX_LOOP; ++loop)
+    for (size_t loop = 0; loop < MAX_LOOP; ++loop)
     {
-      std::size_t idx1 = index1(k);
+      size_t idx1 = index1(k);
       if (!table1_[idx1].occupied)
       {
         table1_[idx1].key = k;
@@ -252,7 +252,7 @@ namespace vishnyakov
       std::swap(k, table1_[idx1].key);
       std::swap(v, table1_[idx1].value);
 
-      std::size_t idx2 = index2(k);
+      size_t idx2 = index2(k);
       if (!table2_[idx2].occupied)
       {
         table2_[idx2].key = k;
@@ -278,10 +278,10 @@ namespace vishnyakov
   template< class Key, class Value, class Hash, class Equal >
   void CuckooHashTable< Key, Value, Hash, Equal >::rehash()
   {
-    std::size_t new_size = table_size_ * 2;
+    size_t new_size = table_size_ * 2;
     CuckooHashTable new_table(new_size);
 
-    for (std::size_t i = 0; i < table_size_; ++i)
+    for (size_t i = 0; i < table_size_; ++i)
     {
       if (table1_[i].occupied)
       {
@@ -302,7 +302,7 @@ namespace vishnyakov
   template< class Key, class Value, class Hash, class Equal >
   void CuckooHashTable< Key, Value, Hash, Equal >::clear() noexcept
   {
-    for (std::size_t i = 0; i < table_size_; ++i)
+    for (size_t i = 0; i < table_size_; ++i)
     {
       table1_[i].occupied = false;
       table2_[i].occupied = false;

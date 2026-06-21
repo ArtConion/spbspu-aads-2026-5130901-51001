@@ -11,7 +11,7 @@ namespace vishnyakov
   class SipHash
   {
   public:
-    template < class T >
+    template< class T >
     std::size_t operator()(const T& key) const
     {
       return boost::hash< T >()(key);

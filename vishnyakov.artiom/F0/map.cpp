@@ -156,7 +156,7 @@ namespace vishnyakov
     return waypoints_.empty();
   }
 
-  std::size_t Map::size() const noexcept
+  size_t Map::size() const noexcept
   {
     return waypoints_.size();
   }

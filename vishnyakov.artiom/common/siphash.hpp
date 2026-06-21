@@ -14,12 +14,12 @@ namespace vishnyakov
   class SipHash
   {
   public:
-    template <class T>
-    std::size_t operator()(const T& key) const
+    template< class T >
+    size_t operator()(const T& key) const
     {
       boost::hash2::siphash_64 hasher{};
       boost::hash2::hash_append(hasher, {}, key);
-      return boost::hash2::get_integral_result<std::size_t>(hasher);
+      return boost::hash2::get_integral_result<size_t>(hasher);
     }
   };
 }

@@ -36,7 +36,7 @@ namespace vishnyakov
     void findByType(const std::string& type, std::ostream& out) const;
 
     bool empty() const noexcept;
-    std::size_t size() const noexcept;
+    size_t size() const noexcept;
 
     iterator begin() noexcept;
     iterator end() noexcept;

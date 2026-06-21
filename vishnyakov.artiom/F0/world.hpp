@@ -28,7 +28,7 @@ namespace vishnyakov
     Map* getMap(const std::string& name);
     const Map* getMap(const std::string& name) const;
     bool hasMap(const std::string& name) const;
-    std::size_t mapCount() const noexcept;
+    size_t mapCount() const noexcept;
     bool empty() const noexcept;
 
     void listMaps(std::ostream& out) const;

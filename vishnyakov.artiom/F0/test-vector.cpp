@@ -18,7 +18,7 @@ namespace vishnyakov
     Vector< int > v(5);
     BOOST_TEST(v.size() == 5);
     BOOST_TEST(v.capacity() >= 5);
-    for (std::size_t i = 0; i < v.size(); ++i)
+    for (size_t i = 0; i < v.size(); ++i)
     {
       BOOST_TEST(v[i] == 0);
     }
@@ -28,7 +28,7 @@ namespace vishnyakov
   {
     Vector< int > v(5, 42);
     BOOST_TEST(v.size() == 5);
-    for (std::size_t i = 0; i < v.size(); ++i)
+    for (size_t i = 0; i < v.size(); ++i)
     {
       BOOST_TEST(v[i] == 42);
     }

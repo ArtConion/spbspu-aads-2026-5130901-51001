@@ -70,7 +70,7 @@ namespace vishnyakov
     const_iterator cend() const noexcept;
 
     bool empty() const noexcept;
-    std::size_t size() const noexcept;
+    size_t size() const noexcept;
 
     void push(const Key& key, const Value& value);
     void push(Key&& key, Value&& value);
@@ -87,7 +87,7 @@ namespace vishnyakov
 
   private:
     Node* root_;
-    std::size_t size_;
+    size_t size_;
     Compare comp_;
 
     Node* find_node(const Key& key) const;
@@ -289,7 +289,7 @@ namespace vishnyakov
   }
 
   template< class Key, class Value, class Compare >
-  std::size_t AVLTree< Key, Value, Compare >::size() const noexcept
+  size_t AVLTree< Key, Value, Compare >::size() const noexcept
   {
     return size_;
   }
@@ -681,8 +681,6 @@ namespace vishnyakov
     return node;
   }
 
-  // ========== AVLIter implementation ==========
-
   template< class Key, class Value, class Compare >
   AVLIter< Key, Value, Compare >::AVLIter():
     node_(nullptr),
@@ -751,8 +749,6 @@ namespace vishnyakov
   {
     return !(*this == other);
   }
-
-  // ========== AVLCIter implementation ==========
 
   template< class Key, class Value, class Compare >
   AVLCIter< Key, Value, Compare >::AVLCIter():

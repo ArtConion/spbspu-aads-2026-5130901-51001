@@ -15,8 +15,8 @@ namespace vishnyakov
     using const_iterator = const T*;
 
     Vector();
-    explicit Vector(std::size_t count);
-    Vector(std::size_t count, const T& value);
+    explicit Vector(size_t count);
+    Vector(size_t count, const T& value);
     Vector(const Vector& other);
     Vector(Vector&& other) noexcept;
     ~Vector();
@@ -32,16 +32,16 @@ namespace vishnyakov
     const_iterator cend() const noexcept;
 
     bool empty() const noexcept;
-    std::size_t size() const noexcept;
-    std::size_t capacity() const noexcept;
+    size_t size() const noexcept;
+    size_t capacity() const noexcept;
 
-    void reserve(std::size_t new_cap);
+    void reserve(size_t new_cap);
     void shrink_to_fit();
 
-    T& operator[](std::size_t index) noexcept;
-    const T& operator[](std::size_t index) const noexcept;
-    T& at(std::size_t index);
-    const T& at(std::size_t index) const;
+    T& operator[](size_t index) noexcept;
+    const T& operator[](size_t index) const noexcept;
+    T& at(size_t index);
+    const T& at(size_t index) const;
 
     T& front() noexcept;
     const T& front() const noexcept;
@@ -54,7 +54,7 @@ namespace vishnyakov
 
     iterator insert(iterator pos, const T& value);
     iterator insert(iterator pos, T&& value);
-    iterator insert(iterator pos, std::size_t count, const T& value);
+    iterator insert(iterator pos, size_t count, const T& value);
 
     iterator erase(iterator pos);
     iterator erase(iterator first, iterator last);
@@ -64,10 +64,10 @@ namespace vishnyakov
 
   private:
     T* data_;
-    std::size_t size_;
-    std::size_t capacity_;
+    size_t size_;
+    size_t capacity_;
 
-    void reallocate(std::size_t new_capacity);
+    void reallocate(size_t new_capacity);
   };
 
   template< class T >
@@ -79,7 +79,7 @@ namespace vishnyakov
   }
 
   template< class T >
-  Vector< T >::Vector(std::size_t count):
+  Vector< T >::Vector(size_t count):
     data_(nullptr),
     size_(0),
     capacity_(0)
@@ -88,7 +88,7 @@ namespace vishnyakov
     {
       reserve(count);
       size_ = count;
-      for (std::size_t i = 0; i < size_; ++i)
+      for (size_t i = 0; i < size_; ++i)
       {
         new (data_ + i) T();
       }
@@ -96,7 +96,7 @@ namespace vishnyakov
   }
 
   template< class T >
-  Vector< T >::Vector(std::size_t count, const T& value):
+  Vector< T >::Vector(size_t count, const T& value):
     data_(nullptr),
     size_(0),
     capacity_(0)
@@ -105,7 +105,7 @@ namespace vishnyakov
     {
       reserve(count);
       size_ = count;
-      for (std::size_t i = 0; i < size_; ++i)
+      for (size_t i = 0; i < size_; ++i)
       {
         new (data_ + i) T(value);
       }
@@ -122,7 +122,7 @@ namespace vishnyakov
     {
       reserve(other.size_);
       size_ = other.size_;
-      for (std::size_t i = 0; i < size_; ++i)
+      for (size_t i = 0; i < size_; ++i)
       {
         new (data_ + i) T(other.data_[i]);
       }
@@ -241,19 +241,19 @@ namespace vishnyakov
   }
 
   template< class T >
-  std::size_t Vector< T >::size() const noexcept
+  size_t Vector< T >::size() const noexcept
   {
     return size_;
   }
 
   template< class T >
-  std::size_t Vector< T >::capacity() const noexcept
+  size_t Vector< T >::capacity() const noexcept
   {
     return capacity_;
   }
 
   template< class T >
-  void Vector< T >::reserve(std::size_t new_cap)
+  void Vector< T >::reserve(size_t new_cap)
   {
     if (new_cap <= capacity_)
     {
@@ -281,19 +281,19 @@ namespace vishnyakov
   }
 
   template< class T >
-  T& Vector< T >::operator[](std::size_t index) noexcept
+  T& Vector< T >::operator[](size_t index) noexcept
   {
     return data_[index];
   }
 
   template< class T >
-  const T& Vector< T >::operator[](std::size_t index) const noexcept
+  const T& Vector< T >::operator[](size_t index) const noexcept
   {
     return data_[index];
   }
 
   template< class T >
-  T& Vector< T >::at(std::size_t index)
+  T& Vector< T >::at(size_t index)
   {
     if (index >= size_)
     {
@@ -303,7 +303,7 @@ namespace vishnyakov
   }
 
   template< class T >
-  const T& Vector< T >::at(std::size_t index) const
+  const T& Vector< T >::at(size_t index) const
   {
     if (index >= size_)
     {
@@ -341,7 +341,7 @@ namespace vishnyakov
   {
     if (size_ == capacity_)
     {
-      std::size_t new_cap = (capacity_ == 0) ? 1 : capacity_ * 2;
+      size_t new_cap = (capacity_ == 0) ? 1 : capacity_ * 2;
       reallocate(new_cap);
     }
     new (data_ + size_) T(value);
@@ -353,7 +353,7 @@ namespace vishnyakov
   {
     if (size_ == capacity_)
     {
-      std::size_t new_cap = (capacity_ == 0) ? 1 : capacity_ * 2;
+      size_t new_cap = (capacity_ == 0) ? 1 : capacity_ * 2;
       reallocate(new_cap);
     }
     new (data_ + size_) T(std::move(value));
@@ -373,13 +373,13 @@ namespace vishnyakov
   template< class T >
   typename Vector< T >::iterator Vector< T >::insert(iterator pos, const T& value)
   {
-    std::size_t index = pos - begin();
+    size_t index = pos - begin();
     if (size_ == capacity_)
     {
-      std::size_t new_cap = (capacity_ == 0) ? 1 : capacity_ * 2;
+      size_t new_cap = (capacity_ == 0) ? 1 : capacity_ * 2;
       reallocate(new_cap);
     }
-    for (std::size_t i = size_; i > index; --i)
+    for (size_t i = size_; i > index; --i)
     {
       new (data_ + i) T(std::move(data_[i - 1]));
       data_[i - 1].~T();
@@ -392,13 +392,13 @@ namespace vishnyakov
   template< class T >
   typename Vector< T >::iterator Vector< T >::insert(iterator pos, T&& value)
   {
-    std::size_t index = pos - begin();
+    size_t index = pos - begin();
     if (size_ == capacity_)
     {
-      std::size_t new_cap = (capacity_ == 0) ? 1 : capacity_ * 2;
+      size_t new_cap = (capacity_ == 0) ? 1 : capacity_ * 2;
       reallocate(new_cap);
     }
-    for (std::size_t i = size_; i > index; --i)
+    for (size_t i = size_; i > index; --i)
     {
       new (data_ + i) T(std::move(data_[i - 1]));
       data_[i - 1].~T();
@@ -409,28 +409,28 @@ namespace vishnyakov
   }
 
   template< class T >
-  typename Vector< T >::iterator Vector< T >::insert(iterator pos, std::size_t count, const T& value)
+  typename Vector< T >::iterator Vector< T >::insert(iterator pos, size_t count, const T& value)
   {
     if (count == 0)
     {
       return pos;
     }
-    std::size_t index = pos - begin();
+    size_t index = pos - begin();
     if (size_ + count > capacity_)
     {
-      std::size_t new_cap = size_ + count;
+      size_t new_cap = size_ + count;
       if (new_cap < capacity_ * 2)
       {
         new_cap = capacity_ * 2;
       }
       reallocate(new_cap);
     }
-    for (std::size_t i = size_; i > index; --i)
+    for (size_t i = size_; i > index; --i)
     {
       new (data_ + i + count - 1) T(std::move(data_[i - 1]));
       data_[i - 1].~T();
     }
-    for (std::size_t i = 0; i < count; ++i)
+    for (size_t i = 0; i < count; ++i)
     {
       new (data_ + index + i) T(value);
     }
@@ -441,9 +441,9 @@ namespace vishnyakov
   template< class T >
   typename Vector< T >::iterator Vector< T >::erase(iterator pos)
   {
-    std::size_t index = pos - begin();
+    size_t index = pos - begin();
     data_[index].~T();
-    for (std::size_t i = index + 1; i < size_; ++i)
+    for (size_t i = index + 1; i < size_; ++i)
     {
       new (data_ + i - 1) T(std::move(data_[i]));
       data_[i].~T();
@@ -459,14 +459,14 @@ namespace vishnyakov
     {
       return first;
     }
-    std::size_t first_index = first - begin();
-    std::size_t last_index = last - begin();
-    std::size_t count = last_index - first_index;
-    for (std::size_t i = first_index; i < last_index; ++i)
+    size_t first_index = first - begin();
+    size_t last_index = last - begin();
+    size_t count = last_index - first_index;
+    for (size_t i = first_index; i < last_index; ++i)
     {
       data_[i].~T();
     }
-    for (std::size_t i = last_index; i < size_; ++i)
+    for (size_t i = last_index; i < size_; ++i)
     {
       new (data_ + i - count) T(std::move(data_[i]));
       data_[i].~T();
@@ -478,7 +478,7 @@ namespace vishnyakov
   template< class T >
   void Vector< T >::clear() noexcept
   {
-    for (std::size_t i = 0; i < size_; ++i)
+    for (size_t i = 0; i < size_; ++i)
     {
       data_[i].~T();
     }
@@ -494,10 +494,10 @@ namespace vishnyakov
   }
 
   template< class T >
-  void Vector< T >::reallocate(std::size_t new_capacity)
+  void Vector< T >::reallocate(size_t new_capacity)
   {
     T* new_data = static_cast< T* >(::operator new(new_capacity * sizeof(T)));
-    for (std::size_t i = 0; i < size_; ++i)
+    for (size_t i = 0; i < size_; ++i)
     {
       new (new_data + i) T(std::move(data_[i]));
       data_[i].~T();

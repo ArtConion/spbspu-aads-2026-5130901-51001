@@ -259,24 +259,17 @@ BOOST_AUTO_TEST_CASE(test_outputNames)
   Sequence seq1;
   seq1.name = "first";
   seq1.nums = new List< size_t >();
+  seqs.push_front(std::move(seq1));
 
   Sequence seq2;
   seq2.name = "second";
   seq2.nums = new List< size_t >();
-
-  LIter< Sequence > pos = seqs.begin();
-  pos = seqs.insert_after(pos, seq1);
-  seqs.insert_after(pos, seq2);
+  seqs.insert_after(seqs.begin(), std::move(seq2));
 
   std::ostringstream out;
   outputNames(seqs, out);
 
   BOOST_TEST(out.str() == "first second\n");
-
-  for (LIter< Sequence > it = seqs.begin(); it != seqs.end(); ++it)
-  {
-    delete it->nums;
-  }
 }
 
 BOOST_AUTO_TEST_CASE(test_outputNums)
@@ -288,26 +281,19 @@ BOOST_AUTO_TEST_CASE(test_outputNums)
   seq1.nums = new List< size_t >();
   seq1.nums->push_back(1);
   seq1.nums->push_back(2);
+  seqs.push_front(std::move(seq1));
 
   Sequence seq2;
   seq2.name = "b";
   seq2.nums = new List< size_t >();
   seq2.nums->push_back(3);
-
-  LIter< Sequence > pos = seqs.begin();
-  pos = seqs.insert_after(pos, seq1);
-  seqs.insert_after(pos, seq2);
+  seqs.insert_after(seqs.begin(), std::move(seq2));
 
   std::ostringstream out;
   int result = outputNums(seqs, out);
 
   BOOST_TEST(result == 0);
   BOOST_TEST(!out.str().empty());
-
-  for (LIter< Sequence > it = seqs.begin(); it != seqs.end(); ++it)
-  {
-    delete it->nums;
-  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -382,22 +382,20 @@ namespace vishnyakov
         return;
       }
 
-      Node* first_node = other.pseudoknot_->next_;
-      Node* last_node = other.pseudoknot_;
+      Node* last = other.pseudoknot_;
+      while (last->next_ != other.pseudoknot_)
+      {
+        last = last->next_;
+      }
 
+      Node* first = other.pseudoknot_->next_;
       other.pseudoknot_->next_ = other.pseudoknot_;
+
+      last->next_ = pos.node_->next_;
+      pos.node_->next_ = first;
+
       size_ += other.size_;
       other.size_ = 0;
-
-      Node* last_current = pos.node_->next_;
-      pos.node_->next_ = first_node;
-
-      Node* current = first_node;
-      while (current->next_ != last_node)
-      {
-        current = current->next_;
-      }
-      current->next_ = last_current;
     }
 
     void splice(LIter< T > pos, List< T >& other, LIter< T > it) noexcept
@@ -408,13 +406,15 @@ namespace vishnyakov
       }
 
       Node* node_to_move = it.node_;
-      Node* prev = other.find_prev(it);
 
-      if (prev)
+      Node* prev = other.pseudoknot_;
+      while (prev->next_ != node_to_move)
       {
-        prev->next_ = node_to_move->next_;
-        --other.size_;
+        prev = prev->next_;
       }
+
+      prev->next_ = node_to_move->next_;
+      --other.size_;
 
       node_to_move->next_ = pos.node_->next_;
       pos.node_->next_ = node_to_move;
@@ -431,15 +431,13 @@ namespace vishnyakov
       Node* first_node = first.node_;
       Node* last_node = last.node_;
 
-      Node* prev_first = other.find_prev(first);
-      if (prev_first)
+      Node* prev_first = other.pseudoknot_;
+      while (prev_first->next_ != first_node)
       {
-        prev_first->next_ = last_node;
+        prev_first = prev_first->next_;
       }
-      else
-      {
-        other.pseudoknot_->next_ = last_node;
-      }
+
+      prev_first->next_ = last_node;
 
       size_t count = 0;
       Node* current = first_node;
@@ -448,18 +446,17 @@ namespace vishnyakov
         ++count;
         current = current->next_;
       }
+
       other.size_ -= count;
       size_ += count;
 
-      Node* last_current = pos.node_->next_;
-      pos.node_->next_ = first_node;
-
-      current = first_node;
-      while (current->next_ != last_node)
+      Node* last_inserted = first_node;
+      while (last_inserted->next_ != last_node)
       {
-        current = current->next_;
+        last_inserted = last_inserted->next_;
       }
-      current->next_ = last_current;
+      last_inserted->next_ = pos.node_->next_;
+      pos.node_->next_ = first_node;
     }
 
     void sort() noexcept

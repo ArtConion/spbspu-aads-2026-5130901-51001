@@ -272,11 +272,6 @@ BOOST_AUTO_TEST_CASE(test_outputNames)
   outputNames(seqs, out);
 
   BOOST_TEST(out.str() == "first second\n");
-
-  for (LIter< Sequence > it = seqs.begin(); it != seqs.end(); ++it)
-  {
-    delete it->nums;
-  }
 }
 
 BOOST_AUTO_TEST_CASE(test_outputNums)
@@ -303,11 +298,6 @@ BOOST_AUTO_TEST_CASE(test_outputNums)
 
   BOOST_TEST(result == 0);
   BOOST_TEST(!out.str().empty());
-
-  for (LIter< Sequence > it = seqs.begin(); it != seqs.end(); ++it)
-  {
-    delete it->nums;
-  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

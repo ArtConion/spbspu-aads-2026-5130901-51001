@@ -357,6 +357,263 @@ namespace vishnyakov
       std::swap(pseudoknot_, other.pseudoknot_);
       std::swap(size_, other.size_);
     }
+
+    void splice(LIter< T > pos, List< T >& other) noexcept
+    {
+      if (other.empty() || &other == this)
+      {
+        return;
+      }
+
+      Node* last = other.pseudoknot_;
+      while (last->next_ != other.pseudoknot_)
+      {
+        last = last->next_;
+      }
+
+      Node* first = other.pseudoknot_->next_;
+
+      other.pseudoknot_->next_ = other.pseudoknot_;
+
+      Node* next_after_pos = pos.node_->next_;
+      pos.node_->next_ = first;
+      last->next_ = next_after_pos;
+
+      size_ += other.size_;
+      other.size_ = 0;
+    }
+
+    void splice(LIter< T > pos, List< T >& other, LIter< T > it) noexcept
+    {
+      if (&other == this || other.empty() || it == other.end())
+      {
+        return;
+      }
+
+      Node* node_to_move = it.node_;
+
+      Node* prev = other.pseudoknot_;
+      while (prev->next_ != node_to_move)
+      {
+        prev = prev->next_;
+      }
+
+      prev->next_ = node_to_move->next_;
+      --other.size_;
+
+      node_to_move->next_ = pos.node_->next_;
+      pos.node_->next_ = node_to_move;
+      ++size_;
+    }
+
+    void splice(LIter< T > pos, List< T >& other, LIter< T > first, LIter< T > last) noexcept
+    {
+      if (other.empty() || first == last || &other == this)
+      {
+        return;
+      }
+
+      Node* first_node = first.node_;
+      Node* last_node = last.node_;
+
+      Node* prev_first = other.pseudoknot_;
+      while (prev_first->next_ != first_node)
+      {
+        prev_first = prev_first->next_;
+      }
+
+      prev_first->next_ = last_node;
+
+      size_t count = 0;
+      Node* current = first_node;
+      while (current != last_node)
+      {
+        ++count;
+        current = current->next_;
+      }
+
+      other.size_ -= count;
+
+      Node* next_after_pos = pos.node_->next_;
+      pos.node_->next_ = first_node;
+
+      current = first_node;
+      while (current->next_ != last_node)
+      {
+        current = current->next_;
+      }
+      current->next_ = next_after_pos;
+
+      size_ += count;
+    }
+
+    void sort() noexcept
+    {
+      sort(std::less< T >());
+    }
+
+    template< class Compare >
+    void sort(Compare comp) noexcept
+    {
+      if (size_ < 2)
+      {
+        return;
+      }
+
+      List< T > sorted;
+
+      while (!empty())
+      {
+        Node* node = pseudoknot_->next_;
+        pseudoknot_->next_ = node->next_;
+        --size_;
+
+        Node* prev = sorted.pseudoknot_;
+        Node* current = sorted.pseudoknot_->next_;
+
+        while (current != sorted.pseudoknot_ && comp(current->data_, node->data_))
+        {
+          prev = current;
+          current = current->next_;
+        }
+
+        node->next_ = current;
+        prev->next_ = node;
+        ++sorted.size_;
+      }
+
+      swap(sorted);
+    }
+
+    void merge(List< T >& other) noexcept
+    {
+      merge(other, std::less< T >());
+    }
+
+    template< class Compare >
+    void merge(List< T >& other, Compare comp) noexcept
+    {
+      if (&other == this || other.empty())
+      {
+        return;
+      }
+
+      List< T > result;
+
+      while (!empty() && !other.empty())
+      {
+        if (comp(front(), other.front()))
+        {
+          Node* node = pseudoknot_->next_;
+          pseudoknot_->next_ = node->next_;
+          --size_;
+
+          Node* last = result.pseudoknot_;
+          while (last->next_ != result.pseudoknot_)
+          {
+            last = last->next_;
+          }
+          node->next_ = result.pseudoknot_;
+          last->next_ = node;
+          ++result.size_;
+        }
+        else
+        {
+          Node* node = other.pseudoknot_->next_;
+          other.pseudoknot_->next_ = node->next_;
+          --other.size_;
+
+          Node* last = result.pseudoknot_;
+          while (last->next_ != result.pseudoknot_)
+          {
+            last = last->next_;
+          }
+          node->next_ = result.pseudoknot_;
+          last->next_ = node;
+          ++result.size_;
+        }
+      }
+
+      if (!empty())
+      {
+        Node* last = result.pseudoknot_;
+        while (last->next_ != result.pseudoknot_)
+        {
+          last = last->next_;
+        }
+        last->next_ = pseudoknot_->next_;
+        while (last->next_ != pseudoknot_)
+        {
+          last = last->next_;
+        }
+        last->next_ = result.pseudoknot_;
+        result.size_ += size_;
+        size_ = 0;
+        pseudoknot_->next_ = pseudoknot_;
+      }
+
+      if (!other.empty())
+      {
+        Node* last = result.pseudoknot_;
+        while (last->next_ != result.pseudoknot_)
+        {
+          last = last->next_;
+        }
+        last->next_ = other.pseudoknot_->next_;
+        while (last->next_ != other.pseudoknot_)
+        {
+          last = last->next_;
+        }
+        last->next_ = result.pseudoknot_;
+        result.size_ += other.size_;
+        other.size_ = 0;
+        other.pseudoknot_->next_ = other.pseudoknot_;
+      }
+
+      swap(result);
+    }
+
+    template< class Predicate >
+    List< T > partition(Predicate pred) noexcept
+    {
+      List< T > false_list;
+
+      LIter< T > it = begin();
+      while (it != end())
+      {
+        if (!pred(*it))
+        {
+          LIter< T > next_it = it;
+          ++next_it;
+
+          Node* node = it.node_;
+          Node* prev = pseudoknot_;
+          while (prev->next_ != node)
+          {
+            prev = prev->next_;
+          }
+          prev->next_ = node->next_;
+          --size_;
+
+          Node* last = false_list.pseudoknot_;
+          while (last->next_ != false_list.pseudoknot_)
+          {
+            last = last->next_;
+          }
+          node->next_ = false_list.pseudoknot_;
+          last->next_ = node;
+          ++false_list.size_;
+
+          it = next_it;
+        }
+        else
+        {
+          ++it;
+        }
+      }
+
+      return false_list;
+    }
   };
 }
 

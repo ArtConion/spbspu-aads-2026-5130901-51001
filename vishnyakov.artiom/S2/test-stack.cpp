@@ -128,3 +128,54 @@ BOOST_AUTO_TEST_CASE(TestStackWithStrings)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(stack_emplace_tests)
+
+struct TestStruct
+{
+  int a;
+  double b;
+  std::string c;
+
+  TestStruct(int a_, double b_, const std::string& c_)
+    : a(a_), b(b_), c(c_)
+  {}
+
+  bool operator==(const TestStruct& other) const
+  {
+    return a == other.a && b == other.b && c == other.c;
+  }
+};
+
+BOOST_AUTO_TEST_CASE(test_stack_emplace)
+{
+  vishnyakov::Stack< TestStruct > stack;
+  stack.emplace(42, 3.14, "hello");
+  stack.emplace(100, 2.71, "world");
+
+  BOOST_TEST(stack.size() == 2);
+
+  TestStruct top = stack.pop();
+  BOOST_TEST(top.a == 100);
+  BOOST_TEST(top.b == 2.71);
+  BOOST_TEST(top.c == "world");
+
+  TestStruct next = stack.pop();
+  BOOST_TEST(next.a == 42);
+  BOOST_TEST(next.b == 3.14);
+  BOOST_TEST(next.c == "hello");
+}
+
+BOOST_AUTO_TEST_CASE(test_stack_emplace_move_only)
+{
+  vishnyakov::Stack< std::unique_ptr< int > > stack;
+  stack.emplace(std::make_unique< int >(42));
+  stack.emplace(std::make_unique< int >(100));
+
+  BOOST_TEST(stack.size() == 2);
+  BOOST_TEST(*stack.top() == 100);
+  stack.pop();
+  BOOST_TEST(*stack.top() == 42);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+

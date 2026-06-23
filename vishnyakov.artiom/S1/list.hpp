@@ -460,34 +460,29 @@ namespace vishnyakov
         return;
       }
 
-      bool swapped;
-      Node* end = pseudoknot_;
+      List< T > sorted;
 
-      do
+      while (!empty())
       {
-        swapped = false;
-        Node* prev = pseudoknot_;
-        Node* current = pseudoknot_->next_;
+        Node* node = pseudoknot_->next_;
+        pseudoknot_->next_ = node->next_;
+        --size_;
 
-        while (current != end && current->next_ != pseudoknot_)
+        Node* prev = sorted.pseudoknot_;
+        Node* current = sorted.pseudoknot_->next_;
+
+        while (current != sorted.pseudoknot_ && comp(current->data_, node->data_))
         {
-          Node* next_node = current->next_;
-          if (comp(next_node->data_, current->data_))
-          {
-            prev->next_ = next_node;
-            current->next_ = next_node->next_;
-            next_node->next_ = current;
-
-            swapped = true;
-          }
-          else
-          {
-            prev = current;
-            current = current->next_;
-          }
+          prev = current;
+          current = current->next_;
         }
-        end = current;
-      } while (swapped);
+
+        node->next_ = current;
+        prev->next_ = node;
+        ++sorted.size_;
+      }
+
+      swap(sorted);
     }
 
     void merge(List< T >& other) noexcept
@@ -503,28 +498,79 @@ namespace vishnyakov
         return;
       }
 
-      LIter< T > this_it = begin();
-      LIter< T > other_it = other.begin();
+      List< T > result;
 
-      while (this_it != end() && other_it != other.end())
+      while (!empty() && !other.empty())
       {
-        if (comp(*other_it, *this_it))
+        if (comp(front(), other.front()))
         {
-          LIter< T > next_other = other_it;
-          ++next_other;
-          splice(this_it, other, other_it);
-          other_it = next_other;
+          Node* node = pseudoknot_->next_;
+          pseudoknot_->next_ = node->next_;
+          --size_;
+
+          Node* last = result.pseudoknot_;
+          while (last->next_ != result.pseudoknot_)
+          {
+            last = last->next_;
+          }
+          node->next_ = result.pseudoknot_;
+          last->next_ = node;
+          ++result.size_;
         }
         else
         {
-          ++this_it;
+          Node* node = other.pseudoknot_->next_;
+          other.pseudoknot_->next_ = node->next_;
+          --other.size_;
+
+          Node* last = result.pseudoknot_;
+          while (last->next_ != result.pseudoknot_)
+          {
+            last = last->next_;
+          }
+          node->next_ = result.pseudoknot_;
+          last->next_ = node;
+          ++result.size_;
         }
+      }
+
+      if (!empty())
+      {
+        Node* last = result.pseudoknot_;
+        while (last->next_ != result.pseudoknot_)
+        {
+          last = last->next_;
+        }
+        last->next_ = pseudoknot_->next_;
+        while (last->next_ != pseudoknot_)
+        {
+          last = last->next_;
+        }
+        last->next_ = result.pseudoknot_;
+        result.size_ += size_;
+        size_ = 0;
+        pseudoknot_->next_ = pseudoknot_;
       }
 
       if (!other.empty())
       {
-        splice(end(), other);
+        Node* last = result.pseudoknot_;
+        while (last->next_ != result.pseudoknot_)
+        {
+          last = last->next_;
+        }
+        last->next_ = other.pseudoknot_->next_;
+        while (last->next_ != other.pseudoknot_)
+        {
+          last = last->next_;
+        }
+        last->next_ = result.pseudoknot_;
+        result.size_ += other.size_;
+        other.size_ = 0;
+        other.pseudoknot_->next_ = other.pseudoknot_;
       }
+
+      swap(result);
     }
 
     template< class Predicate >
@@ -539,7 +585,25 @@ namespace vishnyakov
         {
           LIter< T > next_it = it;
           ++next_it;
-          false_list.splice(false_list.end(), *this, it);
+
+          Node* node = it.node_;
+          Node* prev = pseudoknot_;
+          while (prev->next_ != node)
+          {
+            prev = prev->next_;
+          }
+          prev->next_ = node->next_;
+          --size_;
+
+          Node* last = false_list.pseudoknot_;
+          while (last->next_ != false_list.pseudoknot_)
+          {
+            last = last->next_;
+          }
+          node->next_ = false_list.pseudoknot_;
+          last->next_ = node;
+          ++false_list.size_;
+
           it = next_it;
         }
         else
@@ -549,42 +613,6 @@ namespace vishnyakov
       }
 
       return false_list;
-    }
-
-    template< class... Args >
-    LIter< T > emplace_after(LIter< T > pos, Args&&... args)
-    {
-      Node* new_node = static_cast< Node* >(::operator new(sizeof(Node)));
-      try
-      {
-        new (static_cast< void* >(&new_node->data_)) T(std::forward< Args >(args)...);
-      }
-      catch (...)
-      {
-        ::operator delete(new_node);
-        throw;
-      }
-      new_node->next_ = pos.node_->next_;
-      pos.node_->next_ = new_node;
-      ++size_;
-      return LIter< T >(new_node);
-    }
-
-    template< class... Args >
-    void emplace_front(Args&&... args)
-    {
-      emplace_after(LIter< T >(pseudoknot_), std::forward< Args >(args)...);
-    }
-
-    template< class... Args >
-    void emplace_back(Args&&... args)
-    {
-      Node* last = pseudoknot_;
-      while (last->next_ != pseudoknot_)
-      {
-        last = last->next_;
-      }
-      emplace_after(LIter< T >(last), std::forward< Args >(args)...);
     }
   };
 }

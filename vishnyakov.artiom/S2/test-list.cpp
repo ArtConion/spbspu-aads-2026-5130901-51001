@@ -15,9 +15,9 @@ struct TestStruct
   double b;
   std::string c;
 
-  TestStruct(int a_, double b_, const std::string& c_): 
-    a(a_), 
-    b(b_), 
+  TestStruct(int a_, double b_, const std::string& c_):
+    a(a_),
+    b(b_),
     c(c_)
   {}
 

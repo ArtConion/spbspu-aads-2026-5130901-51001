@@ -461,8 +461,111 @@ namespace vishnyakov
       }
       current->next_ = last_current;
     }
+
+    void sort() noexcept
+    {
+      sort(std::less< T >());
+    }
+
+    template< class Compare >
+    void sort(Compare comp) noexcept
+    {
+      if (size_ < 2)
+      {
+        return;
+      }
+
+      bool swapped;
+      Node* end = pseudoknot_;
+
+      do
+      {
+        swapped = false;
+        Node* prev = pseudoknot_;
+        Node* current = pseudoknot_->next_;
+
+        while (current != end && current->next_ != pseudoknot_)
+        {
+          Node* next_node = current->next_;
+          if (comp(next_node->data_, current->data_))
+          {
+            prev->next_ = next_node;
+            current->next_ = next_node->next_;
+            next_node->next_ = current;
+
+            swapped = true;
+          }
+          else
+          {
+            prev = current;
+            current = current->next_;
+          }
+        }
+        end = current;
+      } while (swapped);
+    }
+
+    void merge(List< T >& other) noexcept
+    {
+      merge(other, std::less< T >());
+    }
+
+    template< class Compare >
+    void merge(List< T >& other, Compare comp) noexcept
+    {
+      if (&other == this || other.empty())
+      {
+        return;
+      }
+
+      LIter< T > this_it = begin();
+      LIter< T > other_it = other.begin();
+
+      while (this_it != end() && other_it != other.end())
+      {
+        if (comp(*other_it, *this_it))
+        {
+          LIter< T > next_other = other_it;
+          ++next_other;
+          splice(this_it, other, other_it);
+          other_it = next_other;
+        }
+        else
+        {
+          ++this_it;
+        }
+      }
+
+      if (!other.empty())
+      {
+        splice(end(), other);
+      }
+    }
+
+    template< class Predicate >
+    List< T > partition(Predicate pred) noexcept
+    {
+      List< T > false_list;
+
+      LIter< T > it = begin();
+      while (it != end())
+      {
+        if (!pred(*it))
+        {
+          LIter< T > next_it = it;
+          ++next_it;
+          false_list.splice(false_list.end(), *this, it);
+          it = next_it;
+        }
+        else
+        {
+          ++it;
+        }
+      }
+
+      return false_list;
+    }
   };
 }
 
 #endif
-

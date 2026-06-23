@@ -358,7 +358,7 @@ namespace vishnyakov
       std::swap(pseudoknot_, other.pseudoknot_);
       std::swap(size_, other.size_);
     }
-    
+
     template< class... Args >
     LIter< T > emplace_after(LIter< T > pos, Args&&... args)
     {
@@ -377,13 +377,13 @@ namespace vishnyakov
       ++size_;
       return LIter< T >(new_node);
     }
-    
+
     template< class... Args >
     void emplace_front(Args&&... args)
     {
       emplace_after(LIter< T >(pseudoknot_), std::forward< Args >(args)...);
     }
-    
+
     template< class... Args >
     void emplace_back(Args&&... args)
     {

@@ -358,23 +358,6 @@ namespace vishnyakov
       std::swap(size_, other.size_);
     }
 
-  private:
-    Node* find_prev(LIter< T > it) const noexcept
-    {
-      if (it.node_ == pseudoknot_ || it.node_ == pseudoknot_->next_)
-      {
-        return pseudoknot_;
-      }
-
-      Node* current = pseudoknot_->next_;
-      while (current != pseudoknot_ && current->next_ != it.node_)
-      {
-        current = current->next_;
-      }
-      return current == pseudoknot_ ? nullptr : current;
-    }
-
-  public:
     void splice(LIter< T > pos, List< T >& other) noexcept
     {
       if (other.empty() || &other == this)
@@ -382,18 +365,21 @@ namespace vishnyakov
         return;
       }
 
-      Node* last = other.pseudoknot_;
-      while (last->next_ != other.pseudoknot_)
-      {
-        last = last->next_;
-      }
-
       Node* first = other.pseudoknot_->next_;
+      Node* last = other.pseudoknot_;
+
       other.pseudoknot_->next_ = other.pseudoknot_;
 
-      last->next_ = pos.node_->next_;
+      Node* next_after_pos = pos.node_->next_;
       pos.node_->next_ = first;
 
+      Node* current = first;
+      while (current->next_ != last)
+      {
+        current = current->next_;
+      }
+      current->next_ = next_after_pos;
+      
       size_ += other.size_;
       other.size_ = 0;
     }
@@ -448,15 +434,18 @@ namespace vishnyakov
       }
 
       other.size_ -= count;
-      size_ += count;
 
-      Node* last_inserted = first_node;
-      while (last_inserted->next_ != last_node)
-      {
-        last_inserted = last_inserted->next_;
-      }
-      last_inserted->next_ = pos.node_->next_;
+      Node* next_after_pos = pos.node_->next_;
       pos.node_->next_ = first_node;
+
+      current = first_node;
+      while (current->next_ != last_node)
+      {
+        current = current->next_;
+      }
+      current->next_ = next_after_pos;
+      
+      size_ += count;
     }
 
     void sort() noexcept
@@ -561,6 +550,42 @@ namespace vishnyakov
       }
 
       return false_list;
+    }
+    
+    template< class... Args >
+    LIter< T > emplace_after(LIter< T > pos, Args&&... args)
+    {
+      Node* new_node = static_cast< Node* >(::operator new(sizeof(Node)));
+      try
+      {
+        new (static_cast< void* >(&new_node->data_)) T(std::forward< Args >(args)...);
+      }
+      catch (...)
+      {
+        ::operator delete(new_node);
+        throw;
+      }
+      new_node->next_ = pos.node_->next_;
+      pos.node_->next_ = new_node;
+      ++size_;
+      return LIter< T >(new_node);
+    }
+    
+    template< class... Args >
+    void emplace_front(Args&&... args)
+    {
+      emplace_after(LIter< T >(pseudoknot_), std::forward< Args >(args)...);
+    }
+    
+    template< class... Args >
+    void emplace_back(Args&&... args)
+    {
+      Node* last = pseudoknot_;
+      while (last->next_ != pseudoknot_)
+      {
+        last = last->next_;
+      }
+      emplace_after(LIter< T >(last), std::forward< Args >(args)...);
     }
   };
 }

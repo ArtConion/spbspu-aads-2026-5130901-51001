@@ -358,8 +358,6 @@ namespace vishnyakov
       std::swap(pseudoknot_, other.pseudoknot_);
       std::swap(size_, other.size_);
     }
-
-    // === Дополнительное задание: emplace ===
     
     template< class... Args >
     LIter< T > emplace_after(LIter< T > pos, Args&&... args)

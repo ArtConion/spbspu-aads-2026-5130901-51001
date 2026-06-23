@@ -1,7 +1,7 @@
 #ifndef QUEUE_HPP
 #define QUEUE_HPP
 
-#include "../common/list.hpp"
+#include <list.hpp>
 #include <stdexcept>
 
 namespace vishnyakov
@@ -75,6 +75,12 @@ namespace vishnyakov
     void swap(Queue& other) noexcept
     {
       data_.swap(other.data_);
+    }
+
+    template< class... Args >
+    void emplace(Args&&... args)
+    {
+      data_.emplace_back(std::forward< Args >(args)...);
     }
 
   private:

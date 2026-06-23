@@ -1,7 +1,7 @@
 #ifndef STACK_HPP
 #define STACK_HPP
 
-#include "../common/list.hpp"
+#include <list.hpp>
 #include <stdexcept>
 
 namespace vishnyakov
@@ -66,6 +66,12 @@ namespace vishnyakov
     void swap(Stack& other) noexcept
     {
       data_.swap(other.data_);
+    }
+
+    template< class... Args >
+    void emplace(Args&&... args)
+    {
+      data_.emplace_front(std::forward< Args >(args)...);
     }
 
   private:

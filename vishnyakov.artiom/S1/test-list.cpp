@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE testLab
+#define BOOST_TEST_MODULE S1
 #include <boost/test/included/unit_test.hpp>
 #include <sstream>
 #include <string>
@@ -259,24 +259,17 @@ BOOST_AUTO_TEST_CASE(test_outputNames)
   Sequence seq1;
   seq1.name = "first";
   seq1.nums = new List< size_t >();
+  seqs.push_front(std::move(seq1));
 
   Sequence seq2;
   seq2.name = "second";
   seq2.nums = new List< size_t >();
-
-  LIter< Sequence > pos = seqs.begin();
-  pos = seqs.insert_after(pos, seq1);
-  seqs.insert_after(pos, seq2);
+  seqs.insert_after(seqs.begin(), std::move(seq2));
 
   std::ostringstream out;
   outputNames(seqs, out);
 
   BOOST_TEST(out.str() == "first second\n");
-
-  for (LIter< Sequence > it = seqs.begin(); it != seqs.end(); ++it)
-  {
-    delete it->nums;
-  }
 }
 
 BOOST_AUTO_TEST_CASE(test_outputNums)
@@ -288,26 +281,198 @@ BOOST_AUTO_TEST_CASE(test_outputNums)
   seq1.nums = new List< size_t >();
   seq1.nums->push_back(1);
   seq1.nums->push_back(2);
+  seqs.push_front(std::move(seq1));
 
   Sequence seq2;
   seq2.name = "b";
   seq2.nums = new List< size_t >();
   seq2.nums->push_back(3);
-
-  LIter< Sequence > pos = seqs.begin();
-  pos = seqs.insert_after(pos, seq1);
-  seqs.insert_after(pos, seq2);
+  seqs.insert_after(seqs.begin(), std::move(seq2));
 
   std::ostringstream out;
   int result = outputNums(seqs, out);
 
   BOOST_TEST(result == 0);
   BOOST_TEST(!out.str().empty());
+}
 
-  for (LIter< Sequence > it = seqs.begin(); it != seqs.end(); ++it)
-  {
-    delete it->nums;
-  }
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(extra_tests)
+
+BOOST_AUTO_TEST_CASE(test_splice_all)
+{
+  List< int > a;
+  a.push_back(1);
+  a.push_back(2);
+
+  List< int > b;
+  b.push_back(3);
+  b.push_back(4);
+
+  LIter< int > pos = a.begin();
+  a.splice(pos, b);
+
+  BOOST_TEST(a.size() == 4);
+  BOOST_TEST(b.empty());
+
+  LIter< int > it = a.begin();
+  BOOST_TEST(*it == 1);
+  ++it;
+  BOOST_TEST(*it == 3);
+  ++it;
+  BOOST_TEST(*it == 4);
+  ++it;
+  BOOST_TEST(*it == 2);
+}
+
+BOOST_AUTO_TEST_CASE(test_splice_one)
+{
+  List< int > a;
+  a.push_back(1);
+  a.push_back(2);
+
+  List< int > b;
+  b.push_back(3);
+  b.push_back(4);
+
+  LIter< int > pos = a.begin();
+  LIter< int > it_b = b.begin();
+  a.splice(pos, b, it_b);
+
+  BOOST_TEST(a.size() == 3);
+  BOOST_TEST(b.size() == 1);
+
+  LIter< int > it = a.begin();
+  BOOST_TEST(*it == 1);
+  ++it;
+  BOOST_TEST(*it == 3);
+  ++it;
+  BOOST_TEST(*it == 2);
+
+  BOOST_TEST(b.front() == 4);
+}
+
+BOOST_AUTO_TEST_CASE(test_splice_range)
+{
+  List< int > a;
+  a.push_back(1);
+  a.push_back(5);
+
+  List< int > b;
+  b.push_back(2);
+  b.push_back(3);
+  b.push_back(4);
+
+  LIter< int > pos = a.begin();
+  LIter< int > first = b.begin();
+  LIter< int > last = b.begin();
+  ++last;
+  ++last;
+
+  a.splice(pos, b, first, last);
+
+  BOOST_TEST(a.size() == 4);
+  BOOST_TEST(b.size() == 1);
+
+  LIter< int > it = a.begin();
+  BOOST_TEST(*it == 1);
+  ++it;
+  BOOST_TEST(*it == 2);
+  ++it;
+  BOOST_TEST(*it == 3);
+  ++it;
+  BOOST_TEST(*it == 5);
+}
+
+BOOST_AUTO_TEST_CASE(test_splice_to_end)
+{
+  List< int > a;
+  a.push_back(1);
+  a.push_back(2);
+
+  List< int > b;
+  b.push_back(3);
+  b.push_back(4);
+
+  LIter< int > pos = a.begin();
+  ++pos;
+  a.splice(pos, b);
+
+  BOOST_TEST(a.size() == 4);
+
+  LIter< int > it = a.begin();
+  BOOST_TEST(*it == 1);
+  ++it;
+  BOOST_TEST(*it == 2);
+  ++it;
+  BOOST_TEST(*it == 3);
+  ++it;
+  BOOST_TEST(*it == 4);
+}
+
+BOOST_AUTO_TEST_CASE(test_sort_ascending)
+{
+  List< int > lst;
+  lst.push_back(3);
+  lst.push_back(1);
+  lst.push_back(4);
+  lst.push_back(1);
+  lst.push_back(5);
+  lst.push_back(9);
+  lst.push_back(2);
+  lst.push_back(6);
+
+  lst.sort();
+
+  LIter< int > it = lst.begin();
+  BOOST_REQUIRE(it != lst.end());
+  BOOST_TEST(*it == 1);
+  ++it;
+  BOOST_REQUIRE(it != lst.end());
+  BOOST_TEST(*it == 1);
+  ++it;
+  BOOST_REQUIRE(it != lst.end());
+  BOOST_TEST(*it == 2);
+  ++it;
+  BOOST_REQUIRE(it != lst.end());
+  BOOST_TEST(*it == 3);
+  ++it;
+  BOOST_REQUIRE(it != lst.end());
+  BOOST_TEST(*it == 4);
+  ++it;
+  BOOST_REQUIRE(it != lst.end());
+  BOOST_TEST(*it == 5);
+  ++it;
+  BOOST_REQUIRE(it != lst.end());
+  BOOST_TEST(*it == 6);
+  ++it;
+  BOOST_REQUIRE(it != lst.end());
+  BOOST_TEST(*it == 9);
+  ++it;
+  BOOST_CHECK(it == lst.end());
+}
+
+BOOST_AUTO_TEST_CASE(test_sort_descending)
+{
+  List< int > lst;
+  lst.push_back(3);
+  lst.push_back(1);
+  lst.push_back(4);
+
+  lst.sort(std::greater< int >());
+
+  LIter< int > it = lst.begin();
+  BOOST_REQUIRE(it != lst.end());
+  BOOST_TEST(*it == 4);
+  ++it;
+  BOOST_REQUIRE(it != lst.end());
+  BOOST_TEST(*it == 3);
+  ++it;
+  BOOST_REQUIRE(it != lst.end());
+  BOOST_TEST(*it == 1);
+  ++it;
+  BOOST_CHECK(it == lst.end());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

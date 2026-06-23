@@ -278,6 +278,10 @@ BOOST_AUTO_TEST_SUITE(HashTableRehashTests)
 BOOST_AUTO_TEST_CASE(RehashToLargerCapacity)
 {
   vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(4);
+
+  table.max_load_factor(10.0);
+  table.max_chain_length(100);
+
   table.add(1, "one");
   table.add(2, "two");
   table.add(3, "three");
@@ -299,6 +303,10 @@ BOOST_AUTO_TEST_CASE(RehashToLargerCapacity)
 BOOST_AUTO_TEST_CASE(RehashToSmallerCapacity)
 {
   vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(16);
+
+  table.max_load_factor(10.0);
+  table.max_chain_length(100);
+
   table.add(1, "one");
   table.add(2, "two");
 
@@ -313,6 +321,10 @@ BOOST_AUTO_TEST_CASE(RehashToSmallerCapacity)
 BOOST_AUTO_TEST_CASE(RehashToZero)
 {
   vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(4);
+
+  table.max_load_factor(10.0);
+  table.max_chain_length(100);
+
   table.add(1, "one");
 
   table.rehash(0);
@@ -325,6 +337,10 @@ BOOST_AUTO_TEST_CASE(RehashToZero)
 BOOST_AUTO_TEST_CASE(RehashSameCapacity)
 {
   vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(8);
+
+  table.max_load_factor(10.0);
+  table.max_chain_length(100);
+
   table.add(1, "one");
 
   size_t old_capacity = table.capacity();
@@ -353,6 +369,9 @@ BOOST_AUTO_TEST_CASE(LoadFactor)
 {
   vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(10);
 
+  table.max_load_factor(10.0);
+  table.max_chain_length(100);
+
   BOOST_CHECK_CLOSE(table.load_factor(), 0.0, 0.001);
 
   table.add(1, "one");
@@ -368,6 +387,9 @@ BOOST_AUTO_TEST_CASE(LoadFactor)
 BOOST_AUTO_TEST_CASE(LongestChain)
 {
   vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(1);
+
+  table.max_load_factor(10.0);
+  table.max_chain_length(100);
 
   BOOST_CHECK_EQUAL(table.longest_chain(), 0);
 
@@ -414,28 +436,46 @@ BOOST_AUTO_TEST_CASE(AutoRehashByLoadFactor)
 {
   vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(4);
   table.max_load_factor(0.5);
+  table.max_chain_length(100);
 
   BOOST_CHECK_EQUAL(table.capacity(), 4);
 
   table.add(1, "one");
-  table.add(2, "two");
+  BOOST_CHECK_EQUAL(table.capacity(), 4);
 
-  BOOST_CHECK_EQUAL(table.size(), 2);
+  table.add(2, "two");
+  BOOST_CHECK_EQUAL(table.capacity(), 4);
+
+  table.add(3, "three");
   BOOST_CHECK_EQUAL(table.capacity(), 8);
+
+  BOOST_CHECK_EQUAL(table.size(), 3);
+  BOOST_CHECK(table.has(1));
+  BOOST_CHECK(table.has(2));
+  BOOST_CHECK(table.has(3));
 }
 
 BOOST_AUTO_TEST_CASE(AutoRehashByChainLength)
 {
   vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(1);
   table.max_chain_length(2);
+  table.max_load_factor(10.0);
 
   BOOST_CHECK_EQUAL(table.capacity(), 1);
 
   table.add(1, "one");
-  table.add(2, "two");
+  BOOST_CHECK_EQUAL(table.capacity(), 1);
 
-  BOOST_CHECK_EQUAL(table.size(), 2);
+  table.add(2, "two");
+  BOOST_CHECK_EQUAL(table.capacity(), 1);
+
+  table.add(3, "three");
   BOOST_CHECK_EQUAL(table.capacity(), 2);
+
+  BOOST_CHECK_EQUAL(table.size(), 3);
+  BOOST_CHECK(table.has(1));
+  BOOST_CHECK(table.has(2));
+  BOOST_CHECK(table.has(3));
 }
 
 BOOST_AUTO_TEST_CASE(CustomRehashPolicy)
@@ -445,7 +485,7 @@ BOOST_AUTO_TEST_CASE(CustomRehashPolicy)
 
   bool policy_called = false;
 
-  table.set_rehash_policy([&policy_called](std::size_t current)
+  table.set_rehash_policy([&policy_called](size_t current)
   {
     policy_called = true;
     return current * 3;
@@ -453,6 +493,11 @@ BOOST_AUTO_TEST_CASE(CustomRehashPolicy)
 
   table.add(1, "one");
   table.add(2, "two");
+
+  BOOST_CHECK(!policy_called);
+  BOOST_CHECK_EQUAL(table.capacity(), 4);
+
+  table.add(3, "three");
 
   BOOST_CHECK(policy_called);
   BOOST_CHECK_EQUAL(table.capacity(), 12);
@@ -466,6 +511,10 @@ BOOST_AUTO_TEST_CASE(RehashPolicyDefault)
   table.add(1, "one");
   table.add(2, "two");
 
+  BOOST_CHECK_EQUAL(table.capacity(), 4);
+
+  table.add(3, "three");
+
   BOOST_CHECK_EQUAL(table.capacity(), 8);
 }
 
@@ -476,9 +525,14 @@ BOOST_AUTO_TEST_CASE(AutoRehashDoesNotTriggerOnDrop)
 
   table.add(1, "one");
   table.add(2, "two");
+
+  BOOST_CHECK_EQUAL(table.capacity(), 4);
+
   table.add(3, "three");
 
-  std::size_t capacity_after_add = table.capacity();
+  BOOST_CHECK_EQUAL(table.capacity(), 8);
+
+  size_t capacity_after_add = table.capacity();
 
   table.drop(1);
   table.drop(2);
@@ -498,7 +552,7 @@ BOOST_AUTO_TEST_CASE(AutoRehashTriggersOnAddAfterDrop)
   table.drop(1);
   table.drop(2);
 
-  std::size_t capacity_before = table.capacity();
+  size_t capacity_before = table.capacity();
 
   table.add(4, "four");
 
@@ -511,21 +565,21 @@ BOOST_AUTO_TEST_CASE(AutoRehashWithCustomPolicy)
   table.max_load_factor(0.6);
   table.max_chain_length(3);
 
-  table.set_rehash_policy([](std::size_t current)
+  table.set_rehash_policy([](size_t current)
   {
     return current < 10 ? 10 : current * 2;
   });
 
   table.add(1, "one");
-
   BOOST_CHECK_EQUAL(table.capacity(), 2);
 
   table.add(2, "two");
-  table.add(3, "three");
-
   BOOST_CHECK_EQUAL(table.capacity(), 10);
+
+  BOOST_CHECK_EQUAL(table.size(), 2);
+  BOOST_CHECK(table.has(1));
+  BOOST_CHECK(table.has(2));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
 

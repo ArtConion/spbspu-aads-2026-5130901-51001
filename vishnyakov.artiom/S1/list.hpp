@@ -357,6 +357,110 @@ namespace vishnyakov
       std::swap(pseudoknot_, other.pseudoknot_);
       std::swap(size_, other.size_);
     }
+
+  private:
+    Node* find_prev(LIter< T > it) const noexcept
+    {
+      if (it.node_ == pseudoknot_ || it.node_ == pseudoknot_->next_)
+      {
+        return pseudoknot_;
+      }
+
+      Node* current = pseudoknot_->next_;
+      while (current != pseudoknot_ && current->next_ != it.node_)
+      {
+        current = current->next_;
+      }
+      return current == pseudoknot_ ? nullptr : current;
+    }
+
+  public:
+    void splice(LIter< T > pos, List< T >& other) noexcept
+    {
+      if (other.empty() || &other == this)
+      {
+        return;
+      }
+
+      Node* first_node = other.pseudoknot_->next_;
+      Node* last_node = other.pseudoknot_;
+
+      other.pseudoknot_->next_ = other.pseudoknot_;
+      size_ += other.size_;
+      other.size_ = 0;
+
+      Node* last_current = pos.node_->next_;
+      pos.node_->next_ = first_node;
+
+      Node* current = first_node;
+      while (current->next_ != last_node)
+      {
+        current = current->next_;
+      }
+      current->next_ = last_current;
+    }
+
+    void splice(LIter< T > pos, List< T >& other, LIter< T > it) noexcept
+    {
+      if (&other == this || other.empty() || it == other.end())
+      {
+        return;
+      }
+
+      Node* node_to_move = it.node_;
+      Node* prev = other.find_prev(it);
+
+      if (prev)
+      {
+        prev->next_ = node_to_move->next_;
+        --other.size_;
+      }
+
+      node_to_move->next_ = pos.node_->next_;
+      pos.node_->next_ = node_to_move;
+      ++size_;
+    }
+
+    void splice(LIter< T > pos, List< T >& other, LIter< T > first, LIter< T > last) noexcept
+    {
+      if (other.empty() || first == last || &other == this)
+      {
+        return;
+      }
+
+      Node* first_node = first.node_;
+      Node* last_node = last.node_;
+
+      Node* prev_first = other.find_prev(first);
+      if (prev_first)
+      {
+        prev_first->next_ = last_node;
+      }
+      else
+      {
+        other.pseudoknot_->next_ = last_node;
+      }
+
+      size_t count = 0;
+      Node* current = first_node;
+      while (current != last_node)
+      {
+        ++count;
+        current = current->next_;
+      }
+      other.size_ -= count;
+      size_ += count;
+
+      Node* last_current = pos.node_->next_;
+      pos.node_->next_ = first_node;
+
+      current = first_node;
+      while (current->next_ != last_node)
+      {
+        current = current->next_;
+      }
+      current->next_ = last_current;
+    }
   };
 }
 

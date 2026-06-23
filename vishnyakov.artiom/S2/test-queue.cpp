@@ -160,11 +160,11 @@ struct TestStruct
   int a;
   double b;
   std::string c;
-  
+
   TestStruct(int a_, double b_, const std::string& c_)
     : a(a_), b(b_), c(c_)
   {}
-  
+
   bool operator==(const TestStruct& other) const
   {
     return a == other.a && b == other.b && c == other.c;
@@ -176,14 +176,14 @@ BOOST_AUTO_TEST_CASE(test_queue_emplace)
   vishnyakov::Queue< TestStruct > queue;
   queue.emplace(42, 3.14, "hello");
   queue.emplace(100, 2.71, "world");
-  
+
   BOOST_TEST(queue.size() == 2);
-  
+
   TestStruct front = queue.pop();
   BOOST_TEST(front.a == 42);
   BOOST_TEST(front.b == 3.14);
   BOOST_TEST(front.c == "hello");
-  
+
   TestStruct next = queue.pop();
   BOOST_TEST(next.a == 100);
   BOOST_TEST(next.b == 2.71);
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE(test_queue_emplace_move_only)
   vishnyakov::Queue< std::unique_ptr< int > > queue;
   queue.emplace(std::make_unique< int >(42));
   queue.emplace(std::make_unique< int >(100));
-  
+
   BOOST_TEST(queue.size() == 2);
   BOOST_TEST(*queue.front() == 42);
   queue.pop();

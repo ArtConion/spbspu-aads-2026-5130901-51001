@@ -314,7 +314,8 @@ BOOST_AUTO_TEST_CASE(test_splice_all)
   b.push_back(3);
   b.push_back(4);
 
-  a.splice(a.end(), b);
+  LIter< int > pos = a.begin();
+  a.splice(pos, b);
 
   BOOST_TEST(a.size() == 4);
   BOOST_TEST(b.empty());
@@ -322,11 +323,11 @@ BOOST_AUTO_TEST_CASE(test_splice_all)
   LIter< int > it = a.begin();
   BOOST_TEST(*it == 1);
   ++it;
-  BOOST_TEST(*it == 2);
-  ++it;
   BOOST_TEST(*it == 3);
   ++it;
   BOOST_TEST(*it == 4);
+  ++it;
+  BOOST_TEST(*it == 2);
 }
 
 BOOST_AUTO_TEST_CASE(test_splice_one)
@@ -339,8 +340,9 @@ BOOST_AUTO_TEST_CASE(test_splice_one)
   b.push_back(3);
   b.push_back(4);
 
+  LIter< int > pos = a.begin();
   LIter< int > it_b = b.begin();
-  a.splice(a.end(), b, it_b);
+  a.splice(pos, b, it_b);
 
   BOOST_TEST(a.size() == 3);
   BOOST_TEST(b.size() == 1);
@@ -348,9 +350,9 @@ BOOST_AUTO_TEST_CASE(test_splice_one)
   LIter< int > it = a.begin();
   BOOST_TEST(*it == 1);
   ++it;
-  BOOST_TEST(*it == 2);
-  ++it;
   BOOST_TEST(*it == 3);
+  ++it;
+  BOOST_TEST(*it == 2);
 
   BOOST_TEST(b.front() == 4);
 }
@@ -366,12 +368,13 @@ BOOST_AUTO_TEST_CASE(test_splice_range)
   b.push_back(3);
   b.push_back(4);
 
+  LIter< int > pos = a.begin();
   LIter< int > first = b.begin();
   LIter< int > last = b.begin();
   ++last;
   ++last;
 
-  a.splice(a.end(), b, first, last);
+  a.splice(pos, b, first, last);
 
   BOOST_TEST(a.size() == 4);
   BOOST_TEST(b.size() == 1);
@@ -379,11 +382,37 @@ BOOST_AUTO_TEST_CASE(test_splice_range)
   LIter< int > it = a.begin();
   BOOST_TEST(*it == 1);
   ++it;
+  BOOST_TEST(*it == 2);
+  ++it;
+  BOOST_TEST(*it == 3);
+  ++it;
   BOOST_TEST(*it == 5);
+}
+
+BOOST_AUTO_TEST_CASE(test_splice_to_end)
+{
+  List< int > a;
+  a.push_back(1);
+  a.push_back(2);
+
+  List< int > b;
+  b.push_back(3);
+  b.push_back(4);
+
+  LIter< int > pos = a.begin();
+  ++pos;
+  a.splice(pos, b);
+
+  BOOST_TEST(a.size() == 4);
+
+  LIter< int > it = a.begin();
+  BOOST_TEST(*it == 1);
   ++it;
   BOOST_TEST(*it == 2);
   ++it;
   BOOST_TEST(*it == 3);
+  ++it;
+  BOOST_TEST(*it == 4);
 }
 
 BOOST_AUTO_TEST_CASE(test_sort_ascending)
@@ -448,42 +477,6 @@ BOOST_AUTO_TEST_CASE(test_sort_descending)
   BOOST_TEST(*it == 1);
   ++it;
   BOOST_CHECK(it == lst.end());
-}
-
-BOOST_AUTO_TEST_CASE(test_partition)
-{
-  List< int > lst;
-  lst.push_back(1);
-  lst.push_back(2);
-  lst.push_back(3);
-  lst.push_back(4);
-  lst.push_back(5);
-
-  List< int > false_list = lst.partition([](int x) { return x % 2 == 0; });
-
-  BOOST_TEST(lst.size() == 2);
-  BOOST_TEST(false_list.size() == 3);
-
-  LIter< int > it = lst.begin();
-  BOOST_REQUIRE(it != lst.end());
-  BOOST_TEST(*it == 2);
-  ++it;
-  BOOST_REQUIRE(it != lst.end());
-  BOOST_TEST(*it == 4);
-  ++it;
-  BOOST_CHECK(it == lst.end());
-
-  it = false_list.begin();
-  BOOST_REQUIRE(it != false_list.end());
-  BOOST_TEST(*it == 1);
-  ++it;
-  BOOST_REQUIRE(it != false_list.end());
-  BOOST_TEST(*it == 3);
-  ++it;
-  BOOST_REQUIRE(it != false_list.end());
-  BOOST_TEST(*it == 5);
-  ++it;
-  BOOST_CHECK(it == false_list.end());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -365,20 +365,19 @@ namespace vishnyakov
         return;
       }
 
-      Node* first = other.pseudoknot_->next_;
       Node* last = other.pseudoknot_;
+      while (last->next_ != other.pseudoknot_)
+      {
+        last = last->next_;
+      }
+
+      Node* first = other.pseudoknot_->next_;
 
       other.pseudoknot_->next_ = other.pseudoknot_;
 
       Node* next_after_pos = pos.node_->next_;
       pos.node_->next_ = first;
-
-      Node* current = first;
-      while (current->next_ != last)
-      {
-        current = current->next_;
-      }
-      current->next_ = next_after_pos;
+      last->next_ = next_after_pos;
 
       size_ += other.size_;
       other.size_ = 0;

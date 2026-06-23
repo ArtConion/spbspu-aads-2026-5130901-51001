@@ -77,6 +77,12 @@ namespace vishnyakov
       data_.swap(other.data_);
     }
 
+    template< class... Args >
+    void emplace(Args&&... args)
+    {
+      data_.emplace_back(std::forward< Args >(args)...);
+    }
+
   private:
     List< T > data_;
   };

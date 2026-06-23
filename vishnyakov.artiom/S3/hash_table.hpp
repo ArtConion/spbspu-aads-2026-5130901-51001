@@ -18,30 +18,36 @@ public:
     array_capacity_(16),
     size_(0),
     hash_(),
-    equal_()
+    equal_(),
+    max_load_factor_(0.75),
+    max_chain_length_(4),
+    rehash_policy_([](std::size_t current) { return current * 2; })
   {
     array_ = static_cast< List< std::pair< const Key, Value > >* >(
       ::operator new(sizeof(List< std::pair< const Key, Value > >) * array_capacity_)
     );
 
-    for (size_t i = 0; i < array_capacity_; ++i)
+    for (std::size_t i = 0; i < array_capacity_; ++i)
     {
       new (&array_[i]) List< std::pair< const Key, Value > >();
     }
   }
 
-  explicit HashTable(size_t initial_capacity):
+  explicit HashTable(std::size_t initial_capacity):
     array_(nullptr),
     array_capacity_(initial_capacity > 0 ? initial_capacity : 16),
     size_(0),
     hash_(),
-    equal_()
+    equal_(),
+    max_load_factor_(0.75),
+    max_chain_length_(4),
+    rehash_policy_([](std::size_t current) { return current * 2; })
   {
     array_ = static_cast< List< std::pair< const Key, Value > >* >(
       ::operator new(sizeof(List< std::pair< const Key, Value > >) * array_capacity_)
     );
 
-    for (size_t i = 0; i < array_capacity_; ++i)
+    for (std::size_t i = 0; i < array_capacity_; ++i)
     {
       new (&array_[i]) List< std::pair< const Key, Value > >();
     }
@@ -52,13 +58,16 @@ public:
     array_capacity_(other.array_capacity_),
     size_(other.size_),
     hash_(other.hash_),
-    equal_(other.equal_)
+    equal_(other.equal_),
+    max_load_factor_(other.max_load_factor_),
+    max_chain_length_(other.max_chain_length_),
+    rehash_policy_(other.rehash_policy_)
   {
     array_ = static_cast< List< std::pair< const Key, Value > >* >(
       ::operator new(sizeof(List< std::pair< const Key, Value > >) * array_capacity_)
     );
 
-    for (size_t i = 0; i < array_capacity_; ++i)
+    for (std::size_t i = 0; i < array_capacity_; ++i)
     {
       new (&array_[i]) List< std::pair< const Key, Value > >(other.array_[i]);
     }
@@ -69,7 +78,10 @@ public:
     array_capacity_(other.array_capacity_),
     size_(other.size_),
     hash_(std::move(other.hash_)),
-    equal_(std::move(other.equal_))
+    equal_(std::move(other.equal_)),
+    max_load_factor_(other.max_load_factor_),
+    max_chain_length_(other.max_chain_length_),
+    rehash_policy_(std::move(other.rehash_policy_))
   {
     other.array_ = nullptr;
     other.array_capacity_ = 0;
@@ -182,7 +194,7 @@ public:
 
   void add(const Key& key, const Value& value)
   {
-    size_t idx = index(key);
+    std::size_t idx = index(key);
     List< std::pair< const Key, Value > >& chain = array_[idx];
 
     for (LIter< std::pair< const Key, Value > > it = chain.begin();
@@ -196,11 +208,13 @@ public:
 
     chain.push_front(std::pair< const Key, Value >(key, value));
     ++size_;
+
+    auto_rehash();
   }
 
   void add(Key&& key, Value&& value)
   {
-    size_t idx = index(key);
+    std::size_t idx = index(key);
     List< std::pair< const Key, Value > >& chain = array_[idx];
 
     for (LIter< std::pair< const Key, Value > > it = chain.begin();
@@ -214,11 +228,13 @@ public:
 
     chain.push_front(std::pair< const Key, Value >(std::move(key), std::move(value)));
     ++size_;
+
+    auto_rehash();
   }
 
   Value drop(const Key& key)
   {
-    size_t idx = index(key);
+    std::size_t idx = index(key);
     List< std::pair< const Key, Value > >& chain = array_[idx];
 
     if (chain.empty())

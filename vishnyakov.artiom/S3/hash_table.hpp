@@ -24,13 +24,13 @@ public:
       ::operator new(sizeof(List< std::pair< const Key, Value > >) * array_capacity_)
     );
 
-    for (std::size_t i = 0; i < array_capacity_; ++i)
+    for (size_t i = 0; i < array_capacity_; ++i)
     {
       new (&array_[i]) List< std::pair< const Key, Value > >();
     }
   }
 
-  explicit HashTable(std::size_t initial_capacity):
+  explicit HashTable(size_t initial_capacity):
     array_(nullptr),
     array_capacity_(initial_capacity > 0 ? initial_capacity : 16),
     size_(0),
@@ -41,7 +41,7 @@ public:
       ::operator new(sizeof(List< std::pair< const Key, Value > >) * array_capacity_)
     );
 
-    for (std::size_t i = 0; i < array_capacity_; ++i)
+    for (size_t i = 0; i < array_capacity_; ++i)
     {
       new (&array_[i]) List< std::pair< const Key, Value > >();
     }
@@ -58,7 +58,7 @@ public:
       ::operator new(sizeof(List< std::pair< const Key, Value > >) * array_capacity_)
     );
 
-    for (std::size_t i = 0; i < array_capacity_; ++i)
+    for (size_t i = 0; i < array_capacity_; ++i)
     {
       new (&array_[i]) List< std::pair< const Key, Value > >(other.array_[i]);
     }
@@ -80,7 +80,7 @@ public:
   {
     if (array_)
     {
-      for (std::size_t i = 0; i < array_capacity_; ++i)
+      for (size_t i = 0; i < array_capacity_; ++i)
       {
         array_[i].~List();
       }
@@ -116,19 +116,19 @@ public:
     return size_ == 0;
   }
 
-  std::size_t size() const noexcept
+  size_t size() const noexcept
   {
     return size_;
   }
 
-  std::size_t capacity() const noexcept
+  size_t capacity() const noexcept
   {
     return array_capacity_;
   }
 
   Value& at(const Key& key)
   {
-    std::size_t idx = index(key);
+    size_t idx = index(key);
     List< std::pair< const Key, Value > >& chain = array_[idx];
 
     for (LIter< std::pair< const Key, Value > > it = chain.begin();
@@ -145,7 +145,7 @@ public:
 
   const Value& at(const Key& key) const
   {
-    std::size_t idx = index(key);
+    size_t idx = index(key);
     const List< std::pair< const Key, Value > >& chain = array_[idx];
 
     for (LCIter< std::pair< const Key, Value > > it = chain.begin();
@@ -162,7 +162,7 @@ public:
 
   Value& operator[](const Key& key)
   {
-    std::size_t idx = index(key);
+    size_t idx = index(key);
     List< std::pair< const Key, Value > >& chain = array_[idx];
 
     for (LIter< std::pair< const Key, Value > > it = chain.begin();
@@ -182,7 +182,7 @@ public:
 
   void add(const Key& key, const Value& value)
   {
-    std::size_t idx = index(key);
+    size_t idx = index(key);
     List< std::pair< const Key, Value > >& chain = array_[idx];
 
     for (LIter< std::pair< const Key, Value > > it = chain.begin();
@@ -200,7 +200,7 @@ public:
 
   void add(Key&& key, Value&& value)
   {
-    std::size_t idx = index(key);
+    size_t idx = index(key);
     List< std::pair< const Key, Value > >& chain = array_[idx];
 
     for (LIter< std::pair< const Key, Value > > it = chain.begin();
@@ -218,7 +218,7 @@ public:
 
   Value drop(const Key& key)
   {
-    std::size_t idx = index(key);
+    size_t idx = index(key);
     List< std::pair< const Key, Value > >& chain = array_[idx];
 
     if (chain.empty())
@@ -256,7 +256,7 @@ public:
 
   bool has(const Key& key) const
   {
-    std::size_t idx = index(key);
+    size_t idx = index(key);
     const List< std::pair< const Key, Value > >& chain = array_[idx];
 
     for (LCIter< std::pair< const Key, Value > > it = chain.begin();
@@ -275,7 +275,7 @@ public:
   {
     List< Key > keys;
 
-    for (std::size_t i = 0; i < array_capacity_; ++i)
+    for (size_t i = 0; i < array_capacity_; ++i)
     {
       const List< std::pair< const Key, Value > >& chain = array_[i];
 
@@ -289,7 +289,7 @@ public:
     return keys;
   }
 
-  void rehash(std::size_t new_capacity)
+  void rehash(size_t new_capacity)
   {
     if (new_capacity == 0)
     {
@@ -306,7 +306,7 @@ public:
 
   void clear() noexcept
   {
-    for (std::size_t i = 0; i < array_capacity_; ++i)
+    for (size_t i = 0; i < array_capacity_; ++i)
     {
       array_[i].clear();
     }
@@ -333,30 +333,99 @@ public:
     std::swap(equal_, other.equal_);
   }
 
+  double load_factor() const noexcept
+  {
+    if (array_capacity_ == 0)
+    {
+      return 0.0;
+    }
+    return static_cast< double >(size_) / static_cast< double >(array_capacity_);
+  }
+
+  size_t longest_chain() const
+  {
+    size_t max_chain = 0;
+
+    for (size_t i = 0; i < array_capacity_; ++i)
+    {
+      size_t chain_size = array_[i].size();
+      if (chain_size > max_chain)
+      {
+        max_chain = chain_size;
+      }
+    }
+
+    return max_chain;
+  }
+
+  size_t max_load_factor() const noexcept
+  {
+    return max_load_factor_;
+  }
+
+  void max_load_factor(size_t factor) noexcept
+  {
+    max_load_factor_ = factor;
+  }
+
+  size_t max_chain_length() const noexcept
+  {
+    return max_chain_length_;
+  }
+
+  void max_chain_length(size_t length) noexcept
+  {
+    max_chain_length_ = length;
+  }
+
+  void set_rehash_policy(std::function< size_t(size_t) > policy)
+  {
+    rehash_policy_ = policy;
+  }
+
+  void auto_rehash()
+  {
+    if (load_factor() > max_load_factor_)
+    {
+      size_t new_capacity = rehash_policy_(array_capacity_);
+      rehash(new_capacity);
+    }
+
+    if (longest_chain() > max_chain_length_)
+    {
+      size_t new_capacity = rehash_policy_(array_capacity_);
+      rehash(new_capacity);
+    }
+  }
+
 private:
   List< std::pair< const Key, Value > >* array_;
-  std::size_t array_capacity_;
-  std::size_t size_;
+  size_t array_capacity_;
+  size_t size_;
   Hash hash_;
   Equal equal_;
 
-  std::size_t index(const Key& key) const
+  size_t max_load_factor_;
+  size_t max_chain_length_;
+  std::function< size_t(size_t) > rehash_policy_;
+
+  size_t index(const Key& key) const
   {
     return hash_(key) % array_capacity_;
   }
 
-  void rehash_impl(std::size_t new_capacity)
+  void rehash_impl(size_t new_capacity)
   {
     List< std::pair< const Key, Value > >* new_array = static_cast< List< std::pair< const Key, Value > >* >(
       ::operator new(sizeof(List< std::pair< const Key, Value > >) * new_capacity)
     );
 
-    for (std::size_t i = 0; i < new_capacity; ++i)
+    for (size_t i = 0; i < new_capacity; ++i)
     {
       new (&new_array[i]) List< std::pair< const Key, Value > >();
     }
 
-    for (std::size_t i = 0; i < array_capacity_; ++i)
+    for (size_t i = 0; i < array_capacity_; ++i)
     {
       List< std::pair< const Key, Value > >& chain = array_[i];
 
@@ -365,7 +434,7 @@ private:
         std::pair< const Key, Value > item = std::move(chain.front());
         chain.pop_front();
 
-        std::size_t new_idx = hash_(item.first) % new_capacity;
+        size_t new_idx = hash_(item.first) % new_capacity;
         new_array[new_idx].push_front(std::move(item));
       }
 

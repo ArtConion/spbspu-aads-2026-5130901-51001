@@ -327,7 +327,7 @@ BOOST_AUTO_TEST_CASE(RehashSameCapacity)
   vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(8);
   table.add(1, "one");
 
-  std::size_t old_capacity = table.capacity();
+  size_t old_capacity = table.capacity();
   table.rehash(8);
 
   BOOST_CHECK_EQUAL(table.capacity(), old_capacity);

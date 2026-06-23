@@ -369,9 +369,9 @@ namespace vishnyakov
     {
       std::string count_str;
       in >> count_str;
-      std::size_t vertex_count = std::stoul(count_str);
+      size_t vertex_count = std::stoul(count_str);
 
-      for (std::size_t i = 0; i < vertex_count; ++i)
+      for (size_t i = 0; i < vertex_count; ++i)
       {
         std::string vertex;
         in >> vertex;
@@ -466,13 +466,13 @@ namespace vishnyakov
   {
     std::string new_name;
     std::string old_name;
-    std::size_t vertex_count;
+    size_t vertex_count;
 
     in >> new_name >> old_name >> vertex_count;
 
     List< std::string > vertices;
 
-    for (std::size_t i = 0; i < vertex_count; ++i)
+    for (size_t i = 0; i < vertex_count; ++i)
     {
       std::string v;
       in >> v;

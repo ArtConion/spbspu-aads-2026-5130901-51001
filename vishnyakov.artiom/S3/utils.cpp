@@ -18,7 +18,7 @@ namespace vishnyakov
 
       std::istringstream iss(line);
       std::string graph_name;
-      std::size_t edge_count;
+      size_t edge_count;
 
       iss >> graph_name >> edge_count;
 
@@ -29,7 +29,7 @@ namespace vishnyakov
 
       Graph graph;
 
-      for (std::size_t i = 0; i < edge_count; ++i)
+      for (size_t i = 0; i < edge_count; ++i)
       {
         if (!std::getline(file, line))
         {

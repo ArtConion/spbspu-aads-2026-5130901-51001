@@ -319,18 +319,18 @@ BOOST_AUTO_TEST_CASE(test_splice_all)
   List< int > a;
   a.push_back(1);
   a.push_back(2);
-  
+
   List< int > b;
   b.push_back(3);
   b.push_back(4);
-  
+
   LIter< int > pos = a.begin();
   ++pos;
   a.splice(pos, b);
-  
+
   BOOST_TEST(a.size() == 4);
   BOOST_TEST(b.empty());
-  
+
   LIter< int > it = a.begin();
   BOOST_TEST(*it == 1);
   ++it;
@@ -346,26 +346,26 @@ BOOST_AUTO_TEST_CASE(test_splice_one)
   List< int > a;
   a.push_back(1);
   a.push_back(2);
-  
+
   List< int > b;
   b.push_back(3);
   b.push_back(4);
-  
+
   LIter< int > pos = a.begin();
   ++pos;
   LIter< int > it_b = b.begin();
   a.splice(pos, b, it_b);
-  
+
   BOOST_TEST(a.size() == 3);
   BOOST_TEST(b.size() == 1);
-  
+
   LIter< int > it = a.begin();
   BOOST_TEST(*it == 1);
   ++it;
   BOOST_TEST(*it == 3);
   ++it;
   BOOST_TEST(*it == 2);
-  
+
   BOOST_TEST(b.front() == 4);
 }
 
@@ -374,24 +374,24 @@ BOOST_AUTO_TEST_CASE(test_splice_range)
   List< int > a;
   a.push_back(1);
   a.push_back(5);
-  
+
   List< int > b;
   b.push_back(2);
   b.push_back(3);
   b.push_back(4);
-  
+
   LIter< int > pos = a.begin();
   ++pos;
   LIter< int > first = b.begin();
   LIter< int > last = b.begin();
   ++last;
   ++last;
-  
+
   a.splice(pos, b, first, last);
-  
+
   BOOST_TEST(a.size() == 4);
   BOOST_TEST(b.size() == 1);
-  
+
   LIter< int > it = a.begin();
   BOOST_TEST(*it == 1);
   ++it;
@@ -429,9 +429,9 @@ BOOST_AUTO_TEST_CASE(test_sort_ascending)
   lst.push_back(9);
   lst.push_back(2);
   lst.push_back(6);
-  
+
   lst.sort();
-  
+
   LIter< int > it = lst.begin();
   BOOST_TEST(*it == 1);
   ++it;
@@ -456,9 +456,9 @@ BOOST_AUTO_TEST_CASE(test_sort_descending)
   lst.push_back(3);
   lst.push_back(1);
   lst.push_back(4);
-  
+
   lst.sort(std::greater< int >());
-  
+
   LIter< int > it = lst.begin();
   BOOST_TEST(*it == 4);
   ++it;
@@ -473,17 +473,17 @@ BOOST_AUTO_TEST_CASE(test_merge)
   a.push_back(1);
   a.push_back(3);
   a.push_back(5);
-  
+
   List< int > b;
   b.push_back(2);
   b.push_back(4);
   b.push_back(6);
-  
+
   a.merge(b);
-  
+
   BOOST_TEST(a.size() == 6);
   BOOST_TEST(b.empty());
-  
+
   LIter< int > it = a.begin();
   BOOST_TEST(*it == 1);
   ++it;
@@ -504,14 +504,14 @@ BOOST_AUTO_TEST_CASE(test_merge_with_comparator)
   a.push_back(5);
   a.push_back(3);
   a.push_back(1);
-  
+
   List< int > b;
   b.push_back(6);
   b.push_back(4);
   b.push_back(2);
-  
+
   a.merge(b, std::greater< int >());
-  
+
   LIter< int > it = a.begin();
   BOOST_TEST(*it == 6);
   ++it;
@@ -534,17 +534,17 @@ BOOST_AUTO_TEST_CASE(test_partition)
   lst.push_back(3);
   lst.push_back(4);
   lst.push_back(5);
-  
+
   List< int > false_list = lst.partition([](int x) { return x % 2 == 0; });
-  
+
   BOOST_TEST(lst.size() == 2);
   BOOST_TEST(false_list.size() == 3);
-  
+
   LIter< int > it = lst.begin();
   BOOST_TEST(*it == 2);
   ++it;
   BOOST_TEST(*it == 4);
-  
+
   it = false_list.begin();
   BOOST_TEST(*it == 1);
   ++it;

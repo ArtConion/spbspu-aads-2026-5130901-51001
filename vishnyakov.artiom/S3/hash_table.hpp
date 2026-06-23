@@ -21,19 +21,19 @@ public:
     equal_(),
     max_load_factor_(0.75),
     max_chain_length_(4),
-    rehash_policy_([](std::size_t current) { return current * 2; })
+    rehash_policy_([](size_t current) { return current * 2; })
   {
     array_ = static_cast< List< std::pair< const Key, Value > >* >(
       ::operator new(sizeof(List< std::pair< const Key, Value > >) * array_capacity_)
     );
 
-    for (std::size_t i = 0; i < array_capacity_; ++i)
+    for (size_t i = 0; i < array_capacity_; ++i)
     {
       new (&array_[i]) List< std::pair< const Key, Value > >();
     }
   }
 
-  explicit HashTable(std::size_t initial_capacity):
+  explicit HashTable(size_t initial_capacity):
     array_(nullptr),
     array_capacity_(initial_capacity > 0 ? initial_capacity : 16),
     size_(0),
@@ -41,13 +41,13 @@ public:
     equal_(),
     max_load_factor_(0.75),
     max_chain_length_(4),
-    rehash_policy_([](std::size_t current) { return current * 2; })
+    rehash_policy_([](size_t current) { return current * 2; })
   {
     array_ = static_cast< List< std::pair< const Key, Value > >* >(
       ::operator new(sizeof(List< std::pair< const Key, Value > >) * array_capacity_)
     );
 
-    for (std::size_t i = 0; i < array_capacity_; ++i)
+    for (size_t i = 0; i < array_capacity_; ++i)
     {
       new (&array_[i]) List< std::pair< const Key, Value > >();
     }
@@ -67,7 +67,7 @@ public:
       ::operator new(sizeof(List< std::pair< const Key, Value > >) * array_capacity_)
     );
 
-    for (std::size_t i = 0; i < array_capacity_; ++i)
+    for (size_t i = 0; i < array_capacity_; ++i)
     {
       new (&array_[i]) List< std::pair< const Key, Value > >(other.array_[i]);
     }
@@ -194,7 +194,7 @@ public:
 
   void add(const Key& key, const Value& value)
   {
-    std::size_t idx = index(key);
+    size_t idx = index(key);
     List< std::pair< const Key, Value > >& chain = array_[idx];
 
     for (LIter< std::pair< const Key, Value > > it = chain.begin();
@@ -214,7 +214,7 @@ public:
 
   void add(Key&& key, Value&& value)
   {
-    std::size_t idx = index(key);
+    size_t idx = index(key);
     List< std::pair< const Key, Value > >& chain = array_[idx];
 
     for (LIter< std::pair< const Key, Value > > it = chain.begin();
@@ -234,7 +234,7 @@ public:
 
   Value drop(const Key& key)
   {
-    std::size_t idx = index(key);
+    size_t idx = index(key);
     List< std::pair< const Key, Value > >& chain = array_[idx];
 
     if (chain.empty())

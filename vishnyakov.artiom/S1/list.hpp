@@ -379,7 +379,7 @@ namespace vishnyakov
         current = current->next_;
       }
       current->next_ = next_after_pos;
-      
+
       size_ += other.size_;
       other.size_ = 0;
     }
@@ -444,7 +444,7 @@ namespace vishnyakov
         current = current->next_;
       }
       current->next_ = next_after_pos;
-      
+
       size_ += count;
     }
 
@@ -551,7 +551,7 @@ namespace vishnyakov
 
       return false_list;
     }
-    
+
     template< class... Args >
     LIter< T > emplace_after(LIter< T > pos, Args&&... args)
     {
@@ -570,13 +570,13 @@ namespace vishnyakov
       ++size_;
       return LIter< T >(new_node);
     }
-    
+
     template< class... Args >
     void emplace_front(Args&&... args)
     {
       emplace_after(LIter< T >(pseudoknot_), std::forward< Args >(args)...);
     }
-    
+
     template< class... Args >
     void emplace_back(Args&&... args)
     {

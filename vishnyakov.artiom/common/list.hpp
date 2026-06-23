@@ -3,6 +3,7 @@
 
 #include "node.hpp"
 #include <utility>
+#include <memory>
 
 namespace vishnyakov
 {
@@ -356,6 +357,44 @@ namespace vishnyakov
     {
       std::swap(pseudoknot_, other.pseudoknot_);
       std::swap(size_, other.size_);
+    }
+
+    // === Дополнительное задание: emplace ===
+    
+    template< class... Args >
+    LIter< T > emplace_after(LIter< T > pos, Args&&... args)
+    {
+      Node* new_node = static_cast< Node* >(::operator new(sizeof(Node)));
+      try
+      {
+        new (static_cast< void* >(&new_node->data_)) T(std::forward< Args >(args)...);
+      }
+      catch (...)
+      {
+        ::operator delete(new_node);
+        throw;
+      }
+      new_node->next_ = pos.node_->next_;
+      pos.node_->next_ = new_node;
+      ++size_;
+      return LIter< T >(new_node);
+    }
+    
+    template< class... Args >
+    void emplace_front(Args&&... args)
+    {
+      emplace_after(LIter< T >(pseudoknot_), std::forward< Args >(args)...);
+    }
+    
+    template< class... Args >
+    void emplace_back(Args&&... args)
+    {
+      Node* last = pseudoknot_;
+      while (last->next_ != pseudoknot_)
+      {
+        last = last->next_;
+      }
+      emplace_after(LIter< T >(last), std::forward< Args >(args)...);
     }
   };
 }

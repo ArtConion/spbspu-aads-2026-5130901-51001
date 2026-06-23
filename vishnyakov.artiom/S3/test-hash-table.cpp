@@ -388,13 +388,13 @@ BOOST_AUTO_TEST_CASE(MaxLoadFactor)
 {
   vishnyakov::HashTable< int, std::string, vishnyakov::SipHash, std::equal_to< int > > table(10);
 
-  BOOST_CHECK_EQUAL(table.max_load_factor(), 0.75);
+  BOOST_CHECK_CLOSE(table.max_load_factor(), 0.75, 0.001);
 
   table.max_load_factor(0.5);
-  BOOST_CHECK_EQUAL(table.max_load_factor(), 0.5);
+  BOOST_CHECK_CLOSE(table.max_load_factor(), 0.5, 0.001);
 
   table.max_load_factor(1.0);
-  BOOST_CHECK_EQUAL(table.max_load_factor(), 1.0);
+  BOOST_CHECK_CLOSE(table.max_load_factor(), 1.0, 0.001);
 }
 
 BOOST_AUTO_TEST_CASE(MaxChainLength)

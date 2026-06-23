@@ -6,7 +6,7 @@
 #include <utility>
 #include <stdexcept>
 #include <algorithm>
-
+#include <functional>
 namespace vishnyakov
 {
 template< class Key, class Value, class Hash, class Equal >
@@ -347,7 +347,11 @@ public:
     std::swap(size_, other.size_);
     std::swap(hash_, other.hash_);
     std::swap(equal_, other.equal_);
+    std::swap(max_load_factor_, other.max_load_factor_);
+    std::swap(max_chain_length_, other.max_chain_length_);
+    std::swap(rehash_policy_, other.rehash_policy_);
   }
+
 
   double load_factor() const noexcept
   {
@@ -374,12 +378,12 @@ public:
     return max_chain;
   }
 
-  size_t max_load_factor() const noexcept
+  double max_load_factor() const noexcept
   {
     return max_load_factor_;
   }
 
-  void max_load_factor(size_t factor) noexcept
+  void max_load_factor(double factor) noexcept
   {
     max_load_factor_ = factor;
   }
@@ -407,7 +411,7 @@ public:
       rehash(new_capacity);
     }
 
-    if (longest_chain() > max_chain_length_)
+    if (static_cast< double >(longest_chain()) > max_chain_length_)
     {
       size_t new_capacity = rehash_policy_(array_capacity_);
       rehash(new_capacity);
@@ -421,7 +425,7 @@ private:
   Hash hash_;
   Equal equal_;
 
-  size_t max_load_factor_;
+  double max_load_factor_;
   size_t max_chain_length_;
   std::function< size_t(size_t) > rehash_policy_;
 

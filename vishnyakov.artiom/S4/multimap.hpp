@@ -30,12 +30,9 @@ namespace vishnyakov
 
       value_type operator*() const
       {
-        // Используем const_cast чтобы получить доступ к данным через неконстантный итератор
-        // Мы знаем, что дерево не константное, потому что iterator создается из неконстантного begin()
-        return std::make_pair(
-          const_cast<typename vishnyakov::BSTree< Key, vishnyakov::List< Value >, Compare >::iterator&>(tree_it_)->first,
-          *list_it_
-        );
+        using TreeIter = typename vishnyakov::BSTree< Key, vishnyakov::List< Value >, Compare >::iterator;
+        const Key& key = const_cast<TreeIter&>(tree_it_)->first;
+        return std::make_pair(key, *list_it_);
       }
 
       iterator& operator++()

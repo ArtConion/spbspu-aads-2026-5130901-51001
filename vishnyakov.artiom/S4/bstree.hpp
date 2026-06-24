@@ -394,6 +394,180 @@ namespace vishnyakov
       return comp_;
     }
 
+    Node* balance(Node* node)
+    {
+      if (!node)
+      {
+        return nullptr;
+      }
+
+      int balance_factor = get_balance_factor(node);
+
+      if (balance_factor > 1)
+      {
+        if (get_balance_factor(node->left_) < 0)
+        {
+          node->left_ = rotate_left_impl(node->left_);
+          if (node->left_)
+          {
+            node->left_->parent_ = node;
+          }
+        }
+        return rotate_right_impl(node);
+      }
+
+      if (balance_factor < -1)
+      {
+        if (get_balance_factor(node->right_) > 0)
+        {
+          node->right_ = rotate_right_impl(node->right_);
+          if (node->right_)
+          {
+            node->right_->parent_ = node;
+          }
+        }
+        return rotate_left_impl(node);
+      }
+
+      return node;
+    }
+
+    int get_balance_factor(Node* node) const
+    {
+      if (!node)
+      {
+        return 0;
+      }
+      return get_height(node->left_) - get_height(node->right_);
+    }
+
+    Node* avl_insert(Node* node, const Key& key, const Value& value)
+    {
+      if (!node)
+      {
+        ++size_;
+        return new Node(key, value, nullptr);
+      }
+
+      if (comp_(key, node->data_.first))
+      {
+        node->left_ = avl_insert(node->left_, key, value);
+        if (node->left_)
+        {
+          node->left_->parent_ = node;
+        }
+      }
+      else if (comp_(node->data_.first, key))
+      {
+        node->right_ = avl_insert(node->right_, key, value);
+        if (node->right_)
+        {
+          node->right_->parent_ = node;
+        }
+      }
+      else
+      {
+        return node;
+      }
+
+      return balance(node);
+    }
+
+    Node* avl_insert(Node* node, Key&& key, Value&& value)
+    {
+      if (!node)
+      {
+        ++size_;
+        return new Node(std::move(key), std::move(value), nullptr);
+      }
+
+      if (comp_(key, node->data_.first))
+      {
+        node->left_ = avl_insert(node->left_, std::move(key), std::move(value));
+        if (node->left_)
+        {
+          node->left_->parent_ = node;
+        }
+      }
+      else if (comp_(node->data_.first, key))
+      {
+        node->right_ = avl_insert(node->right_, std::move(key), std::move(value));
+        if (node->right_)
+        {
+          node->right_->parent_ = node;
+        }
+      }
+      else
+      {
+        return node;
+      }
+
+      return balance(node);
+    }
+
+    Node* avl_erase(Node* node, const Key& key)
+    {
+      if (!node)
+      {
+        return nullptr;
+      }
+
+      if (comp_(key, node->data_.first))
+      {
+        node->left_ = avl_erase(node->left_, key);
+        if (node->left_)
+        {
+          node->left_->parent_ = node;
+        }
+      }
+      else if (comp_(node->data_.first, key))
+      {
+        node->right_ = avl_erase(node->right_, key);
+        if (node->right_)
+        {
+          node->right_->parent_ = node;
+        }
+      }
+      else
+      {
+        if (!node->left_)
+        {
+          Node* right = node->right_;
+          if (right)
+          {
+            right->parent_ = node->parent_;
+          }
+          delete node;
+          --size_;
+          return right;
+        }
+        else if (!node->right_)
+        {
+          Node* left = node->left_;
+          if (left)
+          {
+            left->parent_ = node->parent_;
+          }
+          delete node;
+          --size_;
+          return left;
+        }
+        else
+        {
+          Node* min = min_node(node->right_);
+          const_cast< Key& >(node->data_.first) = std::move(min->data_.first);
+          node->data_.second = std::move(min->data_.second);
+          node->right_ = avl_erase(node->right_, min->data_.first);
+          if (node->right_)
+          {
+            node->right_->parent_ = node;
+          }
+        }
+      }
+
+      return balance(node);
+    }
+
   private:
     Node* root_;
     size_t size_;

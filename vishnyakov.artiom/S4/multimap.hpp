@@ -21,9 +21,9 @@ namespace vishnyakov
     public:
       iterator() = default;
 
-      iterator(typename BSTree< Key, vishnyakov::List< Value >, Compare >::iterator tree_it,
+      iterator(typename vishnyakov::BSTree< Key, vishnyakov::List< Value >, Compare >::iterator tree_it,
                vishnyakov::LIter< Value > list_it,
-               typename BSTree< Key, vishnyakov::List< Value >, Compare >* tree_ptr = nullptr)
+               vishnyakov::BSTree< Key, vishnyakov::List< Value >, Compare >* tree_ptr = nullptr)
         : tree_it_(tree_it), list_it_(list_it), tree_ptr_(tree_ptr)
       {
       }
@@ -45,7 +45,7 @@ namespace vishnyakov
           }
           else
           {
-            tree_it_ = typename BSTree< Key, vishnyakov::List< Value >, Compare >::iterator();
+            tree_it_ = typename vishnyakov::BSTree< Key, vishnyakov::List< Value >, Compare >::iterator();
             list_it_ = vishnyakov::LIter< Value >(nullptr);
           }
         }
@@ -70,9 +70,9 @@ namespace vishnyakov
       }
 
     private:
-      typename BSTree< Key, vishnyakov::List< Value >, Compare >::iterator tree_it_;
+      typename vishnyakov::BSTree< Key, vishnyakov::List< Value >, Compare >::iterator tree_it_;
       vishnyakov::LIter< Value > list_it_;
-      typename BSTree< Key, vishnyakov::List< Value >, Compare >* tree_ptr_;
+      vishnyakov::BSTree< Key, vishnyakov::List< Value >, Compare >* tree_ptr_;
     };
 
     class const_iterator
@@ -80,9 +80,9 @@ namespace vishnyakov
     public:
       const_iterator() = default;
 
-      const_iterator(typename BSTree< Key, vishnyakov::List< Value >, Compare >::const_iterator tree_it,
+      const_iterator(typename vishnyakov::BSTree< Key, vishnyakov::List< Value >, Compare >::const_iterator tree_it,
                      vishnyakov::LCIter< Value > list_it,
-                     const typename BSTree< Key, vishnyakov::List< Value >, Compare >* tree_ptr = nullptr)
+                     const vishnyakov::BSTree< Key, vishnyakov::List< Value >, Compare >* tree_ptr = nullptr)
         : tree_it_(tree_it), list_it_(list_it), tree_ptr_(tree_ptr)
       {
       }
@@ -104,7 +104,7 @@ namespace vishnyakov
           }
           else
           {
-            tree_it_ = typename BSTree< Key, vishnyakov::List< Value >, Compare >::const_iterator();
+            tree_it_ = typename vishnyakov::BSTree< Key, vishnyakov::List< Value >, Compare >::const_iterator();
             list_it_ = vishnyakov::LCIter< Value >(nullptr);
           }
         }
@@ -129,9 +129,9 @@ namespace vishnyakov
       }
 
     private:
-      typename BSTree< Key, vishnyakov::List< Value >, Compare >::const_iterator tree_it_;
+      typename vishnyakov::BSTree< Key, vishnyakov::List< Value >, Compare >::const_iterator tree_it_;
       vishnyakov::LCIter< Value > list_it_;
-      const typename BSTree< Key, vishnyakov::List< Value >, Compare >* tree_ptr_;
+      const vishnyakov::BSTree< Key, vishnyakov::List< Value >, Compare >* tree_ptr_;
     };
 
     Multimap() = default;
@@ -303,7 +303,7 @@ namespace vishnyakov
     }
 
   private:
-    BSTree< Key, vishnyakov::List< Value >, Compare > tree_;
+    vishnyakov::BSTree< Key, vishnyakov::List< Value >, Compare > tree_;
   };
 }
 

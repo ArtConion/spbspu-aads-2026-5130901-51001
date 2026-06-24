@@ -82,8 +82,8 @@ BOOST_AUTO_TEST_CASE(MultimapIterator)
 
   for (auto it = multimap.begin(); it != multimap.end(); ++it)
   {
-    keys.push_back(it->first);
-    values.push_back(it->second);
+    keys.push_back((*it).first);
+    values.push_back((*it).second);
   }
 
   std::vector< int > expected_keys = {1, 1, 2, 3};
@@ -104,17 +104,17 @@ BOOST_AUTO_TEST_CASE(MultimapFind)
 
   auto it = multimap.find(1);
   BOOST_REQUIRE(it != multimap.end());
-  BOOST_CHECK_EQUAL(it->first, 1);
-  BOOST_CHECK_EQUAL(it->second, "one_a");
+  BOOST_CHECK_EQUAL((*it).first, 1);
+  BOOST_CHECK_EQUAL((*it).second, "one_a");
 
   ++it;
   BOOST_REQUIRE(it != multimap.end());
-  BOOST_CHECK_EQUAL(it->first, 1);
-  BOOST_CHECK_EQUAL(it->second, "one_b");
+  BOOST_CHECK_EQUAL((*it).first, 1);
+  BOOST_CHECK_EQUAL((*it).second, "one_b");
 
   ++it;
   BOOST_REQUIRE(it != multimap.end());
-  BOOST_CHECK_EQUAL(it->first, 2);
+  BOOST_CHECK_EQUAL((*it).first, 2);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

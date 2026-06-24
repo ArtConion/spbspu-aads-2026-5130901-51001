@@ -33,16 +33,6 @@ namespace vishnyakov
         return std::make_pair(tree_it_->first, *list_it_);
       }
 
-      value_type* operator->() const
-      {
-        // Создаем временный объект и возвращаем указатель на него
-        // Но это не безопасно, лучше вернуть указатель на пару
-        // Используем static для хранения результата
-        static value_type result;
-        result = std::make_pair(tree_it_->first, *list_it_);
-        return &result;
-      }
-
       iterator& operator++()
       {
         ++list_it_;
@@ -100,13 +90,6 @@ namespace vishnyakov
       value_type operator*() const
       {
         return std::make_pair(tree_it_->first, *list_it_);
-      }
-
-      value_type* operator->() const
-      {
-        static value_type result;
-        result = std::make_pair(tree_it_->first, *list_it_);
-        return &result;
       }
 
       const_iterator& operator++()

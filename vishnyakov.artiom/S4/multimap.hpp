@@ -22,7 +22,7 @@ namespace vishnyakov
       iterator() = default;
 
       iterator(typename BSTree< Key, vishnyakov::List< Value >, Compare >::iterator tree_it,
-               typename vishnyakov::List< Value >::iterator list_it)
+               vishnyakov::LIter< Value > list_it)
         : tree_it_(tree_it), list_it_(list_it)
       {
       }
@@ -65,7 +65,7 @@ namespace vishnyakov
 
     private:
       typename BSTree< Key, vishnyakov::List< Value >, Compare >::iterator tree_it_;
-      typename vishnyakov::List< Value >::iterator list_it_;
+      vishnyakov::LIter< Value > list_it_;
     };
 
     class const_iterator
@@ -74,7 +74,7 @@ namespace vishnyakov
       const_iterator() = default;
 
       const_iterator(typename BSTree< Key, vishnyakov::List< Value >, Compare >::const_iterator tree_it,
-                     typename vishnyakov::List< Value >::const_iterator list_it)
+                     vishnyakov::LCIter< Value > list_it)
         : tree_it_(tree_it), list_it_(list_it)
       {
       }
@@ -117,7 +117,7 @@ namespace vishnyakov
 
     private:
       typename BSTree< Key, vishnyakov::List< Value >, Compare >::const_iterator tree_it_;
-      typename vishnyakov::List< Value >::const_iterator list_it_;
+      vishnyakov::LCIter< Value > list_it_;
     };
 
     Multimap() = default;
@@ -140,7 +140,7 @@ namespace vishnyakov
 
     iterator end()
     {
-      return iterator(tree_.end(), typename vishnyakov::List< Value >::iterator());
+      return iterator(tree_.end(), vishnyakov::LIter< Value >(nullptr));
     }
 
     const_iterator begin() const
@@ -155,7 +155,7 @@ namespace vishnyakov
 
     const_iterator end() const
     {
-      return const_iterator(tree_.end(), typename vishnyakov::List< Value >::const_iterator());
+      return const_iterator(tree_.end(), vishnyakov::LCIter< Value >(nullptr));
     }
 
     const_iterator cbegin() const

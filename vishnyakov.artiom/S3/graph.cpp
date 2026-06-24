@@ -52,7 +52,7 @@ namespace vishnyakov
       }
 
       return;
-   }
+    }
 
     LIter< Weight > prev = weights.begin();
     LIter< Weight > it = weights.begin();

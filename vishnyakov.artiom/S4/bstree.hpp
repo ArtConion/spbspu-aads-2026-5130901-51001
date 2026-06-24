@@ -165,85 +165,14 @@ namespace vishnyakov
 
     void push(const Key& key, const Value& value)
     {
-      if (!root_)
-      {
-        root_ = new Node(key, value, nullptr);
-        ++size_;
-        return;
-      }
-
-      Node* current = root_;
-      Node* parent = nullptr;
-
-      while (current)
-      {
-        parent = current;
-        if (comp_(key, current->data_.first))
-        {
-          current = current->left_;
-        }
-        else if (comp_(current->data_.first, key))
-        {
-          current = current->right_;
-        }
-        else
-        {
-          return;
-        }
-      }
-
-      Node* new_node = new Node(key, value, parent);
-      if (comp_(key, parent->data_.first))
-      {
-        parent->left_ = new_node;
-      }
-      else
-      {
-        parent->right_ = new_node;
-      }
-      ++size_;
+      root_ = avl_insert(root_, key, value);
     }
 
     void push(Key&& key, Value&& value)
     {
-      if (!root_)
-      {
-        root_ = new Node(std::move(key), std::move(value), nullptr);
-        ++size_;
-        return;
-      }
-
-      Node* current = root_;
-      Node* parent = nullptr;
-
-      while (current)
-      {
-        parent = current;
-        if (comp_(key, current->data_.first))
-        {
-          current = current->left_;
-        }
-        else if (comp_(current->data_.first, key))
-        {
-          current = current->right_;
-        }
-        else
-        {
-          return;
-        }
-      }
-
-      Node* new_node = new Node(std::move(key), std::move(value), parent);
-      if (comp_(key, parent->data_.first))
-      {
-        parent->left_ = new_node;
-      }
-      else
-      {
-        parent->right_ = new_node;
-      }
-      ++size_;
+      root_ = avl_insert(root_, std::move(key), std::move(value));
     }
+
 
     bool has(const Key& key) const
     {
@@ -290,8 +219,7 @@ namespace vishnyakov
         throw std::out_of_range("Key not found");
       }
       Value result = std::move(node->data_.second);
-      root_ = erase_node(root_, key);
-      --size_;
+      root_ = avl_erase(root_, key);
       return result;
     }
 

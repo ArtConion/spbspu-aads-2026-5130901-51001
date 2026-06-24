@@ -2,7 +2,7 @@
 #define MULTIMAP_HPP
 
 #include "bstree.hpp"
-#include <list.hpp>
+#include "list.hpp"
 #include <string>
 #include <utility>
 
@@ -21,8 +21,8 @@ namespace vishnyakov
     public:
       iterator() = default;
 
-      iterator(typename BSTree< Key, List< Value >, Compare >::iterator tree_it,
-               typename List< Value >::iterator list_it)
+      iterator(typename BSTree< Key, vishnyakov::List< Value >, Compare >::iterator tree_it,
+               typename vishnyakov::List< Value >::iterator list_it)
         : tree_it_(tree_it), list_it_(list_it)
       {
       }
@@ -64,8 +64,8 @@ namespace vishnyakov
       }
 
     private:
-      typename BSTree< Key, List< Value >, Compare >::iterator tree_it_;
-      typename List< Value >::iterator list_it_;
+      typename BSTree< Key, vishnyakov::List< Value >, Compare >::iterator tree_it_;
+      typename vishnyakov::List< Value >::iterator list_it_;
     };
 
     class const_iterator
@@ -73,8 +73,8 @@ namespace vishnyakov
     public:
       const_iterator() = default;
 
-      const_iterator(typename BSTree< Key, List< Value >, Compare >::const_iterator tree_it,
-                     typename List< Value >::const_iterator list_it)
+      const_iterator(typename BSTree< Key, vishnyakov::List< Value >, Compare >::const_iterator tree_it,
+                     typename vishnyakov::List< Value >::const_iterator list_it)
         : tree_it_(tree_it), list_it_(list_it)
       {
       }
@@ -116,8 +116,8 @@ namespace vishnyakov
       }
 
     private:
-      typename BSTree< Key, List< Value >, Compare >::const_iterator tree_it_;
-      typename List< Value >::const_iterator list_it_;
+      typename BSTree< Key, vishnyakov::List< Value >, Compare >::const_iterator tree_it_;
+      typename vishnyakov::List< Value >::const_iterator list_it_;
     };
 
     Multimap() = default;
@@ -140,7 +140,7 @@ namespace vishnyakov
 
     iterator end()
     {
-      return iterator(tree_.end(), typename List< Value >::iterator());
+      return iterator(tree_.end(), typename vishnyakov::List< Value >::iterator());
     }
 
     const_iterator begin() const
@@ -155,7 +155,7 @@ namespace vishnyakov
 
     const_iterator end() const
     {
-      return const_iterator(tree_.end(), typename List< Value >::const_iterator());
+      return const_iterator(tree_.end(), typename vishnyakov::List< Value >::const_iterator());
     }
 
     const_iterator cbegin() const
@@ -187,13 +187,13 @@ namespace vishnyakov
     {
       if (!tree_.has(key))
       {
-        List< Value > values;
+        vishnyakov::List< Value > values;
         values.push_back(value);
         tree_.push(key, values);
       }
       else
       {
-        List< Value >& values = tree_.at(key);
+        vishnyakov::List< Value >& values = tree_.at(key);
         values.push_back(value);
       }
     }
@@ -202,13 +202,13 @@ namespace vishnyakov
     {
       if (!tree_.has(key))
       {
-        List< Value > values;
+        vishnyakov::List< Value > values;
         values.push_back(std::move(value));
         tree_.push(std::move(key), values);
       }
       else
       {
-        List< Value >& values = tree_.at(key);
+        vishnyakov::List< Value >& values = tree_.at(key);
         values.push_back(std::move(value));
       }
     }
@@ -227,7 +227,7 @@ namespace vishnyakov
       return tree_.at(key).size();
     }
 
-    const List< Value >& at(const Key& key) const
+    const vishnyakov::List< Value >& at(const Key& key) const
     {
       return tree_.at(key);
     }
@@ -239,7 +239,7 @@ namespace vishnyakov
         return;
       }
 
-      List< Value >& values = tree_.at(key);
+      vishnyakov::List< Value >& values = tree_.at(key);
       if (!values.empty())
       {
         values.pop_front();
@@ -289,7 +289,7 @@ namespace vishnyakov
     }
 
   private:
-    BSTree< Key, List< Value >, Compare > tree_;
+    BSTree< Key, vishnyakov::List< Value >, Compare > tree_;
   };
 }
 

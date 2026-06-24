@@ -22,8 +22,9 @@ namespace vishnyakov
       iterator() = default;
 
       iterator(typename BSTree< Key, vishnyakov::List< Value >, Compare >::iterator tree_it,
-               vishnyakov::LIter< Value > list_it)
-        : tree_it_(tree_it), list_it_(list_it)
+               vishnyakov::LIter< Value > list_it,
+               typename BSTree< Key, vishnyakov::List< Value >, Compare >* tree_ptr = nullptr)
+        : tree_it_(tree_it), list_it_(list_it), tree_ptr_(tree_ptr)
       {
       }
 
@@ -38,9 +39,14 @@ namespace vishnyakov
         if (list_it_ == tree_it_->second.end())
         {
           ++tree_it_;
-          if (tree_it_ != tree_it_.end())
+          if (tree_ptr_ && tree_it_ != tree_ptr_->end())
           {
             list_it_ = tree_it_->second.begin();
+          }
+          else
+          {
+            tree_it_ = typename BSTree< Key, vishnyakov::List< Value >, Compare >::iterator();
+            list_it_ = vishnyakov::LIter< Value >(nullptr);
           }
         }
         return *this;
@@ -66,6 +72,7 @@ namespace vishnyakov
     private:
       typename BSTree< Key, vishnyakov::List< Value >, Compare >::iterator tree_it_;
       vishnyakov::LIter< Value > list_it_;
+      typename BSTree< Key, vishnyakov::List< Value >, Compare >* tree_ptr_;
     };
 
     class const_iterator
@@ -74,8 +81,9 @@ namespace vishnyakov
       const_iterator() = default;
 
       const_iterator(typename BSTree< Key, vishnyakov::List< Value >, Compare >::const_iterator tree_it,
-                     vishnyakov::LCIter< Value > list_it)
-        : tree_it_(tree_it), list_it_(list_it)
+                     vishnyakov::LCIter< Value > list_it,
+                     const typename BSTree< Key, vishnyakov::List< Value >, Compare >* tree_ptr = nullptr)
+        : tree_it_(tree_it), list_it_(list_it), tree_ptr_(tree_ptr)
       {
       }
 
@@ -90,9 +98,14 @@ namespace vishnyakov
         if (list_it_ == tree_it_->second.end())
         {
           ++tree_it_;
-          if (tree_it_ != tree_it_.end())
+          if (tree_ptr_ && tree_it_ != tree_ptr_->end())
           {
             list_it_ = tree_it_->second.begin();
+          }
+          else
+          {
+            tree_it_ = typename BSTree< Key, vishnyakov::List< Value >, Compare >::const_iterator();
+            list_it_ = vishnyakov::LCIter< Value >(nullptr);
           }
         }
         return *this;
@@ -118,6 +131,7 @@ namespace vishnyakov
     private:
       typename BSTree< Key, vishnyakov::List< Value >, Compare >::const_iterator tree_it_;
       vishnyakov::LCIter< Value > list_it_;
+      const typename BSTree< Key, vishnyakov::List< Value >, Compare >* tree_ptr_;
     };
 
     Multimap() = default;
@@ -135,12 +149,12 @@ namespace vishnyakov
       {
         return end();
       }
-      return iterator(tree_it, tree_it->second.begin());
+      return iterator(tree_it, tree_it->second.begin(), &tree_);
     }
 
     iterator end()
     {
-      return iterator(tree_.end(), vishnyakov::LIter< Value >(nullptr));
+      return iterator(tree_.end(), vishnyakov::LIter< Value >(nullptr), &tree_);
     }
 
     const_iterator begin() const
@@ -150,12 +164,12 @@ namespace vishnyakov
       {
         return end();
       }
-      return const_iterator(tree_it, tree_it->second.begin());
+      return const_iterator(tree_it, tree_it->second.begin(), &tree_);
     }
 
     const_iterator end() const
     {
-      return const_iterator(tree_.end(), vishnyakov::LCIter< Value >(nullptr));
+      return const_iterator(tree_.end(), vishnyakov::LCIter< Value >(nullptr), &tree_);
     }
 
     const_iterator cbegin() const
@@ -265,7 +279,7 @@ namespace vishnyakov
       {
         return end();
       }
-      return iterator(tree_it, tree_it->second.begin());
+      return iterator(tree_it, tree_it->second.begin(), &tree_);
     }
 
     const_iterator find(const Key& key) const
@@ -275,7 +289,7 @@ namespace vishnyakov
       {
         return end();
       }
-      return const_iterator(tree_it, tree_it->second.begin());
+      return const_iterator(tree_it, tree_it->second.begin(), &tree_);
     }
 
     void clear()

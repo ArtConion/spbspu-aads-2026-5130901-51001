@@ -19,6 +19,18 @@ namespace vishnyakov
     double coefficient;
   };
 
+  void printStopDetails(std::ostream& out, const RouteStop& stop, int stepNumber)
+  {
+    double roundedTravel = std::round(stop.travelTime * 100.0) / 100.0;
+    double roundedDist = std::round(stop.distanceFromPrev * 100.0) / 100.0;
+    
+    if (stepNumber > 1)
+    {
+      out << "      - Затраченное время: " << roundedTravel << " мин.\n";
+      out << "      - Пройденная дистанция: " << roundedDist << " м.\n";
+    }
+  }
+
   void printCommandUsage(std::ostream& out, const std::string& cmd)
   {
     struct CommandInfo
@@ -121,8 +133,6 @@ namespace vishnyakov
       {
         const RouteStop& stop = *it;
         double roundedTime = std::round(stop.time * 100.0) / 100.0;
-        double roundedTravel = std::round(stop.travelTime * 100.0) / 100.0;
-        double roundedDist = std::round(stop.distanceFromPrev * 100.0) / 100.0;
 
         if (stop.name == "start")
         {
@@ -134,11 +144,7 @@ namespace vishnyakov
         {
           out << "  " << stepNumber << ". Остановка на ночь ("
               << stop.x << ", " << stop.z << ")\n";
-          if (stepNumber > 1)
-          {
-            out << "      - Затраченное время: " << roundedTravel << " мин.\n";
-            out << "      - Пройденная дистанция: " << roundedDist << " м.\n";
-          }
+          printStopDetails(out, stop, stepNumber);
           out << "      - Текущее время: " << roundedTime << " мин.\n";
           stepNumber++;
         }
@@ -146,11 +152,7 @@ namespace vishnyakov
         {
           out << "  " << stepNumber << ". " << stop.name
               << " (" << stop.x << ", " << stop.z << ")\n";
-          if (stepNumber > 1)
-          {
-            out << "      - Затраченное время: " << roundedTravel << " мин.\n";
-            out << "      - Пройденная дистанция: " << roundedDist << " м.\n";
-          }
+          printStopDetails(out, stop, stepNumber);
           out << "      - Текущее время: " << roundedTime << " мин.\n";
           stepNumber++;
         }

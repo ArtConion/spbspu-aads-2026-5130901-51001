@@ -11,7 +11,7 @@ namespace vishnyakov
 {
   template< class Key, class Value, class Compare >
   class BSTree;
-
+  
   template< class Key, class Value, class Compare >
   class BSTIter;
 

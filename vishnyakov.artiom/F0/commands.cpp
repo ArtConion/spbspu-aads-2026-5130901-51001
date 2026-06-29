@@ -87,6 +87,15 @@ namespace vishnyakov
       return cmds;
     }();
 
+    CuckooHashTable< std::string, std::string > categoryNames;
+    categoryNames.add("maps", "=== Управление картами ===");
+    categoryNames.add("points", "=== Управление точками ===");
+    categoryNames.add("search", "=== Поиск и навигация ===");
+    categoryNames.add("operations", "=== Операции с картами ===");
+    categoryNames.add("routes", "=== Маршрутизация ===");
+    categoryNames.add("io", "=== Сохранение и загрузка ===");
+    categoryNames.add("other", "=== Прочее ===");
+
     if (cmd == "all" || cmd.empty())
     {
       out << "Доступные команды:\n\n";
@@ -104,21 +113,11 @@ namespace vishnyakov
           }
           firstCategory = false;
           currentCategory = it->category;
-
-          if (currentCategory == "maps")
-            out << "=== Управление картами ===\n";
-          else if (currentCategory == "points")
-            out << "=== Управление точками ===\n";
-          else if (currentCategory == "search")
-            out << "=== Поиск и навигация ===\n";
-          else if (currentCategory == "operations")
-            out << "=== Операции с картами ===\n";
-          else if (currentCategory == "routes")
-            out << "=== Маршрутизация ===\n";
-          else if (currentCategory == "io")
-            out << "=== Сохранение и загрузка ===\n";
-          else if (currentCategory == "other")
-            out << "=== Прочее ===\n";
+          
+          if (categoryNames.has(currentCategory))
+          {
+            out << categoryNames.at(currentCategory) << "\n";
+          }
         }
 
         out << "  " << std::left << std::setw(64) << it->syntax;
@@ -795,7 +794,6 @@ namespace vishnyakov
         return;
       }
 
-
       List< std::string > ignorePoints = parseIgnorePoints(iss, ignoreCount);
       bool shortOutput = parseShortFlag(iss);
 
@@ -830,7 +828,6 @@ namespace vishnyakov
         return;
       }
 
-
       List< std::string > ignorePoints = parseIgnorePoints(iss, ignoreCount);
       bool shortOutput = parseShortFlag(iss);
 
@@ -864,7 +861,6 @@ namespace vishnyakov
       {
         return;
       }
-
 
       List< std::string > ignorePoints = parseIgnorePoints(iss, ignoreCount);
       bool shortOutput = parseShortFlag(iss);

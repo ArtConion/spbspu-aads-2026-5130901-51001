@@ -6,7 +6,6 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iostream>
-#include <stack.hpp>
 
 namespace vishnyakov
 {
@@ -64,10 +63,10 @@ namespace vishnyakov
 
     iterator begin() noexcept;
     iterator end() noexcept;
-    const_iterator begin() const noexcept;
-    const_iterator end() const noexcept;
-    const_iterator cbegin() const noexcept;
-    const_iterator cend() const noexcept;
+    const_iterator begin() const;
+    const_iterator end() const;
+    const_iterator cbegin() const;
+    const_iterator cend() const;
 
     bool empty() const noexcept;
     size_t size() const noexcept;
@@ -106,6 +105,8 @@ namespace vishnyakov
     Node* insert_node(Node* node, Key&& key, Value&& value);
     Node* erase_node(Node* node, const Key& key);
     Node* min_node(Node* node) const;
+
+    Node* get_leftmost(Node* node) const;
   };
 
   template< class Key, class Value, class Compare >
@@ -132,9 +133,8 @@ namespace vishnyakov
   private:
     using Node = typename AVLTree< Key, Value, Compare >::Node;
     Node* node_;
-    Stack< Node* > stack_;
 
-    AVLIter(Node* node, const Stack< Node* >& stack = Stack< Node* >());
+    explicit AVLIter(Node* node);
   };
 
   template< class Key, class Value, class Compare >
@@ -162,9 +162,8 @@ namespace vishnyakov
   private:
     using Node = typename AVLTree< Key, Value, Compare >::Node;
     const Node* node_;
-    Stack< const Node* > stack_;
 
-    AVLCIter(const Node* node, const Stack< const Node* >& stack = Stack< const Node* >());
+    explicit AVLCIter(const Node* node);
   };
 
   template< class Key, class Value, class Compare >
@@ -225,19 +224,8 @@ namespace vishnyakov
   template< class Key, class Value, class Compare >
   typename AVLTree< Key, Value, Compare >::iterator AVLTree< Key, Value, Compare >::begin() noexcept
   {
-    if (!root_)
-    {
-      return end();
-    }
-
-    Node* current = root_;
-    Stack< Node* > stack;
-    while (current->left_)
-    {
-      stack.push(current);
-      current = current->left_;
-    }
-    return iterator(current, stack);
+    Node* leftmost = get_leftmost(root_);
+    return iterator(leftmost);
   }
 
   template< class Key, class Value, class Compare >
@@ -247,37 +235,26 @@ namespace vishnyakov
   }
 
   template< class Key, class Value, class Compare >
-  typename AVLTree< Key, Value, Compare >::const_iterator AVLTree< Key, Value, Compare >::begin() const noexcept
+  typename AVLTree< Key, Value, Compare >::const_iterator AVLTree< Key, Value, Compare >::begin() const
   {
-    if (!root_)
-    {
-      return end();
-    }
-
-    const Node* current = root_;
-    Stack< const Node* > stack;
-    while (current->left_)
-    {
-      stack.push(current);
-      current = current->left_;
-    }
-    return const_iterator(current, stack);
+    const Node* leftmost = get_leftmost(root_);
+    return const_iterator(leftmost);
   }
 
   template< class Key, class Value, class Compare >
-  typename AVLTree< Key, Value, Compare >::const_iterator AVLTree< Key, Value, Compare >::end() const noexcept
+  typename AVLTree< Key, Value, Compare >::const_iterator AVLTree< Key, Value, Compare >::end() const
   {
     return const_iterator(nullptr);
   }
 
   template< class Key, class Value, class Compare >
-  typename AVLTree< Key, Value, Compare >::const_iterator AVLTree< Key, Value, Compare >::cbegin() const noexcept
+  typename AVLTree< Key, Value, Compare >::const_iterator AVLTree< Key, Value, Compare >::cbegin() const
   {
     return begin();
   }
 
   template< class Key, class Value, class Compare >
-  typename AVLTree< Key, Value, Compare >::const_iterator AVLTree< Key, Value, Compare >::cend() const noexcept
+  typename AVLTree< Key, Value, Compare >::const_iterator AVLTree< Key, Value, Compare >::cend() const
   {
     return end();
   }
@@ -297,24 +274,36 @@ namespace vishnyakov
   template< class Key, class Value, class Compare >
   void AVLTree< Key, Value, Compare >::push(const Key& key, const Value& value)
   {
-    if (has(key)) return;
+    if (has(key))
+    {
+      return;
+    }
+
     root_ = insert_node(root_, key, value);
+
     if (root_)
     {
       root_->parent_ = nullptr;
     }
+
     ++size_;
   }
 
   template< class Key, class Value, class Compare >
   void AVLTree< Key, Value, Compare >::push(Key&& key, Value&& value)
   {
-    if (has(key)) return;
+    if (has(key))
+    {
+      return;
+    }
+
     root_ = insert_node(root_, std::move(key), std::move(value));
+
     if (root_)
     {
       root_->parent_ = nullptr;
     }
+
     ++size_;
   }
 
@@ -328,16 +317,20 @@ namespace vishnyakov
   Value AVLTree< Key, Value, Compare >::drop(const Key& key)
   {
     Node* node = find_node(key);
+
     if (!node)
     {
       throw std::out_of_range("Key not found");
     }
+
     Value result = std::move(node->data_.second);
     root_ = erase_node(root_, key);
+
     if (root_)
     {
       root_->parent_ = nullptr;
     }
+
     --size_;
     return result;
   }
@@ -382,6 +375,7 @@ namespace vishnyakov
   typename AVLTree< Key, Value, Compare >::Node* AVLTree< Key, Value, Compare >::find_node(const Key& key) const
   {
     Node* current = root_;
+
     while (current)
     {
       if (comp_(key, current->data_.first))
@@ -397,6 +391,7 @@ namespace vishnyakov
         return current;
       }
     }
+
     return nullptr;
   }
 
@@ -407,10 +402,12 @@ namespace vishnyakov
     {
       return nullptr;
     }
+
     Node* new_node = new Node(node->data_.first, node->data_.second, parent);
     new_node->height_ = node->height_;
     new_node->left_ = copy_tree(node->left_, new_node);
     new_node->right_ = copy_tree(node->right_, new_node);
+
     return new_node;
   }
 
@@ -421,6 +418,7 @@ namespace vishnyakov
     {
       return;
     }
+
     delete_tree(node->left_);
     delete_tree(node->right_);
     delete node;
@@ -454,6 +452,7 @@ namespace vishnyakov
     Node* parent = node->parent_;
 
     node->right_ = right->left_;
+
     if (right->left_)
     {
       right->left_->parent_ = node;
@@ -488,6 +487,7 @@ namespace vishnyakov
     Node* parent = node->parent_;
 
     node->left_ = left->right_;
+
     if (left->right_)
     {
       left->right_->parent_ = node;
@@ -531,11 +531,13 @@ namespace vishnyakov
       if (get_balance(node->left_) < 0)
       {
         node->left_ = rotate_left(node->left_);
+
         if (node->left_)
         {
           node->left_->parent_ = node;
         }
       }
+
       return rotate_right(node);
     }
 
@@ -544,11 +546,13 @@ namespace vishnyakov
       if (get_balance(node->right_) > 0)
       {
         node->right_ = rotate_right(node->right_);
+
         if (node->right_)
         {
           node->right_->parent_ = node;
         }
       }
+
       return rotate_left(node);
     }
 
@@ -566,6 +570,7 @@ namespace vishnyakov
     if (comp_(key, node->data_.first))
     {
       node->left_ = insert_node(node->left_, key, value);
+
       if (node->left_)
       {
         node->left_->parent_ = node;
@@ -574,6 +579,7 @@ namespace vishnyakov
     else if (comp_(node->data_.first, key))
     {
       node->right_ = insert_node(node->right_, key, value);
+
       if (node->right_)
       {
         node->right_->parent_ = node;
@@ -598,6 +604,7 @@ namespace vishnyakov
     if (comp_(key, node->data_.first))
     {
       node->left_ = insert_node(node->left_, std::move(key), std::move(value));
+
       if (node->left_)
       {
         node->left_->parent_ = node;
@@ -606,6 +613,7 @@ namespace vishnyakov
     else if (comp_(node->data_.first, key))
     {
       node->right_ = insert_node(node->right_, std::move(key), std::move(value));
+
       if (node->right_)
       {
         node->right_->parent_ = node;
@@ -630,6 +638,7 @@ namespace vishnyakov
     if (comp_(key, node->data_.first))
     {
       node->left_ = erase_node(node->left_, key);
+
       if (node->left_)
       {
         node->left_->parent_ = node;
@@ -638,6 +647,7 @@ namespace vishnyakov
     else if (comp_(node->data_.first, key))
     {
       node->right_ = erase_node(node->right_, key);
+
       if (node->right_)
       {
         node->right_->parent_ = node;
@@ -648,10 +658,12 @@ namespace vishnyakov
       if (!node->left_ || !node->right_)
       {
         Node* child = node->left_ ? node->left_ : node->right_;
+
         if (child)
         {
           child->parent_ = node->parent_;
         }
+
         delete node;
         return child;
       }
@@ -661,6 +673,7 @@ namespace vishnyakov
         const_cast< Key& >(node->data_.first) = std::move(successor->data_.first);
         node->data_.second = std::move(successor->data_.second);
         node->right_ = erase_node(node->right_, successor->data_.first);
+
         if (node->right_)
         {
           node->right_->parent_ = node;
@@ -678,20 +691,35 @@ namespace vishnyakov
     {
       node = node->left_;
     }
+
+    return node;
+  }
+
+  template< class Key, class Value, class Compare >
+  typename AVLTree< Key, Value, Compare >::Node* AVLTree< Key, Value, Compare >::get_leftmost(Node* node) const
+  {
+    if (!node)
+    {
+      return nullptr;
+    }
+
+    while (node->left_)
+    {
+      node = node->left_;
+    }
+
     return node;
   }
 
   template< class Key, class Value, class Compare >
   AVLIter< Key, Value, Compare >::AVLIter():
-    node_(nullptr),
-    stack_()
+    node_(nullptr)
   {
   }
 
   template< class Key, class Value, class Compare >
-  AVLIter< Key, Value, Compare >::AVLIter(Node* node, const Stack< Node* >& stack):
-    node_(node),
-    stack_(stack)
+  AVLIter< Key, Value, Compare >::AVLIter(Node* node):
+    node_(node)
   {
   }
 
@@ -713,20 +741,25 @@ namespace vishnyakov
     if (node_->right_)
     {
       node_ = node_->right_;
+
       while (node_->left_)
       {
-        stack_.push(node_);
         node_ = node_->left_;
       }
     }
-    else if (!stack_.empty())
-    {
-      node_ = stack_.pop();
-    }
     else
     {
-      node_ = nullptr;
+      Node* parent = node_->parent_;
+
+      while (parent && parent->right_ == node_)
+      {
+        node_ = parent;
+        parent = parent->parent_;
+      }
+
+      node_ = parent;
     }
+
     return *this;
   }
 
@@ -752,22 +785,19 @@ namespace vishnyakov
 
   template< class Key, class Value, class Compare >
   AVLCIter< Key, Value, Compare >::AVLCIter():
-    node_(nullptr),
-    stack_()
+    node_(nullptr)
   {
   }
 
   template< class Key, class Value, class Compare >
-  AVLCIter< Key, Value, Compare >::AVLCIter(const Node* node, const Stack< const Node* >& stack):
-    node_(node),
-    stack_(stack)
+  AVLCIter< Key, Value, Compare >::AVLCIter(const Node* node):
+    node_(node)
   {
   }
 
   template< class Key, class Value, class Compare >
   AVLCIter< Key, Value, Compare >::AVLCIter(const AVLIter< Key, Value, Compare >& other):
-    node_(other.node_),
-    stack_()
+    node_(other.node_)
   {
   }
 
@@ -789,20 +819,25 @@ namespace vishnyakov
     if (node_->right_)
     {
       node_ = node_->right_;
+
       while (node_->left_)
       {
-        stack_.push(node_);
         node_ = node_->left_;
       }
     }
-    else if (!stack_.empty())
-    {
-      node_ = stack_.pop();
-    }
     else
     {
-      node_ = nullptr;
+      const Node* parent = node_->parent_;
+
+      while (parent && parent->right_ == node_)
+      {
+        node_ = parent;
+        parent = parent->parent_;
+      }
+
+      node_ = parent;
     }
+
     return *this;
   }
 
@@ -831,20 +866,6 @@ namespace vishnyakov
   {
     lhs.swap(rhs);
   }
-}
-
-template< class Key, class Value, class Compare >
-std::ostream& operator<<(std::ostream& out, const vishnyakov::AVLIter< Key, Value, Compare >&)
-{
-  out << "AVLIter";
-  return out;
-}
-
-template< class Key, class Value, class Compare >
-std::ostream& operator<<(std::ostream& out, const vishnyakov::AVLCIter< Key, Value, Compare >&)
-{
-  out << "AVLCIter";
-  return out;
 }
 
 #endif

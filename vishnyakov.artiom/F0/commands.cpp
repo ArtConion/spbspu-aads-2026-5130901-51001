@@ -29,63 +29,35 @@ namespace vishnyakov
       std::string category;
     };
 
-    static const List< CommandInfo > allCommands = []()
-    {
-      List< CommandInfo > cmds;
-
-      cmds.push_back({"create-map", "create-map <name>",
-                      "создать новую карту", "maps"});
-      cmds.push_back({"delete-map", "delete-map <name>",
-                      "удалить карту", "maps"});
-      cmds.push_back({"list-maps", "list-maps",
-                      "показать все карты", "maps"});
-
-      cmds.push_back({"add-point", "add-point <map> <name> <x> <z> <type>",
-                      "добавить точку на карту", "points"});
-      cmds.push_back({"remove-point", "remove-point <map> <name>",
-                      "удалить точку", "points"});
-      cmds.push_back({"edit-point", "edit-point <map> <name> <new-name> <x> <z> <type>",
-                      "изменить точку (\"-\" = без изменений)", "points"});
-      cmds.push_back({"show-points", "show-points <map>",
-                      "показать все точки карты", "points"});
-
-      cmds.push_back({"find-nearest", "find-nearest <map> <x> <z> <k> [type]",
-                      "найти K ближайших точек", "search"});
-      cmds.push_back({"find-by-type", "find-by-type <map> <type>",
-                      "найти точки по типу", "search"});
-      cmds.push_back({"copy-point", "copy-point <src> <dst> <name>",
-                      "скопировать точку между картами", "search"});
-      cmds.push_back({"move-point", "move-point <src> <dst> <name>",
-                      "переместить точку между картами", "search"});
-
-      cmds.push_back({"merge-maps", "merge-maps <new> <map1> <map2>",
-                      "объединить две карты", "operations"});
-      cmds.push_back({"clear-map", "clear-map <map>",
-                      "очистить карту", "operations"});
-
-      cmds.push_back({"plan-route-greedy", "plan-route-greedy <map> <x> <z> <time> <n> [p...] [-short]",
-                      "жадный алгоритм", "routes"});
-      cmds.push_back({"plan-route-2opt", "plan-route-2opt <map> <x> <z> <time> <n> [p...] [-short]",
-                      "2-opt улучшение", "routes"});
-      cmds.push_back({"plan-route-mst", "plan-route-mst <map> <x> <z> <time> <n> [p...] [-short]",
-                      "MST (Prim)", "routes"});
-      cmds.push_back({"plan-route-ant", "plan-route-ant <map> <x> <z> <time> <n> [p...] [-short]",
-                      "муравьиный алгоритм", "routes"});
-      cmds.push_back({"best-route", "best-route <map> <x> <z> <time> <n> [p...]",
-                      "сравнить все алгоритмы", "routes"});
-
-      cmds.push_back({"save", "save <filename>",
-                      "сохранить все данные в файл", "io"});
-      cmds.push_back({"load", "load <filename>",
-                      "загрузить данные из файла", "io"});
-
-      cmds.push_back({"help", "help",
-                      "показать справку", "other"});
-      cmds.push_back({"exit", "exit",
-                      "выйти из программы", "other"});
-
-      return cmds;
-    }();
+    List< CommandInfo > allCommands;
+    allCommands.push_back({"create-map", "create-map <name>", "создать новую карту", "maps"});
+    allCommands.push_back({"delete-map", "delete-map <name>", "удалить карту", "maps"});
+    allCommands.push_back({"list-maps", "list-maps", "показать все карты", "maps"});
+    
+    allCommands.push_back({"add-point", "add-point <map> <name> <x> <z> <type>", "добавить точку на карту", "points"});
+    allCommands.push_back({"remove-point", "remove-point <map> <name>", "удалить точку", "points"});
+    allCommands.push_back({"edit-point", "edit-point <map> <name> <new-name> <x> <z> <type>", "изменить точку (\"-\" = без изменений)", "points"});
+    allCommands.push_back({"show-points", "show-points <map>", "показать все точки карты", "points"});
+    
+    allCommands.push_back({"find-nearest", "find-nearest <map> <x> <z> <k> [type]", "найти K ближайших точек", "search"});
+    allCommands.push_back({"find-by-type", "find-by-type <map> <type>", "найти точки по типу", "search"});
+    allCommands.push_back({"copy-point", "copy-point <src> <dst> <name>", "скопировать точку между картами", "search"});
+    allCommands.push_back({"move-point", "move-point <src> <dst> <name>", "переместить точку между картами", "search"});
+    
+    allCommands.push_back({"merge-maps", "merge-maps <new> <map1> <map2>", "объединить две карты", "operations"});
+    allCommands.push_back({"clear-map", "clear-map <map>", "очистить карту", "operations"});
+    
+    allCommands.push_back({"plan-route-greedy", "plan-route-greedy <map> <x> <z> <time> <n> [p...] [-short]", "жадный алгоритм", "routes"});
+    allCommands.push_back({"plan-route-2opt", "plan-route-2opt <map> <x> <z> <time> <n> [p...] [-short]", "2-opt улучшение", "routes"});
+    allCommands.push_back({"plan-route-mst", "plan-route-mst <map> <x> <z> <time> <n> [p...] [-short]", "MST (Prim)", "routes"});
+    allCommands.push_back({"plan-route-ant", "plan-route-ant <map> <x> <z> <time> <n> [p...] [-short]", "муравьиный алгоритм", "routes"});
+    allCommands.push_back({"best-route", "best-route <map> <x> <z> <time> <n> [p...]", "сравнить все алгоритмы", "routes"});
+    
+    allCommands.push_back({"save", "save <filename>", "сохранить все данные в файл", "io"});
+    allCommands.push_back({"load", "load <filename>", "загрузить данные из файла", "io"});
+    
+    allCommands.push_back({"help", "help", "показать справку", "other"});
+    allCommands.push_back({"exit", "exit", "выйти из программы", "other"});
 
     CuckooHashTable< std::string, std::string > categoryNames;
     categoryNames.add("maps", "=== Управление картами ===");

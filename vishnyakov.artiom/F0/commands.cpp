@@ -21,7 +21,7 @@ namespace vishnyakov
   {
     double roundedTravel = std::round(stop.travelTime * 100.0) / 100.0;
     double roundedDist = std::round(stop.distanceFromPrev * 100.0) / 100.0;
-    
+
     if (stepNumber > 1)
     {
       out << "      - Затраченное время: " << roundedTravel << " мин.\n";
@@ -43,29 +43,56 @@ namespace vishnyakov
     allCommands.push_back({"create-map", "create-map <name>", "создать новую карту", "maps"});
     allCommands.push_back({"delete-map", "delete-map <name>", "удалить карту", "maps"});
     allCommands.push_back({"list-maps", "list-maps", "показать все карты", "maps"});
-    
-    allCommands.push_back({"add-point", "add-point <map> <name> <x> <z> <type>", "добавить точку на карту", "points"});
+    allCommands.push_back({"add-point",
+          "add-point <map> <name> <x> <z> <type>",
+          "добавить точку на карту",
+          "points"});
     allCommands.push_back({"remove-point", "remove-point <map> <name>", "удалить точку", "points"});
-    allCommands.push_back({"edit-point", "edit-point <map> <name> <new-name> <x> <z> <type>", "изменить точку (\"-\" = без изменений)", "points"});
+    allCommands.push_back({"edit-point",
+          "edit-point <map> <name> <new-name> <x> <z> <type>",
+          "изменить точку (\"-\" = без изменений)",
+          "points"});
     allCommands.push_back({"show-points", "show-points <map>", "показать все точки карты", "points"});
-    
-    allCommands.push_back({"find-nearest", "find-nearest <map> <x> <z> <k> [type]", "найти K ближайших точек", "search"});
+    allCommands.push_back({"find-nearest",
+          "find-nearest <map> <x> <z> <k> [type]",
+          "найти K ближайших точек",
+          "search"});
     allCommands.push_back({"find-by-type", "find-by-type <map> <type>", "найти точки по типу", "search"});
-    allCommands.push_back({"copy-point", "copy-point <src> <dst> <name>", "скопировать точку между картами", "search"});
-    allCommands.push_back({"move-point", "move-point <src> <dst> <name>", "переместить точку между картами", "search"});
-    
-    allCommands.push_back({"merge-maps", "merge-maps <new> <map1> <map2>", "объединить две карты", "operations"});
+    allCommands.push_back({"copy-point",
+          "copy-point <src> <dst> <name>",
+          "скопировать точку между картами",
+          "search"});
+    allCommands.push_back({"move-point",
+          "move-point <src> <dst> <name>",
+          "переместить точку между картами",
+          "search"});
+    allCommands.push_back({"merge-maps",
+          "merge-maps <new> <map1> <map2>",
+          "объединить две карты",
+          "operations"});
     allCommands.push_back({"clear-map", "clear-map <map>", "очистить карту", "operations"});
-    
-    allCommands.push_back({"plan-route-greedy", "plan-route-greedy <map> <x> <z> <time> <n> [p...] [-short]", "жадный алгоритм", "routes"});
-    allCommands.push_back({"plan-route-2opt", "plan-route-2opt <map> <x> <z> <time> <n> [p...] [-short]", "2-opt улучшение", "routes"});
-    allCommands.push_back({"plan-route-mst", "plan-route-mst <map> <x> <z> <time> <n> [p...] [-short]", "MST (Prim)", "routes"});
-    allCommands.push_back({"plan-route-ant", "plan-route-ant <map> <x> <z> <time> <n> [p...] [-short]", "муравьиный алгоритм", "routes"});
-    allCommands.push_back({"best-route", "best-route <map> <x> <z> <time> <n> [p...]", "сравнить все алгоритмы", "routes"});
-    
+    allCommands.push_back({"plan-route-greedy",
+          "plan-route-greedy <map> <x> <z> <time> <n> [p...] [-short]",
+          "жадный алгоритм",
+          "routes"});
+    allCommands.push_back({"plan-route-2opt",
+          "plan-route-2opt <map> <x> <z> <time> <n> [p...] [-short]",
+          "2-opt улучшение",
+          "routes"});
+    allCommands.push_back({"plan-route-mst",
+          "plan-route-mst <map> <x> <z> <time> <n> [p...] [-short]",
+          "MST (Prim)",
+          "routes"});
+    allCommands.push_back({"plan-route-ant",
+          "plan-route-ant <map> <x> <z> <time> <n> [p...] [-short]",
+          "муравьиный алгоритм",
+          "routes"});
+    allCommands.push_back({"best-route",
+          "best-route <map> <x> <z> <time> <n> [p...]",
+          "сравнить все алгоритмы",
+          "routes"});
     allCommands.push_back({"save", "save <filename>", "сохранить все данные в файл", "io"});
     allCommands.push_back({"load", "load <filename>", "загрузить данные из файла", "io"});
-    
     allCommands.push_back({"help", "help", "показать справку", "other"});
     allCommands.push_back({"exit", "exit", "выйти из программы", "other"});
 
@@ -95,7 +122,7 @@ namespace vishnyakov
           }
           firstCategory = false;
           currentCategory = it->category;
-          
+
           if (categoryNames.has(currentCategory))
           {
             out << categoryNames.at(currentCategory) << "\n";
@@ -120,13 +147,14 @@ namespace vishnyakov
     }
   }
 
-  void printRouteResult(std::ostream& out, const RouteResult& route,
-                        const std::string& algorithmName, bool shortOutput)
+  void printRouteResult(std::ostream& out, const RouteResult& route, const std::string& algorithmName, bool shortOutput)
   {
     out << "Маршрут (" << algorithmName << "):\n";
+
     if (!shortOutput)
     {
       int stepNumber = 1;
+
       for (LCIter< RouteStop > it = route.allStops.cbegin(); it != route.allStops.cend(); ++it)
       {
         const RouteStop& stop = *it;
@@ -140,16 +168,14 @@ namespace vishnyakov
         }
         else if (stop.isNightStop)
         {
-          out << "  " << stepNumber << ". Остановка на ночь ("
-              << stop.x << ", " << stop.z << ")\n";
+          out << "  " << stepNumber << ". Остановка на ночь (" << stop.x << ", " << stop.z << ")\n";
           printStopDetails(out, stop, stepNumber);
           out << "      - Текущее время: " << roundedTime << " мин.\n";
           stepNumber++;
         }
         else if (stop.isPoint)
         {
-          out << "  " << stepNumber << ". " << stop.name
-              << " (" << stop.x << ", " << stop.z << ")\n";
+          out << "  " << stepNumber << ". " << stop.name << " (" << stop.x << ", " << stop.z << ")\n";
           printStopDetails(out, stop, stepNumber);
           out << "      - Текущее время: " << roundedTime << " мин.\n";
           stepNumber++;
@@ -170,6 +196,7 @@ namespace vishnyakov
   {
     std::string name;
     iss >> name;
+
     if (name.empty())
     {
       out << "Wrong usage. Use:\n";
@@ -189,6 +216,7 @@ namespace vishnyakov
   {
     std::string name;
     iss >> name;
+
     if (name.empty())
     {
       out << "Wrong usage. Use:\n";
@@ -204,15 +232,21 @@ namespace vishnyakov
     }
   }
 
-  void handleListMaps(std::istringstream&, std::ostream& out, World& world)
+  void handleListMaps(std::ostream& out, World& world)
   {
     world.listMaps(out);
+  }
+
+  void handleListMapsAdapter(std::istringstream&, std::ostream& out, World& world)
+  {
+    handleListMaps(out, world);
   }
 
   void handleAddPoint(std::istringstream& iss, std::ostream& out, World& world)
   {
     std::string mapName, pointName, type;
     int x, z;
+
     iss >> mapName >> pointName >> x >> z >> type;
 
     if (mapName.empty() || pointName.empty() || type.empty())
@@ -223,6 +257,7 @@ namespace vishnyakov
     }
 
     Map* map = world.getMap(mapName);
+
     if (!map)
     {
       out << "Map doesn't exist\n";
@@ -242,6 +277,7 @@ namespace vishnyakov
   void handleRemovePoint(std::istringstream& iss, std::ostream& out, World& world)
   {
     std::string mapName, pointName;
+
     iss >> mapName >> pointName;
 
     if (mapName.empty() || pointName.empty())
@@ -252,6 +288,7 @@ namespace vishnyakov
     }
 
     Map* map = world.getMap(mapName);
+
     if (!map)
     {
       out << "Map doesn't exist\n";
@@ -271,6 +308,7 @@ namespace vishnyakov
   void handleEditPoint(std::istringstream& iss, std::ostream& out, World& world)
   {
     std::string mapName, pointName, newName, xStr, zStr, type;
+
     iss >> mapName >> pointName >> newName >> xStr >> zStr >> type;
 
     if (mapName.empty() || pointName.empty())
@@ -281,6 +319,7 @@ namespace vishnyakov
     }
 
     Map* map = world.getMap(mapName);
+
     if (!map)
     {
       out << "Map doesn't exist\n";
@@ -288,6 +327,7 @@ namespace vishnyakov
     }
 
     Waypoint* wp = map->findWaypoint(pointName);
+
     if (!wp)
     {
       out << "Point doesn't exist\n";
@@ -298,10 +338,12 @@ namespace vishnyakov
     {
       wp->x = std::stoi(xStr);
     }
+
     if (zStr != "-")
     {
       wp->z = std::stoi(zStr);
     }
+
     if (type != "-" && !type.empty())
     {
       wp->type = type;
@@ -314,6 +356,7 @@ namespace vishnyakov
         out << "Point with new name already exists\n";
         return;
       }
+
       Waypoint newWp(wp->x, wp->z, wp->type);
       map->removeWaypoint(pointName);
       map->addWaypoint(newName, newWp);
@@ -335,6 +378,7 @@ namespace vishnyakov
     }
 
     const Map* map = world.getMap(mapName);
+
     if (!map)
     {
       out << "Map doesn't exist\n";
@@ -359,6 +403,7 @@ namespace vishnyakov
     std::string mapName;
     int x, z, k;
     std::string typeFilter;
+
     iss >> mapName >> x >> z >> k >> typeFilter;
 
     if (mapName.empty() || k <= 0)
@@ -369,6 +414,7 @@ namespace vishnyakov
     }
 
     const Map* map = world.getMap(mapName);
+
     if (!map)
     {
       out << "Map doesn't exist\n";
@@ -405,9 +451,11 @@ namespace vishnyakov
     }
 
     List< NearestResult > sortedResults;
+
     while (!results.empty())
     {
       LIter< NearestResult > minIt = results.begin();
+
       for (LIter< NearestResult > it = results.begin(); it != results.end(); ++it)
       {
         if (it->distance < minIt->distance)
@@ -415,15 +463,20 @@ namespace vishnyakov
           minIt = it;
         }
       }
+
       sortedResults.push_back(*minIt);
       results.erase(minIt);
     }
 
     double minDist = sortedResults.cbegin()->distance;
     int count = 0;
-    for (LCIter< NearestResult > it = sortedResults.cbegin(); it != sortedResults.cend() && count < k; ++it, ++count)
+
+    for (LCIter< NearestResult > it = sortedResults.cbegin();
+         it != sortedResults.cend() && count < k;
+         ++it, ++count)
     {
       NearestResult res = *it;
+
       if (minDist > 0.0)
       {
         res.coefficient = (res.distance / minDist) * 100.0;
@@ -442,6 +495,7 @@ namespace vishnyakov
   void handleFindByType(std::istringstream& iss, std::ostream& out, World& world)
   {
     std::string mapName, type;
+
     iss >> mapName >> type;
 
     if (mapName.empty() || type.empty())
@@ -452,6 +506,7 @@ namespace vishnyakov
     }
 
     const Map* map = world.getMap(mapName);
+
     if (!map)
     {
       out << "Map doesn't exist\n";
@@ -464,6 +519,7 @@ namespace vishnyakov
   void handleCopyPoint(std::istringstream& iss, std::ostream& out, World& world)
   {
     std::string srcMap, dstMap, pointName;
+
     iss >> srcMap >> dstMap >> pointName;
 
     if (srcMap.empty() || dstMap.empty() || pointName.empty())
@@ -481,6 +537,7 @@ namespace vishnyakov
       out << "Source map doesn't exist\n";
       return;
     }
+
     if (!dst)
     {
       out << "Destination map doesn't exist\n";
@@ -488,6 +545,7 @@ namespace vishnyakov
     }
 
     const Waypoint* wp = src->findWaypoint(pointName);
+
     if (!wp)
     {
       out << "Point doesn't exist\n";
@@ -508,6 +566,7 @@ namespace vishnyakov
   void handleMovePoint(std::istringstream& iss, std::ostream& out, World& world)
   {
     std::string srcMap, dstMap, pointName;
+
     iss >> srcMap >> dstMap >> pointName;
 
     if (srcMap.empty() || dstMap.empty() || pointName.empty())
@@ -525,6 +584,7 @@ namespace vishnyakov
       out << "Source map doesn't exist\n";
       return;
     }
+
     if (!dst)
     {
       out << "Destination map doesn't exist\n";
@@ -532,6 +592,7 @@ namespace vishnyakov
     }
 
     const Waypoint* wp = src->findWaypoint(pointName);
+
     if (!wp)
     {
       out << "Point doesn't exist\n";
@@ -553,6 +614,7 @@ namespace vishnyakov
   void handleMergeMaps(std::istringstream& iss, std::ostream& out, World& world)
   {
     std::string newName, name1, name2;
+
     iss >> newName >> name1 >> name2;
 
     if (newName.empty() || name1.empty() || name2.empty())
@@ -602,6 +664,7 @@ namespace vishnyakov
     }
 
     Map* map = world.getMap(mapName);
+
     if (!map)
     {
       out << "Map doesn't exist\n";
@@ -625,6 +688,7 @@ namespace vishnyakov
     }
 
     std::ofstream file(filename);
+
     if (!file.is_open())
     {
       out << "Cannot open file for writing\n";
@@ -634,6 +698,7 @@ namespace vishnyakov
     for (World::iterator mapIt = world.begin(); mapIt != world.end(); ++mapIt)
     {
       file << mapIt->getName() << "\n";
+
       for (Map::const_iterator pointIt = mapIt->begin(); pointIt != mapIt->end(); ++pointIt)
       {
         file << pointIt->first << " "
@@ -659,6 +724,7 @@ namespace vishnyakov
     }
 
     std::ifstream file(filename);
+
     if (!file.is_open())
     {
       out << "Cannot open file for reading\n";
@@ -686,9 +752,11 @@ namespace vishnyakov
         std::istringstream pointIss(mapLine);
         std::string pointName, type;
         int x, z;
+
         pointIss >> pointName >> x >> z >> type;
 
         Map* map = newWorld.getMap(currentMapName);
+
         if (map)
         {
           if (map->findWaypoint(pointName))
@@ -724,6 +792,7 @@ namespace vishnyakov
     bool shortOutput = parseShortFlag(iss);
 
     const Map* map = world.getMap(mapName);
+
     if (!map)
     {
       out << "Map doesn't exist\n";
@@ -758,6 +827,7 @@ namespace vishnyakov
     bool shortOutput = parseShortFlag(iss);
 
     const Map* map = world.getMap(mapName);
+
     if (!map)
     {
       out << "Map doesn't exist\n";
@@ -792,6 +862,7 @@ namespace vishnyakov
     bool shortOutput = parseShortFlag(iss);
 
     const Map* map = world.getMap(mapName);
+
     if (!map)
     {
       out << "Map doesn't exist\n";
@@ -826,6 +897,7 @@ namespace vishnyakov
     bool shortOutput = parseShortFlag(iss);
 
     const Map* map = world.getMap(mapName);
+
     if (!map)
     {
       out << "Map doesn't exist\n";
@@ -859,6 +931,7 @@ namespace vishnyakov
     List< std::string > ignorePoints = parseIgnorePoints(iss, ignoreCount);
 
     const Map* map = world.getMap(mapName);
+
     if (!map)
     {
       out << "Map doesn't exist\n";
@@ -963,9 +1036,14 @@ namespace vishnyakov
     }
   }
 
-  void handleHelp(std::istringstream&, std::ostream& out, World&)
+  void handleHelp(std::ostream& out, World&)
   {
     printCommandUsage(out, "all");
+  }
+
+  void handleHelpAdapter(std::istringstream&, std::ostream& out, World& world)
+  {
+    handleHelp(out, world);
   }
 }
 

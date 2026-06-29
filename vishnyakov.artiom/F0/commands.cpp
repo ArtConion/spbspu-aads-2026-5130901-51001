@@ -159,19 +159,12 @@ namespace vishnyakov
       }
     }
 
-    double roundedDistance = std::round(route.totalDistance * 100.0) / 100.0;
-    double roundedTotalTime = std::round(route.totalTime * 100.0) / 100.0;
-    double roundedHunger = std::round(route.totalHunger * 100.0) / 100.0;
-
-    int days = static_cast< int >(route.totalTime / CYCLE_LENGTH);
-    double minutesInCurrentDay = route.totalTime - (days * CYCLE_LENGTH);
-    minutesInCurrentDay = std::round(minutesInCurrentDay * 100.0) / 100.0;
-
-    out << "Общая длина: " << roundedDistance << " блоков\n";
-    out << "Общее время: " << roundedTotalTime << " мин. ("
-        << days << " д. " << minutesInCurrentDay << " мин.)\n";
-    out << "Потрачено голода: " << roundedHunger << " ед.\n";
-    out << "Хлеба нужно: " << route.breadNeeded << " шт.\n";
+    RouteStatistics stats = calculateRouteStatistics(route);
+    out << "Общая длина: " << stats.roundedDistance << " блоков\n";
+    out << "Общее время: " << stats.roundedTotalTime << " мин. ("
+        << stats.days << " д. " << stats.minutesInCurrentDay << " мин.)\n";
+    out << "Потрачено голода: " << stats.roundedHunger << " ед.\n";
+    out << "Хлеба нужно: " << stats.breadNeeded << " шт.\n";
   }
 
   void processCommands(std::istream& in, World& world, std::ostream& out)

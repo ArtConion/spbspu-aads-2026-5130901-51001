@@ -8,6 +8,19 @@
 
 namespace vishnyakov
 {
+  RouteStatistics calculateRouteStatistics(const RouteResult& route)
+  {
+    RouteStatistics stats;
+    stats.roundedDistance = std::round(route.totalDistance * 100.0) / 100.0;
+    stats.roundedTotalTime = std::round(route.totalTime * 100.0) / 100.0;
+    stats.roundedHunger = std::round(route.totalHunger * 100.0) / 100.0;
+    stats.days = static_cast< int >(route.totalTime / CYCLE_LENGTH);
+    stats.minutesInCurrentDay = route.totalTime - (stats.days * CYCLE_LENGTH);
+    stats.minutesInCurrentDay = std::round(stats.minutesInCurrentDay * 100.0) / 100.0;
+    stats.breadNeeded = route.breadNeeded;
+    return stats;
+  }
+
   SegmentResult traverseSegment(
     const std::string& nameA,
     int xA, int zA,

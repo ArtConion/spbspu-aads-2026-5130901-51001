@@ -63,6 +63,18 @@ namespace vishnyakov
     double totalNightTime;
   };
 
+  struct RouteStatistics
+  {
+    double roundedDistance;
+    double roundedTotalTime;
+    double roundedHunger;
+    int days;
+    double minutesInCurrentDay;
+    int breadNeeded;
+  };
+
+  RouteStatistics calculateRouteStatistics(const RouteResult& route);
+
   RouteResult buildGreedyRoute(
     const List< std::pair< std::string, Waypoint > >& points,
     int startX, int startZ,

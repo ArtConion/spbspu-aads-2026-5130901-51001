@@ -1,5 +1,9 @@
 #include "commands.hpp"
+#include "cuckoo_ht.hpp"
 #include <iostream>
+#include <sstream>
+#include <string>
+#include <functional>
 
 int main()
 {
@@ -7,7 +11,57 @@ int main()
 
   World world;
 
-  processCommands(std::cin, world, std::cout);
+  CuckooHashTable< std::string, std::function<void(std::istringstream&, std::ostream&, World&)> > commands;
+  
+  commands.add("create-map", handleCreateMap);
+  commands.add("delete-map", handleDeleteMap);
+  commands.add("list-maps", handleListMaps);
+  commands.add("add-point", handleAddPoint);
+  commands.add("remove-point", handleRemovePoint);
+  commands.add("edit-point", handleEditPoint);
+  commands.add("show-points", handleShowPoints);
+  commands.add("find-nearest", handleFindNearest);
+  commands.add("find-by-type", handleFindByType);
+  commands.add("copy-point", handleCopyPoint);
+  commands.add("move-point", handleMovePoint);
+  commands.add("merge-maps", handleMergeMaps);
+  commands.add("clear-map", handleClearMap);
+  commands.add("save", handleSave);
+  commands.add("load", handleLoad);
+  commands.add("plan-route-greedy", handlePlanRouteGreedy);
+  commands.add("plan-route-2opt", handlePlanRoute2Opt);
+  commands.add("plan-route-mst", handlePlanRouteMST);
+  commands.add("plan-route-ant", handlePlanRouteAnt);
+  commands.add("best-route", handleBestRoute);
+  commands.add("help", handleHelp);
+
+  std::string line;
+  while (std::getline(std::cin, line))
+  {
+    if (line.empty())
+    {
+      continue;
+    }
+
+    std::istringstream iss(line);
+    std::string cmd;
+    iss >> cmd;
+
+    if (cmd == "exit")
+    {
+      break;
+    }
+
+    if (commands.has(cmd))
+    {
+      commands.at(cmd)(iss, std::cout, world);
+    }
+    else
+    {
+      std::cout << "Unknown command. Use 'help' to see available commands.\n";
+    }
+  }
 
   return 0;
 }
+

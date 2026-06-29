@@ -48,7 +48,7 @@ namespace vishnyakov
       Value value;
       bool occupied;
 
-      Bucket(): key(), value(), occupied(false) {}
+      Bucket();
     };
 
     Bucket* table1_;
@@ -62,49 +62,92 @@ namespace vishnyakov
     size_t index1(const Key& key) const;
     size_t index2(const Key& key) const;
     void rehash();
-    int find_bucket(const Key& key) const;
+    size_t find_bucket(const Key& key) const;
+
+    void allocate_tables(size_t size);
+    void deallocate_tables();
   };
+
+  template< class Key, class Value, class Hash, class Equal >
+  CuckooHashTable< Key, Value, Hash, Equal >::Bucket::Bucket():
+    key(),
+    value(),
+    occupied(false)
+  {
+  }
+
+  template< class Key, class Value, class Hash, class Equal >
+  void CuckooHashTable< Key, Value, Hash, Equal >::allocate_tables(size_t size)
+  {
+    Bucket* new_table1 = nullptr;
+    Bucket* new_table2 = nullptr;
+
+    try
+    {
+      new_table1 = new Bucket[size];
+      new_table2 = new Bucket[size];
+    }
+    catch (...)
+    {
+      delete[] new_table1;
+      delete[] new_table2;
+      throw;
+    }
+
+    table1_ = new_table1;
+    table2_ = new_table2;
+    table_size_ = size;
+  }
+
+  template< class Key, class Value, class Hash, class Equal >
+  void CuckooHashTable< Key, Value, Hash, Equal >::deallocate_tables()
+  {
+    delete[] table1_;
+    delete[] table2_;
+    table1_ = nullptr;
+    table2_ = nullptr;
+    table_size_ = 0;
+  }
 
   template< class Key, class Value, class Hash, class Equal >
   CuckooHashTable< Key, Value, Hash, Equal >::CuckooHashTable():
     table1_(nullptr),
     table2_(nullptr),
-    table_size_(DEFAULT_CAPACITY),
+    table_size_(0),
     size_(0),
     hash1_(),
     hash2_(),
     equal_()
   {
-    table1_ = new Bucket[table_size_];
-    table2_ = new Bucket[table_size_];
+    allocate_tables(DEFAULT_CAPACITY);
   }
 
   template< class Key, class Value, class Hash, class Equal >
   CuckooHashTable< Key, Value, Hash, Equal >::CuckooHashTable(size_t initial_capacity):
     table1_(nullptr),
     table2_(nullptr),
-    table_size_(initial_capacity > 0 ? initial_capacity : DEFAULT_CAPACITY),
+    table_size_(0),
     size_(0),
     hash1_(),
     hash2_(),
     equal_()
   {
-    table1_ = new Bucket[table_size_];
-    table2_ = new Bucket[table_size_];
+    size_t cap = (initial_capacity > 0) ? initial_capacity : DEFAULT_CAPACITY;
+    allocate_tables(cap);
   }
 
   template< class Key, class Value, class Hash, class Equal >
   CuckooHashTable< Key, Value, Hash, Equal >::CuckooHashTable(const CuckooHashTable& other):
     table1_(nullptr),
     table2_(nullptr),
-    table_size_(other.table_size_),
+    table_size_(0),
     size_(other.size_),
     hash1_(other.hash1_),
     hash2_(other.hash2_),
     equal_(other.equal_)
   {
-    table1_ = new Bucket[table_size_];
-    table2_ = new Bucket[table_size_];
+    allocate_tables(other.table_size_);
+
     for (size_t i = 0; i < table_size_; ++i)
     {
       table1_[i] = other.table1_[i];
@@ -131,8 +174,7 @@ namespace vishnyakov
   template< class Key, class Value, class Hash, class Equal >
   CuckooHashTable< Key, Value, Hash, Equal >::~CuckooHashTable()
   {
-    delete[] table1_;
-    delete[] table2_;
+    deallocate_tables();
   }
 
   template< class Key, class Value, class Hash, class Equal >
@@ -141,13 +183,7 @@ namespace vishnyakov
     if (this != &other)
     {
       CuckooHashTable tmp(other);
-      std::swap(table1_, tmp.table1_);
-      std::swap(table2_, tmp.table2_);
-      std::swap(table_size_, tmp.table_size_);
-      std::swap(size_, tmp.size_);
-      std::swap(hash1_, tmp.hash1_);
-      std::swap(hash2_, tmp.hash2_);
-      std::swap(equal_, tmp.equal_);
+      swap(tmp);
     }
     return *this;
   }
@@ -157,15 +193,17 @@ namespace vishnyakov
   {
     if (this != &other)
     {
-      delete[] table1_;
-      delete[] table2_;
+      deallocate_tables();
+
       table1_ = other.table1_;
       table2_ = other.table2_;
       table_size_ = other.table_size_;
       size_ = other.size_;
-      hash1_ = std::move(other.hash1_);
-      hash2_ = std::move(other.hash2_);
-      equal_ = std::move(other.equal_);
+
+      std::swap(hash1_, other.hash1_);
+      std::swap(hash2_, other.hash2_);
+      std::swap(equal_, other.equal_);
+
       other.table1_ = nullptr;
       other.table2_ = nullptr;
       other.table_size_ = 0;
@@ -205,21 +243,23 @@ namespace vishnyakov
   }
 
   template< class Key, class Value, class Hash, class Equal >
-  int CuckooHashTable< Key, Value, Hash, Equal >::find_bucket(const Key& key) const
+  size_t CuckooHashTable< Key, Value, Hash, Equal >::find_bucket(const Key& key) const
   {
     size_t idx1 = index1(key);
+
     if (table1_[idx1].occupied && equal_(table1_[idx1].key, key))
     {
-      return static_cast<int>(idx1);
+      return idx1;
     }
 
     size_t idx2 = index2(key);
+
     if (table2_[idx2].occupied && equal_(table2_[idx2].key, key))
     {
-      return static_cast<int>(idx2 + table_size_);
+      return idx2 + table_size_;
     }
 
-    return -1;
+    return table_size_ * 2;
   }
 
   template< class Key, class Value, class Hash, class Equal >
@@ -241,6 +281,7 @@ namespace vishnyakov
     for (size_t loop = 0; loop < MAX_LOOP; ++loop)
     {
       size_t idx1 = index1(k);
+
       if (!table1_[idx1].occupied)
       {
         table1_[idx1].key = k;
@@ -249,10 +290,12 @@ namespace vishnyakov
         ++size_;
         return;
       }
+
       std::swap(k, table1_[idx1].key);
       std::swap(v, table1_[idx1].value);
 
       size_t idx2 = index2(k);
+
       if (!table2_[idx2].occupied)
       {
         table2_[idx2].key = k;
@@ -261,6 +304,7 @@ namespace vishnyakov
         ++size_;
         return;
       }
+
       std::swap(k, table2_[idx2].key);
       std::swap(v, table2_[idx2].value);
     }
@@ -287,6 +331,7 @@ namespace vishnyakov
       {
         new_table.add(table1_[i].key, table1_[i].value);
       }
+
       if (table2_[i].occupied)
       {
         new_table.add(table2_[i].key, table2_[i].value);
@@ -307,24 +352,27 @@ namespace vishnyakov
       table1_[i].occupied = false;
       table2_[i].occupied = false;
     }
+
     size_ = 0;
   }
 
   template< class Key, class Value, class Hash, class Equal >
   bool CuckooHashTable< Key, Value, Hash, Equal >::has(const Key& key) const
   {
-    return find_bucket(key) != -1;
+    return find_bucket(key) != table_size_ * 2;
   }
 
   template< class Key, class Value, class Hash, class Equal >
   Value& CuckooHashTable< Key, Value, Hash, Equal >::at(const Key& key)
   {
-    int bucket = find_bucket(key);
-    if (bucket == -1)
+    size_t bucket = find_bucket(key);
+
+    if (bucket == table_size_ * 2)
     {
       throw std::out_of_range("Key not found");
     }
-    if (bucket < static_cast<int>(table_size_))
+
+    if (bucket < table_size_)
     {
       return table1_[bucket].value;
     }
@@ -337,12 +385,14 @@ namespace vishnyakov
   template< class Key, class Value, class Hash, class Equal >
   const Value& CuckooHashTable< Key, Value, Hash, Equal >::at(const Key& key) const
   {
-    int bucket = find_bucket(key);
-    if (bucket == -1)
+    size_t bucket = find_bucket(key);
+
+    if (bucket == table_size_ * 2)
     {
       throw std::out_of_range("Key not found");
     }
-    if (bucket < static_cast<int>(table_size_))
+
+    if (bucket < table_size_)
     {
       return table1_[bucket].value;
     }
@@ -355,10 +405,11 @@ namespace vishnyakov
   template< class Key, class Value, class Hash, class Equal >
   Value& CuckooHashTable< Key, Value, Hash, Equal >::operator[](const Key& key)
   {
-    int bucket = find_bucket(key);
-    if (bucket != -1)
+    size_t bucket = find_bucket(key);
+
+    if (bucket != table_size_ * 2)
     {
-      if (bucket < static_cast<int>(table_size_))
+      if (bucket < table_size_)
       {
         return table1_[bucket].value;
       }
@@ -367,9 +418,11 @@ namespace vishnyakov
         return table2_[bucket - table_size_].value;
       }
     }
+
     add(key, Value());
     bucket = find_bucket(key);
-    if (bucket < static_cast<int>(table_size_))
+
+    if (bucket < table_size_)
     {
       return table1_[bucket].value;
     }
@@ -382,24 +435,53 @@ namespace vishnyakov
   template< class Key, class Value, class Hash, class Equal >
   Value CuckooHashTable< Key, Value, Hash, Equal >::drop(const Key& key)
   {
-    int bucket = find_bucket(key);
-    if (bucket == -1)
+    const size_t NOT_FOUND = table_size_ * 2;
+    size_t bucket = find_bucket(key);
+
+    if (bucket == NOT_FOUND)
     {
       throw std::out_of_range("Key not found");
     }
+
+    const bool in_table1 = (bucket < table_size_);
+    const size_t idx = in_table1 ? bucket : (bucket - table_size_);
+
     Value result;
-    if (bucket < static_cast<int>(table_size_))
+
+    try
     {
-      result = std::move(table1_[bucket].value);
-      table1_[bucket].occupied = false;
+      if (in_table1)
+      {
+        result = std::move(table1_[idx].value);
+      }
+      else
+      {
+        result = std::move(table2_[idx].value);
+      }
+
+      if (in_table1)
+      {
+        table1_[idx].occupied = false;
+      }
+      else
+      {
+        table2_[idx].occupied = false;
+      }
     }
-    else
+    catch (...)
     {
-      result = std::move(table2_[bucket - table_size_].value);
-      table2_[bucket - table_size_].occupied = false;
+      throw;
     }
+
     --size_;
     return result;
+  }
+
+  template< class Key, class Value, class Hash, class Equal >
+  void swap(CuckooHashTable< Key, Value, Hash, Equal >& lhs,
+            CuckooHashTable< Key, Value, Hash, Equal >& rhs) noexcept
+  {
+    lhs.swap(rhs);
   }
 }
 

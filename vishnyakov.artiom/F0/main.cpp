@@ -9,14 +9,10 @@ int main()
 {
   using namespace vishnyakov;
 
-  std::cout << "=== Карта Мира с отметками (Waypoints) ===\n";
-  std::cout << "Введите 'help' для списка команд или 'exit' для выхода\n\n";
-
   World world;
 
   CuckooHashTable< std::string,
-            std::function<void(std::istringstream&, std::ostream&, World&)> >
-    commands;
+         std::function<void(std::istringstream&, std::ostream&, World&)> > commands;
 
   commands.add("create-map", handleCreateMap);
   commands.add("delete-map", handleDeleteMap);
@@ -54,7 +50,6 @@ int main()
 
     if (cmd == "exit")
     {
-      std::cout << "\nПрограмма завершена. До свидания!\n";
       break;
     }
 

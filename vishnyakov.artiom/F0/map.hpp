@@ -4,6 +4,7 @@
 #include "avltree.hpp"
 #include "cuckoo_ht.hpp"
 #include "waypoint.hpp"
+#include <list.hpp>
 #include <string>
 
 namespace vishnyakov
